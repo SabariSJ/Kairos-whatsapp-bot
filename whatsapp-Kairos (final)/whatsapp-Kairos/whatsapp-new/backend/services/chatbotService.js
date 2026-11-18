@@ -192,12 +192,43 @@ async function processMessage(from, userMessage = "", buttonId = null, messageId
     userLang = (student.languageCode === "fr" || googleSheetService.isFrench(student.language)) ? "fr" : "en";
   }
 
+  const isPaidStudent = student && student.paymentStatus === "yes";
+
+  // Check if incoming message is an onboarding interaction
+  const isOnboardingAction =
+    buttonId === "lang_en" ||
+    buttonId === "lang_fr" ||
+    buttonId === "accept_intro" ||
+    buttonId === "agree" ||
+    buttonId === "accept_register" ||
+    buttonId === "sub_accept" ||
+    buttonId === "reg_submitted" ||
+    buttonId === "form_submitted" ||
+    buttonId === "check_reg" ||
+    buttonId === "lang_picker" ||
+    clean === "english" ||
+    clean === "en" ||
+    clean === "français" ||
+    clean === "francais" ||
+    clean === "fr" ||
+    clean === "french" ||
+    clean === "i accept" ||
+    clean === "j'accepte" ||
+    clean === "accept" ||
+    clean === "accepte" ||
+    clean.includes("submitted") ||
+    clean.includes("soumis");
+
   // =========================================================================
-  // SCENARIO A: UNREGISTERED USER (Phone not found in Google Sheet)
-  // Perfectly matches user screenshots 1, 2, 3, 4 with full English & French support
+  // SCENARIO A: ONBOARDING & INTRODUCTORY FLOW (English & French)
+  // Perfectly matches user screenshots:
+  // Step 1: Greeting & Language Picker ([English], [Français])
+  // Step 2: Poster + "Take the introductory course for free..." ([I accept])
+  // Step 3: Video + "Would you like to register for our course?" ([I accept])
+  // Step 4: Registration form link + ([Submitted ✅])
   // =========================================================================
-  if (!student) {
-    console.log(`[ChatbotEngine] Scenario A: Unregistered user detected (+${from}, Phone10: ${phone10}, Step: ${unregStep}, Lang: ${userLang})`);
+  if (!isPaidStudent || isOnboardingAction) {
+    console.log(`[ChatbotEngine] Onboarding flow active (+${from}, Phone10: ${phone10}, Step: ${unregStep}, Lang: ${userLang})`);
 
     // --- STEP 5: REGISTRATION SUBMITTED CHECK ---
     // User taps "Submitted ✅" or "Soumis ✅"
@@ -313,9 +344,15 @@ async function processMessage(from, userMessage = "", buttonId = null, messageId
     if (
       buttonId === "accept_intro" ||
       buttonId === "agree" ||
-      (unregStep === "INTRO_OFFERED" && (
-        clean === "i accept" || clean === "j'accepte" || clean === "accept" || clean === "accepte" || clean === "yes" || clean === "oui" || clean === "ok" || clean === "d'accord"
-      ))
+      unregStep === "INTRO_OFFERED" ||
+      clean === "i accept" ||
+      clean === "j'accepte" ||
+      clean === "accept" ||
+      clean === "accepte" ||
+      clean === "yes" ||
+      clean === "oui" ||
+      clean === "ok" ||
+      clean === "d'accord"
     ) {
       const isFr = userLang === "fr" || clean.includes("j'accepte") || clean.includes("oui") || clean.includes("d'accord");
       const lang = isFr ? "fr" : "en";
