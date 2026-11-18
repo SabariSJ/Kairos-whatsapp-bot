@@ -20,7 +20,7 @@ function formatTime(seconds = 0) {
  * Resolve public media URL for posters, videos, and images
  */
 function getPosterUrl(filename = "class_img_english.jpeg") {
-  const baseUrl = process.env.RENDER_EXTERNAL_URL || process.env.SERVER_BASE_URL || "https://kairos-1ec3.onrender.com";
+  const baseUrl = process.env.RENDER_EXTERNAL_URL || process.env.SERVER_BASE_URL || "https://kairos-whatsapp-bot-cy5w.onrender.com";
   return `${baseUrl}/media/${filename}`;
 }
 
@@ -162,7 +162,7 @@ async function processMessage(from, userMessage = "", buttonId = null, messageId
   const text = (userMessage || "").trim();
   const clean = text.toLowerCase();
   const phone10 = googleSheetService.normalizePhone(from);
-  const serverBase = process.env.RENDER_EXTERNAL_URL || process.env.SERVER_BASE_URL || "https://kairos-1ec3.onrender.com";
+  const serverBase = process.env.RENDER_EXTERNAL_URL || process.env.SERVER_BASE_URL || "https://kairos-whatsapp-bot-cy5w.onrender.com";
 
   console.log(`[ChatbotEngine] Processing message from +${from} (Phone10: ${phone10}) | Input: "${text}" | Button: ${buttonId || "none"}`);
 

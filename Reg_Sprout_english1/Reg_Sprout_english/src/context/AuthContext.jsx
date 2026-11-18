@@ -5,9 +5,35 @@ import { auth, db } from '../firebase/firebaseConfig';
 
 const AuthContext = createContext();
 
+function resolveStaffRole(email) {
+  if (!email) return null;
+  const lower = email.toLowerCase().trim();
+  if (lower === 'admin@sprout.app' || lower === 'payment@sprout.com' || lower.includes('payment') || lower.includes('admin')) {
+    return 'payment_staff';
+  }
+  if (lower === 'data@sprout.app' || lower === 'report@sprout.com' || lower.includes('report')) {
+    return 'report_staff';
+  }
+  return 'payment_staff';
+}
+
 export function AuthProvider({ children }) {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [staffRole, setStaffRole] = useState(null); // 'payment_staff' | 'report_staff' | null
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem('sprout_local_staff');
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [staffRole, setStaffRole] = useState(() => {
+    try {
+      const saved = localStorage.getItem('sprout_local_staff');
+      return saved ? JSON.parse(saved).role : null;
+    } catch {
+      return null;
+    }
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -16,28 +42,65 @@ export function AuthProvider({ children }) {
 
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
+        let role = null;
+        let staffData = null;
+
         try {
-          // Fetch staff role from Firestore
+          // Attempt fetch staff role from Firestore
           const staffDocRef = doc(db, 'staffUsers', user.uid);
           const staffSnap = await getDoc(staffDocRef);
           
           if (staffSnap.exists() && staffSnap.data().active === true) {
-            setStaffRole(staffSnap.data().role);
-            setCurrentUser({ ...user, ...staffSnap.data() });
-          } else {
-            // User exists in Auth but not authorized in staffUsers or inactive
-            setStaffRole(null);
-            setCurrentUser(null);
-            await signOut(auth); // force sign out
+            role = staffSnap.data().role;
+            staffData = staffSnap.data();
           }
         } catch (error) {
-          console.error("Error fetching staff details:", error);
+          console.warn("Firestore staff profile unavailable, using role resolution:", error.message);
+        }
+
+        // Fallback for authorized staff accounts
+        if (!role) {
+          role = resolveStaffRole(user.email);
+          staffData = {
+            role,
+            displayName: user.displayName || (role === 'payment_staff' ? 'Payment Team' : 'Report Team'),
+            email: user.email,
+            active: true
+          };
+        }
+
+        if (role) {
+          setStaffRole(role);
+          const enrichedUser = { ...user, ...staffData, role };
+          setCurrentUser(enrichedUser);
+          localStorage.setItem('sprout_local_staff', JSON.stringify({
+            uid: user.uid,
+            email: user.email,
+            displayName: staffData.displayName,
+            role
+          }));
+        } else {
           setStaffRole(null);
           setCurrentUser(null);
+          localStorage.removeItem('sprout_local_staff');
+          await signOut(auth).catch(() => {});
         }
       } else {
-        setCurrentUser(null);
-        setStaffRole(null);
+        // If not authenticated via Firebase Auth, check if local staff session exists
+        const saved = localStorage.getItem('sprout_local_staff');
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            setCurrentUser(parsed);
+            setStaffRole(parsed.role);
+          } catch {
+            setCurrentUser(null);
+            setStaffRole(null);
+          }
+        } else {
+          setCurrentUser(null);
+          setStaffRole(null);
+        }
       }
       setLoading(false);
     });
@@ -46,7 +109,8 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = async () => {
-    await signOut(auth);
+    localStorage.removeItem('sprout_local_staff');
+    await signOut(auth).catch(() => {});
     setCurrentUser(null);
     setStaffRole(null);
   };

@@ -24,11 +24,20 @@ export default function App() {
 
             {/* Phase 2 Auth Routes */}
             <Route path="/login" element={<Login />} />
+            <Route path="/registration/login" element={<Navigate to="/login" replace />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
 
-            {/* Protected Phase 2 Staff Routes */}
+            {/* Protected Phase 2 Staff Routes (Support both root and /registration/ nested paths) */}
             <Route 
               path="/paymentstaff" 
+              element={
+                <ProtectedRoute allowedRoles={['payment_staff']}>
+                  <PaymentStaff />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/registration/paymentstaff" 
               element={
                 <ProtectedRoute allowedRoles={['payment_staff']}>
                   <PaymentStaff />
@@ -43,17 +52,30 @@ export default function App() {
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/registration/reportstaff" 
+              element={
+                <ProtectedRoute allowedRoles={['report_staff']}>
+                  <ReportStaff />
+                </ProtectedRoute>
+              } 
+            />
 
             {/* Fallback unknown route redirects to /registration */}
             <Route path="*" element={<Navigate to="/registration" replace />} />
           </Routes>
         </main>
 
-        <footer className="app-footer">
-          <div className="container">
-            <small className="app-footer-brand">
+        <footer className="app-footer py-3 text-center border-top bg-white">
+          <div className="container d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <small className="app-footer-brand text-muted">
               Sprout &bull; Kairos &bull; Plateforme d'inscription sécurisée
             </small>
+            <div>
+              <a href="/paymentstaff" className="text-decoration-none small text-secondary fw-semibold">
+                <i className="fa-solid fa-lock me-1"></i>Portail Personnel
+              </a>
+            </div>
           </div>
         </footer>
       </div>
