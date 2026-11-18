@@ -103,7 +103,7 @@ app.get("/", (req, res) => {
     healthCheck: "/health",
     webhookUrl: "/webhook",
     phone: process.env.WHATSAPP_PHONE_NUMBER || "+919629531891",
-    googleSheetSync: Boolean(process.env.GOOGLE_SHEET_SCRIPT_URL),
+    database: "AWS RDS PostgreSQL (devdb)",
     activeSessions: drmService.getActiveSessionsCount()
   });
 });
@@ -343,7 +343,7 @@ app.listen(PORT, "0.0.0.0", () => {
   console.log(`🔗 Webhook GET/POST endpoint: http://localhost:${PORT}/webhook`);
   console.log(`🔒 DRM Classroom player base: http://localhost:${PORT}/classroom/:sessionId`);
   console.log(`📱 WhatsApp Number: ${process.env.WHATSAPP_PHONE_NUMBER || "+919629531891"}`);
-  console.log(`📊 Google Sheet Sync: ${process.env.GOOGLE_SHEET_SCRIPT_URL ? "Configured" : "Local Fallback Active"}`);
+  console.log(`🗄️ Database: AWS RDS PostgreSQL (${process.env.DB_HOST || "kairos-dev-db.cstyogquglrh.us-east-1.rds.amazonaws.com"})`);
   console.log("==================================================");
 
   startKeepAlivePing();

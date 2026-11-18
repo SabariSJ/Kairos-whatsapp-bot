@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const axios = require("axios");
 
-const DEFAULT_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyRd0Q04T_1K7DP2IrPcKfumWYTO5OX8spM6RYUPixBAJLVwqPWWTJeAtvf2R2X6doS_w/exec";
+const DEFAULT_SCRIPT_URL = null;
 
 /**
  * Check if payment status represents a paid/completed status
@@ -95,12 +95,12 @@ class ConcurrencyQueue {
  */
 class GoogleSheetService {
   constructor() {
-    this.scriptUrl = process.env.GOOGLE_SHEET_SCRIPT_URL || DEFAULT_SCRIPT_URL;
-    this.sheetUrl = process.env.GOOGLE_SHEET_URL || "";
+    this.scriptUrl = null;
+    this.sheetUrl = "";
     this.localStorePath = path.join(__dirname, "..", "data", "students.json");
     this.studentMemoryCache = new Map();
-    this.cacheTtlMs = 30000; // 30-second TTL for high-concurrency 100+ users
-    this.requestQueue = new ConcurrencyQueue(10); // Safely caps concurrent outgoing requests to Google Apps Script to 10
+    this.cacheTtlMs = 30000;
+    this.requestQueue = new ConcurrencyQueue(10);
     this.pendingStudents = null;
     this.writeDebounceTimer = null;
     this.initLocalStore();
@@ -277,96 +277,40 @@ class GoogleSheetService {
   }
 
   /**
-   * Fetch a student record by phone number in REAL TIME
-   * Checks Google Apps Script ➡️ Direct Sheet CSV ➡️ Local database
+   * Fetch a student record by phone number from local store
    * 
    * @param {string} rawPhone Incoming phone number
-   * @returns {Promise<{name: string, phone: string, course: string, paymentStatus: string, progressSeconds: number, currentModule: number, completedModules: Array<number>}|null>}
+   * @returns {Promise<object|null>}
    */
   async getStudent(rawPhone) {
     const phone = this.normalizePhone(rawPhone);
     if (!phone) return null;
 
-    // 0. High-Speed In-Memory Cache (30s TTL) - Protects Google Apps Script from 100+ concurrent message spikes
     const cached = this.studentMemoryCache.get(phone);
     if (cached && cached.expiresAt > Date.now()) {
       return cached.student;
     }
 
-    const scriptUrl = process.env.GOOGLE_SHEET_SCRIPT_URL || this.scriptUrl;
-
-    // 1. Attempt Google Apps Script request in real time
-    if (scriptUrl && scriptUrl.startsWith("http")) {
-      try {
-        console.log(`[GoogleSheetSync] Querying Google Apps Script for student: ${phone}`);
-        
-        // Query via concurrency queue (max 10 concurrent requests to Google Apps Script)
-        let response = await this.requestQueue.run(async () => {
-          try {
-            return await axios.post(
-              scriptUrl,
-              { action: "getStudent", phone: phone },
-              { headers: { "Content-Type": "application/json" }, timeout: 8000, maxRedirects: 5 }
-            );
-          } catch (postErr) {
-            return await axios.get(scriptUrl, {
-              params: { action: "getStudent", phone: phone },
-              timeout: 8000,
-              maxRedirects: 5
-            });
-          }
-        });
-
-        if (typeof response.data === "string" && response.data.trim().startsWith("<")) {
-          console.warn("[GoogleSheetSync Warning] Google Apps Script returned a Google Login page. Please ensure in Apps Script deployment: 'Who has access' is set to 'Anyone' (NOT 'Only myself'). Using direct sheet / local fallback.");
-        } else if (response.data && response.data.success && response.data.student) {
-          const s = response.data.student;
-          const isPaid = isPaymentYes(s.paymentStatus);
-          const isFr = this.isFrench(s.language);
-          const formatted = {
-            name: s.name || "Student",
-            phone: this.normalizePhone(s.phone || phone),
-            course: s.course || (isFr ? "Cours de Réussite Commerciale" : "Business Success Class"),
-            paymentStatus: isPaid ? "yes" : "no",
-            language: isFr ? "français" : "english",
-            languageCode: isFr ? "fr" : "en",
-            progressSeconds: Number(s.progressSeconds || 0),
-            currentModule: Math.max(1, Math.min(6, Number(s.currentModule || 1))),
-            completedModules: Array.isArray(s.completedModules)
-              ? s.completedModules.map(Number)
-              : typeof s.completedModules === "string" && s.completedModules.trim()
-                ? s.completedModules.split(",").map(m => Number(m.trim())).filter(n => !isNaN(n))
-                : []
-          };
-
-          // Cache update locally & in-memory
-          this.upsertLocalStudent(formatted);
-          this.studentMemoryCache.set(phone, {
-            student: formatted,
-            expiresAt: Date.now() + this.cacheTtlMs
-          });
-          console.log(`[GoogleSheetSync] Real-time student verified from Google Sheet: ${formatted.name} (Payment: ${formatted.paymentStatus}, Lang: ${formatted.language})`);
-          return formatted;
-        } else if (response.data && response.data.success === false) {
-          console.log(`[GoogleSheetSync] Student ${phone} is NOT in Google Sheet. Unregistered user.`);
-          this.studentMemoryCache.set(phone, {
-            student: null,
-            expiresAt: Date.now() + 15000
-          });
-          return null;
-        }
-      } catch (err) {
-        console.warn(`[GoogleSheetSync Warning] Google Apps Script request failed (${err.message}).`);
-      }
+    const students = this.readLocalStudents();
+    const found = students.find(s => this.phonesMatch(s.phone, phone));
+    if (found) {
+      const isPaid = isPaymentYes(found.paymentStatus);
+      const isFr = this.isFrench(found.language);
+      const formatted = {
+        name: found.name || "Student",
+        phone: this.normalizePhone(found.phone || phone),
+        course: found.course || (isFr ? "Cours de Réussite Commerciale" : "Business Success Class"),
+        paymentStatus: isPaid ? "yes" : "no",
+        language: isFr ? "français" : "english",
+        languageCode: isFr ? "fr" : "en",
+        progressSeconds: Number(found.progressSeconds || 0),
+        currentModule: Math.max(1, Math.min(6, Number(found.currentModule || 1))),
+        completedModules: Array.isArray(found.completedModules) ? found.completedModules : []
+      };
+      this.studentMemoryCache.set(phone, { student: formatted, expiresAt: Date.now() + this.cacheTtlMs });
+      return formatted;
     }
 
-    // 2. Attempt Direct Public Sheet CSV if configured
-    const csvStudent = await this.fetchFromDirectSheetCsv(phone);
-    if (csvStudent) {
-      return csvStudent;
-    }
-
-    // Student not found anywhere in Google Sheet -> return null for Unregistered Flow
     return null;
   }
 
@@ -391,42 +335,6 @@ class GoogleSheetService {
 
     // 2. Update local cache immediately
     const updatedLocal = this.upsertLocalStudent({ phone, ...updates });
-
-    // 3. Dispatch to Google Apps Script asynchronously via concurrency queue
-    const scriptUrl = process.env.GOOGLE_SHEET_SCRIPT_URL || this.scriptUrl;
-    if (scriptUrl && scriptUrl.startsWith("http")) {
-      const payload = {
-        action: "updateProgress",
-        phone: phone,
-        progressSeconds: updates.progressSeconds,
-        currentModule: updates.currentModule,
-        completedModules: updates.completedModules ? updates.completedModules.join(",") : undefined,
-        paymentStatus: updates.paymentStatus
-      };
-
-      this.requestQueue.run(async () => {
-        try {
-          await axios.post(scriptUrl, payload, {
-            headers: { "Content-Type": "application/json" },
-            timeout: 6000,
-            maxRedirects: 5
-          });
-          console.log(`[GoogleSheetSync] Real-time progress updated in Google Sheet for ${phone}`);
-        } catch (err) {
-          try {
-            await axios.get(scriptUrl, {
-              params: payload,
-              timeout: 6000,
-              maxRedirects: 5
-            });
-            console.log(`[GoogleSheetSync GET Fallback] Progress updated for ${phone}`);
-          } catch (getErr) {
-            console.warn(`[GoogleSheetSync Warning] Failed to update Google Sheet: ${err.message}. Local store updated.`);
-          }
-        }
-      });
-    }
-
     return updatedLocal;
   }
 

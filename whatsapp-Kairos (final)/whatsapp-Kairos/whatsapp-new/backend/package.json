@@ -24,6 +24,7 @@
     "@aws-sdk/s3-request-presigner": "^3.1171.0",
     "axios": "^1.7.9",
     "dotenv": "^16.4.7",
-    "express": "^4.21.2"
+    "express": "^4.21.2",
+    "pg": "^8.23.1"
   }
 }

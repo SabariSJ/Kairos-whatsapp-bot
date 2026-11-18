@@ -24,7 +24,17 @@ services:
         sync: false
       - key: SERVER_BASE_URL
         sync: false
-      - key: GOOGLE_SHEET_SCRIPT_URL
-        sync: false
+      - key: DB_HOST
+        value: kairos-dev-db.cstyogquglrh.us-east-1.rds.amazonaws.com
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_NAME
+        value: devdb
+      - key: DB_USER
+        value: postgres
+      - key: DB_PASSWORD
+        value: Kairos$123
+      - key: DB_SSL
+        value: "true"
       - key: DRM_SECRET_KEY
         sync: false

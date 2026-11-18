@@ -180,12 +180,8 @@ async function processMessage(from, userMessage = "", buttonId = null, messageId
     userLang = "fr";
   }
 
-  // Fetch student status from Authoritative Common Backend (AWS RDS PostgreSQL)
+  // Fetch student status from Authoritative Database (AWS RDS PostgreSQL)
   let student = await backendStudentService.getStudent(from, phone10);
-  if (!student) {
-    // Legacy Google Sheet fallback if student not yet migrated
-    student = await googleSheetService.getStudent(phone10);
-  }
 
   // If student is registered, authoritative language from PostgreSQL is the single source of truth
   if (student && (student.languageCode || student.language)) {
@@ -227,7 +223,7 @@ async function processMessage(from, userMessage = "", buttonId = null, messageId
   // Step 3: Video + "Would you like to register for our course?" ([I accept])
   // Step 4: Registration form link + ([Submitted ✅])
   // =========================================================================
-  if (!isPaidStudent || isOnboardingAction) {
+  if (!student || isOnboardingAction) {
     console.log(`[ChatbotEngine] Onboarding flow active (+${from}, Phone10: ${phone10}, Step: ${unregStep}, Lang: ${userLang})`);
 
     // --- STEP 5: REGISTRATION SUBMITTED CHECK ---
@@ -243,9 +239,6 @@ async function processMessage(from, userMessage = "", buttonId = null, messageId
       clean.includes("je suis inscrit")
     ) {
       let recheckedStudent = await backendStudentService.getStudent(from, phone10);
-      if (!recheckedStudent) {
-        recheckedStudent = await googleSheetService.getStudent(phone10);
-      }
       if (recheckedStudent) {
         conversationState.updateConversationState(phone10, { unregisteredStep: "IDLE", language: userLang });
         return processStudentAccess(recheckedStudent, from, clean, buttonId, serverBase, userLang);
@@ -560,10 +553,8 @@ async function processStudentAccess(student, from, clean, buttonId, serverBase, 
 
     // Handle "Check Payment" button click
     if (buttonId === "check_payment" || clean.includes("check payment") || clean.includes("i have paid") || clean.includes("vérifier paiement") || clean.includes("j'ai payé")) {
+      backendStudentService.clearCache(phone10);
       let rechecked = await backendStudentService.getStudent(from, phone10);
-      if (!rechecked) {
-        rechecked = await googleSheetService.getStudent(phone10);
-      }
       if (rechecked && rechecked.paymentStatus === "yes") {
         return buildPaidStudentMenu(rechecked, from, serverBase, userLang);
       }
@@ -572,7 +563,7 @@ async function processStudentAccess(student, from, clean, buttonId, serverBase, 
         return [
           {
             type: "text",
-            text: `⏳ *Vérification du paiement en cours*\n\nNous vérifions actuellement votre paiement pour le *+${phone10}* dans notre fichier Google Sheets.\n\nSi vous avez effectué le transfert, veuillez patienter un instant ou contacter notre équipe d'assistance.`
+            text: `⏳ *Vérification du paiement en cours*\n\nNous vérifions actuellement votre paiement pour le *+${phone10}* auprès de notre équipe de paiement.\n\nSi vous avez effectué le transfert, veuillez patienter un instant ou contacter notre équipe d'assistance.`
           },
           {
             type: "button",
@@ -591,7 +582,7 @@ async function processStudentAccess(student, from, clean, buttonId, serverBase, 
       return [
         {
           type: "text",
-          text: `⏳ *Payment Verification Pending*\n\nWe are currently verifying your payment for *+${phone10}* in our Google Sheet records.\n\nIf you have completed the transfer, please allow a few moments for bank reconciliation or share your receipt with our support team.`
+          text: `⏳ *Payment Verification Pending*\n\nWe are currently verifying your payment status for *+${phone10}* with our payment staff.\n\nIf you have completed the transfer, please allow a few moments for verification or share your receipt with our support team.`
         },
         {
           type: "button",
@@ -863,7 +854,7 @@ function buildUnpaidStudentMenu(student, from, serverBase, lang = "en") {
     return [
       {
         type: "text",
-        text: `🔒 *Accès au cours verrouillé*\n\nBonjour *${student.name}* ! Vous êtes inscrit(e) à *${courseName}*.\n\n⚠️ *Veuillez effectuer le paiement pour continuer vos cours.*\n\nDès que votre paiement sera vérifié dans Google Sheets, vos cours vidéo seront instantanément accessibles.`
+        text: `🔒 *Accès au cours verrouillé*\n\nBonjour *${student.name}* ! Vous êtes inscrit(e) à *${courseName}*.\n\n⚠️ *Veuillez effectuer le paiement pour continuer vos cours.*\n\nDès que votre paiement sera validé par notre équipe de paiement, vos cours vidéo seront instantanément accessibles.`
       },
       {
         type: "button",
@@ -882,7 +873,7 @@ function buildUnpaidStudentMenu(student, from, serverBase, lang = "en") {
   return [
     {
       type: "text",
-      text: `🔒 *Classroom Access Locked*\n\nHello *${student.name}*! You are registered for *${courseName}*.\n\n⚠️ *Please do payment to continue courses.*\n\nOnce your payment is verified in Google Sheets, your video lessons will be instantly accessible.`
+      text: `🔒 *Classroom Access Locked*\n\nHello *${student.name}*! You are registered for *${courseName}*.\n\n⚠️ *Please do payment to continue courses.*\n\nOnce your payment is verified by our payment staff, your video lessons will be instantly accessible.`
     },
     {
       type: "button",
