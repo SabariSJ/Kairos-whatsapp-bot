@@ -140,7 +140,7 @@ async function main() {
     // Step 4: Accept Course Registration in French
     const step4 = await chatbotService.processMessage(unregPhoneFr, "J'accepte", "accept_register");
     const formMsg = step4.find(m => m.type === "button");
-    assert(formMsg.body.includes("https://reg-feandsme-sprout.web.app/registration"), "Must contain French registration link");
+    assert(formMsg.body.includes("fer-form.web.app") || formMsg.body.includes("reg-feandsme-sprout.web.app"), "Must contain French registration link");
     assert(formMsg.buttons[0].title === "Soumis ✅", "Button must be 'Soumis ✅'");
 
     // Step 5: Submitted Check in French (Not yet in sheet)

@@ -224,7 +224,7 @@ async function processMessage(from, userMessage = "", buttonId = null, messageId
         return [
           {
             type: "text",
-            text: `⏳ *Vérification de l'inscription...*\n\nNous n'avons pas encore reçu votre inscription pour le *+${phone10}* dans notre base de données Google Sheets.\n\nSi vous venez de soumettre le formulaire, veuillez patienter 30 secondes et appuyer à nouveau sur *Soumis ✅* ci-dessous !\n\nLien du formulaire:\n👉 https://reg-feandsme-sprout.web.app/registration`
+            text: `⏳ *Vérification de l'inscription...*\n\nNous n'avons pas encore reçu votre inscription pour le *+${phone10}* dans notre base de données.\n\nSi vous venez de soumettre le formulaire, veuillez patienter 30 secondes et appuyer à nouveau sur *Soumis ✅* ci-dessous !\n\nLien du formulaire :\n👉 https://fer-form.web.app`
           },
           {
             type: "button",
@@ -241,7 +241,7 @@ async function processMessage(from, userMessage = "", buttonId = null, messageId
       return [
         {
           type: "text",
-          text: `⏳ *Checking Registration...*\n\nWe haven't received your registration record yet for *+${phone10}* in our Google Sheet database.\n\nIf you just submitted the form, please wait 30 seconds and tap *Submitted ✅* again below!\n\nForm link:\n👉 https://english-form.web.app`
+          text: `⏳ *Checking Registration...*\n\nWe haven't received your registration record yet for *+${phone10}* in our database.\n\nIf you just submitted the form, please wait 30 seconds and tap *Submitted ✅* again below!\n\nForm link:\n👉 https://english-form.web.app`
         },
         {
           type: "button",
@@ -261,7 +261,7 @@ async function processMessage(from, userMessage = "", buttonId = null, messageId
       buttonId === "accept_register" ||
       buttonId === "sub_accept" ||
       (unregStep === "WATCHING_FREE_INTRO" && (
-        clean === "i accept" || clean === "j'accepte" || clean === "accept" || clean === "yes" || clean === "oui" || clean.includes("register") || clean.includes("inscri")
+        clean === "i accept" || clean === "j'accepte" || clean === "accept" || clean === "accepte" || clean === "yes" || clean === "oui" || clean.includes("register") || clean.includes("inscri")
       ))
     ) {
       const isFr = userLang === "fr" || clean.includes("j'accepte") || clean.includes("inscri");
@@ -272,7 +272,7 @@ async function processMessage(from, userMessage = "", buttonId = null, messageId
         return [
           {
             type: "button",
-            body: "Super ! Veuillez remplir le formulaire d'inscription pour vous inscrire à notre cours:\n\n👉 https://reg-feandsme-sprout.web.app/registration\n\nUne fois soumis, revenez ici et appuyez ci-dessous !",
+            body: "Super ! Veuillez remplir le formulaire d'inscription pour vous inscrire à notre cours :\n\n👉 https://fer-form.web.app\n\nUne fois soumis, revenez ici et appuyez ci-dessous !",
             buttons: [
               { id: "reg_submitted", title: "Soumis ✅" }
             ],
@@ -314,7 +314,7 @@ async function processMessage(from, userMessage = "", buttonId = null, messageId
       buttonId === "accept_intro" ||
       buttonId === "agree" ||
       (unregStep === "INTRO_OFFERED" && (
-        clean === "i accept" || clean === "j'accepte" || clean === "accept" || clean === "yes" || clean === "oui" || clean === "ok" || clean === "d'accord"
+        clean === "i accept" || clean === "j'accepte" || clean === "accept" || clean === "accepte" || clean === "yes" || clean === "oui" || clean === "ok" || clean === "d'accord"
       ))
     ) {
       const isFr = userLang === "fr" || clean.includes("j'accepte") || clean.includes("oui") || clean.includes("d'accord");
@@ -397,7 +397,7 @@ async function processMessage(from, userMessage = "", buttonId = null, messageId
       return [
         {
           type: "text",
-          text: "Welcome to Kairos – Your favorite teacher.\n\nRegistration Form:\n👉 https://english-form.web.app"
+          text: "Welcome to Kairos – Your favorite teacher."
         },
         {
           type: "image",
@@ -406,7 +406,7 @@ async function processMessage(from, userMessage = "", buttonId = null, messageId
         },
         {
           type: "button",
-          body: "Take the introductory course for free and start your journey to business success.\n\nRegistration Link: https://english-form.web.app",
+          body: "Take the introductory course for free and start your journey to business success.",
           buttons: [
             { id: "accept_intro", title: "I accept" }
           ],
