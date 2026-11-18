@@ -225,7 +225,7 @@ async function testAutoAdvance() {
     progressSeconds: 0
   });
 
-  const nextUrl = `https://whatsapp-kairos-video.onrender.com/classroom/${session.sessionId}`;
+  const nextUrl = `https://kairos-whatsapp-bot-cy5w.onrender.com/classroom/${session.sessionId}`;
   console.log(`\n🎉 Module ${currentMod} Completed!`);
   console.log(`🤖 Automated WhatsApp Message Dispatched to +${phone}:`);
   console.log(`   "🎉 Congratulations ${student.name}! You completed Module ${currentMod}!"`);

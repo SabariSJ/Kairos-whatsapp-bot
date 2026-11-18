@@ -182,7 +182,7 @@ app.post("/api/webhook/payment-confirmed", async (req, res) => {
 
     // Automatically send payment confirmation & start class button on WhatsApp
     const whatsappService = require("./services/whatsappService");
-    const serverBase = process.env.RENDER_EXTERNAL_URL || process.env.SERVER_BASE_URL || "https://whatsapp-kairos-video.onrender.com";
+    const serverBase = process.env.RENDER_EXTERNAL_URL || process.env.SERVER_BASE_URL || "https://kairos-whatsapp-bot-cy5w.onrender.com";
     
     const isFr = googleSheetService.isFrench(updated?.language);
     
