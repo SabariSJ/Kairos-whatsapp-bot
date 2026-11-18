@@ -13,10 +13,10 @@ RUN npm install --prefix backend --omit=dev
 COPY . .
 
 # Expose server port
-EXPOSE 5000
+EXPOSE 10000
 
 ENV NODE_ENV=production
-ENV PORT=5000
+ENV PORT=10000
 
 # Start server
 CMD ["node", "backend/server.js"]
