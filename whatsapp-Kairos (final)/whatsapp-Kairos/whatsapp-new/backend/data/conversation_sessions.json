@@ -1,0 +1,128 @@
+{
+  "919629531891": {
+    "step": "IDLE",
+    "unregisteredStep": "IDLE",
+    "language": "en",
+    "collectedData": {
+      "agreed": false,
+      "lookingFor": null,
+      "profile": null,
+      "hours": null,
+      "workLocation": null,
+      "device": null,
+      "startDate": null,
+      "selectedOffer": "Mobile Money agent",
+      "applications": [],
+      "name": null
+    },
+    "lastUpdated": 1795019957722
+  },
+  "9629531891": {
+    "step": "IDLE",
+    "unregisteredStep": "IDLE",
+    "language": "en",
+    "collectedData": {
+      "agreed": false,
+      "lookingFor": null,
+      "profile": null,
+      "hours": null,
+      "workLocation": null,
+      "device": null,
+      "startDate": null,
+      "selectedOffer": "Mobile Money agent",
+      "applications": [],
+      "name": null
+    },
+    "lastUpdated": 1795019943162
+  },
+  "919629531892": {
+    "step": "IDLE",
+    "unregisteredStep": "IDLE",
+    "language": "en",
+    "collectedData": {
+      "agreed": false,
+      "lookingFor": null,
+      "profile": null,
+      "hours": null,
+      "workLocation": null,
+      "device": null,
+      "startDate": null,
+      "selectedOffer": "Mobile Money agent",
+      "applications": [],
+      "name": null
+    },
+    "lastUpdated": 1795019952732
+  },
+  "9629531892": {
+    "step": "IDLE",
+    "unregisteredStep": "AWAITING_REGISTRATION",
+    "language": "fr",
+    "collectedData": {
+      "agreed": false,
+      "lookingFor": null,
+      "profile": null,
+      "hours": null,
+      "workLocation": null,
+      "device": null,
+      "startDate": null,
+      "selectedOffer": "Mobile Money agent",
+      "applications": [],
+      "name": null
+    },
+    "lastUpdated": 1795019957721
+  },
+  "9998887776": {
+    "step": "IDLE",
+    "unregisteredStep": "AWAITING_REGISTRATION",
+    "language": "en",
+    "collectedData": {
+      "agreed": false,
+      "lookingFor": null,
+      "profile": null,
+      "hours": null,
+      "workLocation": null,
+      "device": null,
+      "startDate": null,
+      "selectedOffer": "Mobile Money agent",
+      "applications": [],
+      "name": null
+    },
+    "lastUpdated": 1795019979079
+  },
+  "9998887777": {
+    "step": "IDLE",
+    "unregisteredStep": "AWAITING_REGISTRATION",
+    "language": "fr",
+    "collectedData": {
+      "agreed": false,
+      "lookingFor": null,
+      "profile": null,
+      "hours": null,
+      "workLocation": null,
+      "device": null,
+      "startDate": null,
+      "selectedOffer": "Mobile Money agent",
+      "applications": [],
+      "name": null
+    },
+    "lastUpdated": 1795019981970
+  },
+  "9876501234": {
+    "step": "IDLE",
+    "unregisteredStep": "AWAITING_REGISTRATION",
+    "language": "en",
+    "collectedData": {
+      "agreed": false,
+      "lookingFor": null,
+      "profile": null,
+      "hours": null,
+      "workLocation": null,
+      "device": null,
+      "startDate": null,
+      "selectedOffer": "Mobile Money agent",
+      "applications": [],
+      "name": null
+    },
+    "lastUpdated": 1795020035094
+  }
+}

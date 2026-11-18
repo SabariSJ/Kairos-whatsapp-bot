@@ -1,0 +1,77 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+  
+    function isStaff() {
+      return request.auth != null 
+        && exists(/databases/$(database)/documents/staffUsers/$(request.auth.uid))
+        && get(/databases/$(database)/documents/staffUsers/$(request.auth.uid)).data.active == true;
+    }
+    
+    function getRole() {
+      return get(/databases/$(database)/documents/staffUsers/$(request.auth.uid)).data.role;
+    }
+
+    /**
+     * STAFF USERS COLLECTION
+     * Users can only read their own staff profile to determine role and active status.
+     */
+    match /staffUsers/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    /**
+     * REGISTRATIONS COLLECTION
+     */
+    match /registrations/{emailHash} {
+
+      // Public cannot list. Only active staff can list registrations.
+      allow list: if isStaff();
+
+      // Allow single document lookup to verify duplicate status (public).
+      allow get: if true;
+
+      // Allow creation ONLY when the document does not already exist
+      // and satisfies strict validation rules (Phase 1 preserved).
+      allow create: if !exists(/databases/$(database)/documents/registrations/$(emailHash))
+        && request.resource.data.keys().hasAll(['name', 'phone', 'email', 'city', 'occupation', 'createdAt'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 100
+        && request.resource.data.phone is string
+        && request.resource.data.phone.matches('^\\+[0-9]{8,15}$')
+        && request.resource.data.email is string
+        && request.resource.data.email.size() <= 254
+        && request.resource.data.city is string
+        && request.resource.data.city.size() >= 2
+        && request.resource.data.city.size() <= 100
+        && request.resource.data.occupation in [
+          'Indépendant',
+          "Projet de création d'entreprise",
+          'Agriculteur / Travail agricole',
+          'Étudiant',
+          'Autres',
+          'Self Employed',
+          'Planning to start a business',
+          'Farmer / Agriculture related work',
+          'Student',
+          'Others'
+        ]
+        && request.resource.data.createdAt == request.time;
+
+      // Allow update ONLY for payment_staff, and ONLY updating status-related fields.
+      allow update: if isStaff() && getRole() == 'payment_staff'
+        && request.resource.data.diff(resource.data).affectedKeys()
+           .hasOnly(['status', 'statusUpdatedAt', 'statusUpdatedBy']);
+
+      // Forbid deletions
+      allow delete: if false;
+    }
+
+    // Default deny for any other collections
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

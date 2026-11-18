@@ -1,0 +1,2008 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0c13">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Kairos | {{COURSE_NAME}}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 0%, #151928 0%, #0a0c13 100%);
+      background-color: #0a0c13;
+      color: #f1f5f9;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    /* Top Navigation Bar */
+    header.top-header {
+      background: rgba(13, 21, 39, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 38px;
+      height: 38px;
+      background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      font-weight: 800;
+      color: #ffffff;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.45);
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.2px;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    .badge-secure {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.32);
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 11.5px;
+      color: #34d399;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+    }
+
+    .badge-secure .pulse {
+      width: 7px;
+      height: 7px;
+      background: #10b981;
+      border-radius: 50%;
+      animation: pulseDot 2s infinite ease-in-out;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulseDot {
+      0% { transform: scale(0.9); opacity: 0.7; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 0.7; }
+    }
+
+    /* Main Container */
+    main.portal-main {
+      flex: 1;
+      max-width: 1040px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      box-sizing: border-box;
+    }
+
+    /* Video Player Card */
+    .player-card {
+      position: relative;
+      background: #000000;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.8), 0 0 30px rgba(6, 182, 212, 0.08);
+      aspect-ratio: 16 / 9;
+      width: 100%;
+      max-height: 75vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: min-height 0.3s ease, aspect-ratio 0.3s ease;
+    }
+
+    .player-card.has-overlay {
+      aspect-ratio: auto !important;
+      min-height: 320px !important;
+      height: auto !important;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+      background: #000000;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* Dynamic Anti-Piracy Watermark Overlay */
+    #watermark-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 20;
+      overflow: hidden;
+    }
+
+    .floating-watermark {
+      position: absolute;
+      padding: 5px 10px;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.35);
+      white-space: nowrap;
+      transition: all 3.5s ease-in-out;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    /* Resume Notification Banner */
+    .resume-banner {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.94);
+      border: 1px solid #06b6d4;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 8px 16px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      color: #e2e8f0;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      z-index: 30;
+      animation: fadeInDown 0.35s ease-out;
+      white-space: nowrap;
+      max-width: 90%;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translate(-50%, -12px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+
+    /* Buffering Spinner Overlay */
+    .buffering-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.45);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      z-index: 25;
+      pointer-events: none;
+    }
+
+    .buffering-spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255, 255, 255, 0.15);
+      border-top-color: #06b6d4;
+      border-right-color: #10b981;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    .buffering-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: #e2e8f0;
+      letter-spacing: 0.3px;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Playback Error Overlay */
+    .error-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 20, 30, 0.94);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+      z-index: 35;
+      gap: 14px;
+    }
+
+    .error-icon {
+      font-size: 40px;
+    }
+
+    .error-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #f87171;
+    }
+
+    .error-message {
+      font-size: 13px;
+      color: #94a3b8;
+      max-width: 360px;
+      line-height: 1.4;
+    }
+
+    .btn-retry {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+      color: #ffffff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(6, 182, 212, 0.4);
+      transition: transform 0.15s ease;
+    }
+
+    .btn-retry:hover {
+      transform: scale(1.03);
+    }
+
+    /* Center Play/Pause Overlay Button */
+    .center-play-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 66px;
+      height: 66px;
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      color: #ffffff;
+      cursor: pointer;
+      z-index: 22;
+      transition: all 0.2s ease;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    .center-play-overlay:hover {
+      transform: translate(-50%, -50%) scale(1.1);
+      background: rgba(6, 182, 212, 0.85);
+    }
+
+    .center-play-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Custom Modern Controls Bar */
+    .custom-controls-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(to top, rgba(10, 12, 19, 0.95) 0%, rgba(10, 12, 19, 0.7) 70%, transparent 100%);
+      padding: 12px 16px 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 24;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .custom-controls-bar.hidden-controls {
+      opacity: 0;
+      transform: translateY(6px);
+      pointer-events: none;
+    }
+
+    /* Seekbar Container */
+    .seek-container {
+      position: relative;
+      width: 100%;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .seek-track {
+      position: relative;
+      width: 100%;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.18);
+      border-radius: 4px;
+      overflow: visible;
+      transition: height 0.15s ease;
+    }
+
+    .seek-container:hover .seek-track {
+      height: 7px;
+    }
+
+    .seek-buffered {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+    }
+
+    .seek-progress {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #10b981 0%, #06b6d4 100%);
+      border-radius: 4px;
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+    }
+
+    .seek-handle {
+      position: absolute;
+      top: 50%;
+      left: 0%;
+      width: 13px;
+      height: 13px;
+      background: #ffffff;
+      border: 2px solid #06b6d4;
+      border-radius: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      box-shadow: 0 0 8px rgba(0,0,0,0.6);
+      transition: transform 0.15s ease;
+      pointer-events: none;
+    }
+
+    .seek-container:hover .seek-handle {
+      transform: translate(-50%, -50%) scale(1);
+    }
+
+    .seek-tooltip {
+      position: absolute;
+      bottom: 22px;
+      left: 0%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 3px 6px;
+      border-radius: 4px;
+      pointer-events: none;
+      display: none;
+      white-space: nowrap;
+      z-index: 30;
+    }
+
+    /* Buttons Row */
+    .controls-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .controls-group-left, .controls-group-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .ctrl-btn {
+      background: transparent;
+      border: none;
+      color: #f1f5f9;
+      cursor: pointer;
+      padding: 6px 8px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+      position: relative;
+    }
+
+    .ctrl-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #38bdf8;
+    }
+
+    .ctrl-btn:active {
+      transform: scale(0.95);
+    }
+
+    .ctrl-btn-jump {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      gap: 4px;
+      padding: 5px 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .time-display {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #cbd5e1;
+      margin-left: 4px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .time-current {
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    /* Volume Slider */
+    .volume-box {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .volume-slider {
+      width: 65px;
+      height: 4px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: rgba(255, 255, 255, 0.25);
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+      transition: width 0.2s ease;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #06b6d4;
+      cursor: pointer;
+    }
+
+    /* Speed Selector Menu */
+    .speed-wrapper {
+      position: relative;
+    }
+
+    .speed-menu {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      right: 0;
+      background: rgba(15, 23, 42, 0.98);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      padding: 6px;
+      display: none;
+      flex-direction: column;
+      gap: 2px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 50;
+      min-width: 90px;
+    }
+
+    .speed-menu.show {
+      display: flex;
+    }
+
+    .speed-option {
+      background: transparent;
+      border: none;
+      color: #cbd5e1;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 12.5px;
+      font-family: 'JetBrains Mono', monospace;
+      cursor: pointer;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    .speed-option:hover {
+      background: rgba(6, 182, 212, 0.15);
+      color: #38bdf8;
+    }
+
+    .speed-option.active {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      font-weight: 700;
+    }
+
+    /* Video Navigation Controls (Prev / Next Bar) */
+    .video-nav-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: rgba(20, 27, 45, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 10px 16px;
+      backdrop-filter: blur(12px);
+    }
+
+    .btn-nav-module {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #ffffff;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .btn-nav-module:hover:not(:disabled) {
+      background: rgba(6, 182, 212, 0.2);
+      border-color: #06b6d4;
+      color: #38bdf8;
+    }
+
+    .btn-nav-module:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .nav-module-info {
+      font-size: 13px;
+      font-weight: 700;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-module-info strong {
+      color: #38bdf8;
+    }
+
+    /* Course Playlist Section */
+    .playlist-section {
+      background: rgba(20, 27, 45, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.5);
+    }
+
+    .playlist-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .playlist-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .playlist-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+      gap: 10px;
+    }
+
+    .playlist-item {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .playlist-item:hover {
+      background: rgba(30, 41, 59, 0.8);
+      border-color: rgba(6, 182, 212, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .playlist-item.active-item {
+      background: rgba(6, 182, 212, 0.12);
+      border-color: #06b6d4;
+      box-shadow: 0 0 16px rgba(6, 182, 212, 0.2);
+    }
+
+    .playlist-item-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow: hidden;
+    }
+
+    .playlist-num-badge {
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.08);
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      flex-shrink: 0;
+    }
+
+    .playlist-item.active-item .playlist-num-badge {
+      background: #06b6d4;
+      color: #ffffff;
+    }
+
+    .playlist-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      overflow: hidden;
+    }
+
+    .playlist-mod-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #ffffff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .playlist-duration {
+      font-size: 11px;
+      color: #64748b;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .playlist-status-badge {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .status-watched {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
+    }
+
+    .status-playing {
+      background: rgba(6, 182, 212, 0.15);
+      border: 1px solid rgba(6, 182, 212, 0.4);
+      color: #38bdf8;
+      animation: pulseDot 2s infinite ease-in-out;
+    }
+
+    .status-unwatched {
+      background: rgba(148, 163, 184, 0.1);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      color: #94a3b8;
+    }
+
+    /* Lesson Metadata Card */
+    .info-card {
+      background: rgba(20, 27, 45, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.5);
+    }
+
+    .info-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .info-header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .lesson-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.2px;
+      line-height: 1.3;
+    }
+
+    .student-tag {
+      font-size: 13px;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .student-tag strong {
+      color: #38bdf8;
+      font-weight: 600;
+    }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(6, 182, 212, 0.12);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      padding: 5px 12px;
+      border-radius: 9999px;
+      font-size: 12px;
+      color: #38bdf8;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge-status.completed {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #34d399;
+    }
+
+    /* Anti-Sharing Device Lockout Screen */
+    .lock-screen-card {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: linear-gradient(145deg, rgba(30, 20, 25, 0.95) 0%, rgba(15, 18, 30, 0.95) 100%);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: 18px;
+      padding: 36px 20px;
+      box-shadow: 0 20px 45px rgba(239, 68, 68, 0.15);
+      margin-bottom: 20px;
+      animation: fadeIn 0.35s ease;
+      box-sizing: border-box;
+    }
+
+    .lock-icon-wrap {
+      width: 68px;
+      height: 68px;
+      background: rgba(239, 68, 68, 0.12);
+      border: 2px solid rgba(239, 68, 68, 0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin-bottom: 16px;
+      box-shadow: 0 0 25px rgba(239, 68, 68, 0.25);
+    }
+
+    .lock-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #fca5a5;
+      margin-bottom: 10px;
+      letter-spacing: -0.3px;
+    }
+
+    .lock-message {
+      font-size: 14px;
+      color: #cbd5e1;
+      max-width: 500px;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .lock-policy-box {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px dashed rgba(239, 68, 68, 0.4);
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 12.5px;
+      color: #94a3b8;
+      max-width: 480px;
+      text-align: left;
+      line-height: 1.55;
+      margin-bottom: 24px;
+    }
+
+    .lock-policy-box strong {
+      color: #f87171;
+    }
+
+    .lock-action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #25d366;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 12px 24px;
+      border-radius: 12px;
+      text-decoration: none;
+      box-shadow: 0 8px 20px rgba(37, 211, 102, 0.3);
+      cursor: pointer;
+      border: none;
+    }
+
+    /* Module Completed Celebration Overlay */
+    .completion-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(10, 12, 19, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 40;
+      text-align: center;
+      padding: 20px 16px;
+      box-sizing: border-box;
+      overflow-y: auto;
+      max-height: 100%;
+      animation: fadeIn 0.35s ease-out;
+    }
+
+    .player-card.has-overlay .completion-overlay {
+      position: relative;
+      min-height: 320px;
+      height: auto;
+      width: 100%;
+    }
+
+    .completion-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      max-width: 420px;
+      width: 100%;
+      margin: auto;
+    }
+
+    .completion-celebration {
+      font-size: 38px;
+      line-height: 1;
+      animation: bounce 1.5s infinite;
+      margin-bottom: 2px;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .completion-content h2 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #34d399;
+      letter-spacing: -0.3px;
+      line-height: 1.25;
+    }
+
+    .completion-content p {
+      font-size: 13px;
+      color: #94a3b8;
+      line-height: 1.45;
+      max-width: 340px;
+    }
+
+    .completion-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 320px;
+      margin-top: 6px;
+    }
+
+    .btn-completion {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      cursor: pointer;
+      border: none;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .btn-primary-comp {
+      background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-wa-comp {
+      background: #25d366;
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
+    }
+
+    footer.portal-footer {
+      text-align: center;
+      padding: 18px 20px;
+      font-size: 12px;
+      color: #64748b;
+      margin-top: auto;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 640px) {
+      header.top-header { padding: 10px 14px; }
+      .brand-logo { width: 32px; height: 32px; font-size: 17px; }
+      .brand-title { font-size: 14px; }
+      .badge-secure-text { display: none; }
+      .badge-secure-short { display: inline; }
+
+      main.portal-main { padding: 12px; gap: 12px; }
+      .volume-slider { width: 45px; }
+      .ctrl-btn-jump { padding: 4px 6px; font-size: 11px; }
+      .time-display { font-size: 11px; }
+      .playlist-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (min-width: 641px) {
+      .badge-secure-short { display: none; }
+      .badge-secure-text { display: inline; }
+    }
+  </style>
+</head>
+<body oncontextmenu="return false;">
+
+  <!-- Header -->
+  <header class="top-header">
+    <div class="brand">
+      <div class="brand-logo">K</div>
+      <div>
+        <div class="brand-title">Kairos</div>
+        <div class="brand-sub">Official Student Portal</div>
+      </div>
+    </div>
+    <div class="badge-secure">
+      <span class="pulse"></span>
+      <span class="badge-secure-text">DRM Protected Session</span>
+      <span class="badge-secure-short">DRM Active</span>
+    </div>
+  </header>
+
+  <main class="portal-main">
+    <!-- Device Lock Screen Modal -->
+    <div id="device-lock-screen" class="lock-screen-card">
+      <div class="lock-icon-wrap">🛡️</div>
+      <h2 class="lock-title">Access Restricted: Device Locked</h2>
+      <p id="lock-screen-message" class="lock-message">
+        This video lesson is locked to the original student's device.
+        Link sharing and forwarding are strictly prohibited under Kairos Security Policy.
+      </p>
+      <div class="lock-policy-box">
+        ⚠️ <strong>Single-Device Security Policy:</strong><br>
+        • Video lessons cannot be shared, forwarded, or accessed across multiple devices.<br>
+        • This link has already been claimed by the student's registered browser session.<br>
+        • <span id="lock-screen-phone" style="color: #cbd5e1;">Original Account Verification Active</span>
+      </div>
+      <a id="lock-wa-btn" href="https://wa.me/919629531891?text=Hi" class="lock-action-btn">
+        <span>💬 Open WhatsApp to Start Your Class</span>
+      </a>
+    </div>
+
+    <!-- Video Player Card -->
+    <div class="player-card" id="player-container">
+      <!-- Resume Banner -->
+      <div id="resume-banner" class="resume-banner" style="display: none;">
+        <span>⏱️</span>
+        <span id="resume-text">Resuming from where you left off...</span>
+      </div>
+
+      <!-- Watermark -->
+      <div id="watermark-overlay">
+        <div id="floating-watermark" class="floating-watermark">KAIROS DRM PROTECTED</div>
+      </div>
+
+      <!-- Buffering Spinner Overlay -->
+      <div id="buffering-overlay" class="buffering-overlay">
+        <div class="buffering-spinner"></div>
+        <div class="buffering-text" id="buffering-text">Loading secure stream...</div>
+      </div>
+
+      <!-- Playback Error Overlay -->
+      <div id="playback-error-overlay" class="error-overlay">
+        <div class="error-icon">⚠️</div>
+        <div class="error-title" id="error-title">Playback Interrupted</div>
+        <div class="error-message" id="error-message">Streaming connection could not be established or was interrupted. Tap retry to reconnect.</div>
+        <button id="btn-retry-playback" class="btn-retry">🔄 Retry Playback</button>
+      </div>
+
+      <!-- Center Play Overlay Button -->
+      <div id="center-play-overlay" class="center-play-overlay">
+        <span id="center-play-icon">▶</span>
+      </div>
+
+      <!-- Completion Overlay -->
+      <div id="completion-overlay" class="completion-overlay">
+        <div class="completion-content">
+          <div class="completion-celebration">🎉</div>
+          <h2 id="completion-title">Module Completed!</h2>
+          <p id="completion-subtitle">The next video lesson has been unlocked!</p>
+          <div class="completion-buttons">
+            <button id="btn-next-module-comp" class="btn-completion btn-primary-comp">
+              ▶️ Play Next Module
+            </button>
+            <button id="btn-replay-comp" class="btn-completion btn-nav-module" style="background: rgba(255,255,255,0.1); color: #fff;">
+              🔁 Replay This Video
+            </button>
+            <a id="btn-wa-portal" href="https://wa.me/919629531891?text=Hi" class="btn-completion btn-wa-comp">
+              💬 Open WhatsApp
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- HTML5 Video Element (Strictly NO native controls or PiP) -->
+      <video 
+        id="video-player"
+        playsinline
+        webkit-playsinline
+        x5-playsinline
+        disablePictureInPicture
+        controlsList="nodownload noplaybackrate"
+        preload="auto"
+      >
+        Your browser does not support HTML5 video playback.
+      </video>
+
+      <!-- Custom Modern Controls Bar -->
+      <div id="custom-controls-bar" class="custom-controls-bar">
+        <!-- Interactive Seekbar -->
+        <div class="seek-container" id="seek-container">
+          <div class="seek-tooltip" id="seek-tooltip">00:00</div>
+          <div class="seek-track" id="seek-track">
+            <div class="seek-buffered" id="seek-buffered"></div>
+            <div class="seek-progress" id="seek-progress"></div>
+            <div class="seek-handle" id="seek-handle"></div>
+          </div>
+        </div>
+
+        <!-- Controls Row -->
+        <div class="controls-row">
+          <!-- Left Controls -->
+          <div class="controls-group-left">
+            <!-- Play/Pause -->
+            <button id="btn-play-pause" class="ctrl-btn" title="Play/Pause">
+              <span id="icon-play-pause">▶</span>
+            </button>
+            <!-- Rewind 10s -->
+            <button id="btn-rewind-10" class="ctrl-btn ctrl-btn-jump" title="Rewind 10s">
+              <span>⏪ 10s</span>
+            </button>
+            <!-- Forward 10s -->
+            <button id="btn-forward-10" class="ctrl-btn ctrl-btn-jump" title="Forward 10s">
+              <span>10s ⏩</span>
+            </button>
+            <!-- Time Display -->
+            <div class="time-display">
+              <span id="time-current" class="time-current">00:00</span>
+              <span>/</span>
+              <span id="time-duration">--:--</span>
+            </div>
+          </div>
+
+          <!-- Right Controls -->
+          <div class="controls-group-right">
+            <!-- Volume Box -->
+            <div class="volume-box">
+              <button id="btn-volume" class="ctrl-btn" title="Mute/Unmute">
+                <span id="icon-volume">🔊</span>
+              </button>
+              <input type="range" id="volume-slider" class="volume-slider" min="0" max="1" step="0.05" value="1" title="Volume">
+            </div>
+
+            <!-- Speed Selector -->
+            <div class="speed-wrapper">
+              <button id="btn-speed" class="ctrl-btn" title="Playback Speed">
+                <span id="current-speed-label">1x</span>
+              </button>
+              <div id="speed-menu" class="speed-menu">
+                <button class="speed-option" data-speed="0.5">0.5x</button>
+                <button class="speed-option" data-speed="0.75">0.75x</button>
+                <button class="speed-option active" data-speed="1.0">1.0x (Normal)</button>
+                <button class="speed-option" data-speed="1.25">1.25x</button>
+                <button class="speed-option" data-speed="1.5">1.5x</button>
+                <button class="speed-option" data-speed="2.0">2.0x</button>
+              </div>
+            </div>
+
+            <!-- Fullscreen -->
+            <button id="btn-fullscreen" class="ctrl-btn" title="Fullscreen">
+              <span id="icon-fullscreen">⛶</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Video Navigation Bar (Prev / Next Buttons) -->
+    <div class="video-nav-bar" id="video-nav-bar">
+      <button id="btn-prev-module" class="btn-nav-module">
+        <span>⏮️</span>
+        <span id="btn-prev-text">Previous Video</span>
+      </button>
+      <div class="nav-module-info" id="nav-module-info">
+        <span id="nav-module-counter">Module 1 of 6</span>
+      </div>
+      <button id="btn-next-module" class="btn-nav-module">
+        <span id="btn-next-text">Next Video</span>
+        <span>⏭️</span>
+      </button>
+    </div>
+
+    <!-- Course Video Playlist Section -->
+    <div class="playlist-section" id="playlist-section">
+      <div class="playlist-header">
+        <div class="playlist-title">
+          <span>📋</span>
+          <span id="playlist-heading">Course Video Playlist</span>
+        </div>
+        <span id="playlist-lang-tag" class="badge-status">English Syllabus</span>
+      </div>
+      <div class="playlist-grid" id="playlist-grid">
+        <!-- Module cards dynamically generated -->
+      </div>
+    </div>
+
+    <!-- Student Metadata & Cloud Sync Card -->
+    <div class="info-card" id="info-card">
+      <div class="info-header">
+        <div class="info-header-left">
+          <h1 class="lesson-title" id="module-title">Module {{MODULE_NUMBER}}: {{COURSE_NAME}}</h1>
+          <div class="student-tag">
+            Student: <strong id="student-name">{{STUDENT_NAME_UPPER}}</strong> (<span id="student-phone">{{STUDENT_PHONE}}</span>)
+          </div>
+        </div>
+        <div class="badge-status" id="save-status">
+          <span>☁️ Synced with AWS RDS & Google CRM</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="portal-footer">
+    &copy; 2026 Kairos Academy. All rights reserved. Secure Cloud Delivery.
+  </footer>
+
+  <script>
+    // Server Injected Template Parameters
+    const INJECTED_SESSION = "{{SESSION_ID}}";
+    const INJECTED_NAME = "{{STUDENT_NAME}}";
+    const INJECTED_NAME_UPPER = "{{STUDENT_NAME_UPPER}}";
+    const INJECTED_PHONE = "{{STUDENT_PHONE}}";
+    let currentModuleNumber = parseInt("{{MODULE_NUMBER}}", 10) || 1;
+    const INJECTED_COURSE = "{{COURSE_NAME}}";
+    const INJECTED_PROGRESS = "{{INITIAL_PROGRESS}}";
+    const INJECTED_LANGUAGE = "{{LANGUAGE}}";
+
+    // Standard syllabus definition
+    const ENGLISH_PLAYLIST = [
+      { module: 1, title: "Market Research & Idea Validation", duration: "05:14" },
+      { module: 2, title: "Financial Literacy & Cash Flow", duration: "04:02" },
+      { module: 3, title: "Customer Acquisition & Sales Strategy", duration: "04:12" },
+      { module: 4, title: "Digital Marketing & WhatsApp Growth", duration: "05:54" },
+      { module: 5, title: "Operations & Inventory Management", duration: "05:18" },
+      { module: 6, title: "Scaling & Business Growth", duration: "04:52" }
+    ];
+
+    const FRENCH_PLAYLIST = [
+      { module: 1, title: "Étude de Marché et Validation d'Idée", duration: "05:16" },
+      { module: 2, title: "Gestion Financière et Flux de Trésorerie", duration: "04:00" },
+      { module: 3, title: "Stratégie de Vente et Acquisition Client", duration: "04:22" },
+      { module: 4, title: "Marketing Digital et Croissance WhatsApp", duration: "06:14" },
+      { module: 5, title: "Gestion des Opérations et des Stocks", duration: "05:12" },
+      { module: 6, title: "Stratégies de Croissance et Expansion", duration: "05:04" }
+    ];
+
+    // Session ID extraction
+    const urlParams = new URLSearchParams(window.location.search);
+    let sessionParam = (!INJECTED_SESSION.includes("{{") && INJECTED_SESSION.trim() !== "") ? INJECTED_SESSION.trim() : null;
+    if (!sessionParam) {
+      sessionParam = urlParams.get('token') || urlParams.get('session');
+    }
+    if (!sessionParam) {
+      const pathParts = window.location.pathname.split('/').filter(Boolean);
+      if (pathParts.length >= 2 && pathParts[0] === 'classroom') {
+        sessionParam = pathParts[1];
+      }
+    }
+
+    // DOM Elements
+    const video = document.getElementById('video-player');
+    const playerContainer = document.getElementById('player-container');
+    const infoCard = document.getElementById('info-card');
+    const controlsBar = document.getElementById('custom-controls-bar');
+    const centerPlayOverlay = document.getElementById('center-play-overlay');
+    const centerPlayIcon = document.getElementById('center-play-icon');
+    const bufferingOverlay = document.getElementById('buffering-overlay');
+    const bufferingText = document.getElementById('buffering-text');
+    const playbackErrorOverlay = document.getElementById('playback-error-overlay');
+    const btnRetryPlayback = document.getElementById('btn-retry-playback');
+    const resumeBanner = document.getElementById('resume-banner');
+    const resumeText = document.getElementById('resume-text');
+    const completionOverlay = document.getElementById('completion-overlay');
+    const btnNextModuleComp = document.getElementById('btn-next-module-comp');
+    const btnReplayComp = document.getElementById('btn-replay-comp');
+    const studentNameEl = document.getElementById('student-name');
+    const studentPhoneEl = document.getElementById('student-phone');
+    const moduleTitleEl = document.getElementById('module-title');
+    const saveStatusEl = document.getElementById('save-status');
+
+    // Controls Elements
+    const btnPlayPause = document.getElementById('btn-play-pause');
+    const iconPlayPause = document.getElementById('icon-play-pause');
+    const btnRewind10 = document.getElementById('btn-rewind-10');
+    const btnForward10 = document.getElementById('btn-forward-10');
+    const timeCurrent = document.getElementById('time-current');
+    const timeDuration = document.getElementById('time-duration');
+    const seekContainer = document.getElementById('seek-container');
+    const seekTrack = document.getElementById('seek-track');
+    const seekProgress = document.getElementById('seek-progress');
+    const seekBuffered = document.getElementById('seek-buffered');
+    const seekHandle = document.getElementById('seek-handle');
+    const seekTooltip = document.getElementById('seek-tooltip');
+    const btnVolume = document.getElementById('btn-volume');
+    const iconVolume = document.getElementById('icon-volume');
+    const volumeSlider = document.getElementById('volume-slider');
+    const btnSpeed = document.getElementById('btn-speed');
+    const currentSpeedLabel = document.getElementById('current-speed-label');
+    const speedMenu = document.getElementById('speed-menu');
+    const btnFullscreen = document.getElementById('btn-fullscreen');
+    const iconFullscreen = document.getElementById('icon-fullscreen');
+
+    // Navigation & Playlist Elements
+    const btnPrevModule = document.getElementById('btn-prev-module');
+    const btnNextModule = document.getElementById('btn-next-module');
+    const btnPrevText = document.getElementById('btn-prev-text');
+    const btnNextText = document.getElementById('btn-next-text');
+    const navModuleCounter = document.getElementById('nav-module-counter');
+    const playlistGrid = document.getElementById('playlist-grid');
+    const playlistHeading = document.getElementById('playlist-heading');
+    const playlistLangTag = document.getElementById('playlist-lang-tag');
+    const watermarkEl = document.getElementById('floating-watermark');
+
+    // State
+    let initialResumeSeconds = parseInt(INJECTED_PROGRESS, 10) || 0;
+    let hasAppliedInitialSeek = false;
+    let studentData = null;
+    let activeToken = null;
+    let watermarkInterval = null;
+    let controlsHideTimeout = null;
+    let isSeeking = false;
+    let hasCompletedModule = false;
+    let currentSpeed = 1.0;
+    let completedModulesSet = new Set();
+
+    // Helper: format seconds to MM:SS
+    function formatTime(sec) {
+      const total = Math.max(0, Math.floor(sec || 0));
+      const m = Math.floor(total / 60);
+      const s = total % 60;
+      return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    }
+
+    // Helper: detect French language
+    function isFrench() {
+      if (!INJECTED_LANGUAGE.includes("{{") && (INJECTED_LANGUAGE === "fr" || INJECTED_LANGUAGE.startsWith("fr") || INJECTED_LANGUAGE === "f")) return true;
+      if (studentData && (studentData.language === "fr" || studentData.languageCode === "fr" || studentData.language === "français")) return true;
+      return false;
+    }
+
+    // Apply translations
+    function applyLocalization() {
+      const isFr = isFrench();
+      if (isFr) {
+        document.querySelector('.brand-sub').textContent = "Portail Étudiant Officiel";
+        document.querySelector('.badge-secure-text').textContent = "Session Sécurisée DRM";
+        document.querySelector('.badge-secure-short').textContent = "DRM Actif";
+        document.querySelector('.student-tag').innerHTML = `Étudiant : <strong id="student-name">${studentNameEl.textContent}</strong> (<span id="student-phone">${studentPhoneEl.textContent}</span>)`;
+        btnPrevText.textContent = "Vidéo Précédente";
+        btnNextText.textContent = "Vidéo Suivante";
+        playlistHeading.textContent = "Programme & Liste des Vidéos";
+        playlistLangTag.textContent = "Programme Français";
+        bufferingText.textContent = "Chargement sécurisé du flux...";
+        document.getElementById('error-title').textContent = "Lecture Interrompue";
+        document.getElementById('error-message').textContent = "La connexion de streaming a été interrompue. Appuyez sur Réessayer pour relancer le flux.";
+        btnRetryPlayback.textContent = "🔄 Réessayer la Lecture";
+      } else {
+        playlistLangTag.textContent = "English Syllabus";
+      }
+    }
+
+    // Device fingerprinting
+    function getOrCreateDeviceSig() {
+      let sig = localStorage.getItem('sproutks_device_sig');
+      if (!sig) {
+        try {
+          const arr = new Uint8Array(16);
+          window.crypto.getRandomValues(arr);
+          sig = Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+        } catch (e) {
+          sig = 'dev_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+        }
+        localStorage.setItem('sproutks_device_sig', sig);
+      }
+      return sig;
+    }
+    const currentDeviceSig = getOrCreateDeviceSig();
+
+    function showDeviceLockScreen(message, phone) {
+      if (playerContainer) playerContainer.style.display = 'none';
+      if (infoCard) infoCard.style.display = 'none';
+      const lockScreen = document.getElementById('device-lock-screen');
+      const lockMsg = document.getElementById('lock-screen-message');
+      const lockPhone = document.getElementById('lock-screen-phone');
+      if (lockMsg && message) lockMsg.innerText = message;
+      if (lockPhone && phone) lockPhone.innerText = `Original Account Verification: ...${phone}`;
+      if (lockScreen) lockScreen.style.display = 'flex';
+    }
+
+    // Watermark animation
+    function updateWatermarkPosition() {
+      if (!watermarkEl || !playerContainer) return;
+      const rect = playerContainer.getBoundingClientRect();
+      const w = rect.width || 320;
+      const h = rect.height || 180;
+      const minX = 70;
+      const maxX = Math.max(minX, w - 120);
+      const minY = 35;
+      const maxY = Math.max(minY, h - 35);
+      const randX = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
+      const randY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
+      watermarkEl.style.left = `${randX}px`;
+      watermarkEl.style.top = `${randY}px`;
+      const now = new Date().toLocaleTimeString();
+      const phoneTxt = studentPhoneEl.textContent || "";
+      const nameTxt = studentNameEl.textContent || "STUDENT";
+      watermarkEl.textContent = `${phoneTxt ? phoneTxt + ' • ' : ''}${nameTxt} • KAIROS DRM • ${now}`;
+    }
+
+    function startWatermark() {
+      updateWatermarkPosition();
+      if (watermarkInterval) clearInterval(watermarkInterval);
+      watermarkInterval = setInterval(updateWatermarkPosition, 3500);
+    }
+
+    // Render Syllabus Playlist
+    function renderPlaylist() {
+      const isFr = isFrench();
+      const playlist = isFr ? FRENCH_PLAYLIST : ENGLISH_PLAYLIST;
+      playlistGrid.innerHTML = '';
+
+      navModuleCounter.innerHTML = isFr 
+        ? `Module <strong>${currentModuleNumber}</strong> sur 6`
+        : `Module <strong>${currentModuleNumber}</strong> of 6`;
+
+      btnPrevModule.disabled = (currentModuleNumber <= 1);
+      btnNextModule.disabled = (currentModuleNumber >= 6);
+
+      playlist.forEach(item => {
+        const isCurrent = (item.module === currentModuleNumber);
+        const isWatched = completedModulesSet.has(item.module);
+
+        const card = document.createElement('div');
+        card.className = `playlist-item ${isCurrent ? 'active-item' : ''}`;
+        
+        let statusBadge = '';
+        if (isCurrent) {
+          statusBadge = `<span class="playlist-status-badge status-playing">${isFr ? '▶️ En cours' : '▶️ Playing'}</span>`;
+        } else if (isWatched) {
+          statusBadge = `<span class="playlist-status-badge status-watched">${isFr ? '✅ Terminé' : '✅ Watched'}</span>`;
+        } else {
+          statusBadge = `<span class="playlist-status-badge status-unwatched">${isFr ? '⏳ À venir' : '⏳ Ready'}</span>`;
+        }
+
+        card.innerHTML = `
+          <div class="playlist-item-left">
+            <div class="playlist-num-badge">M${item.module}</div>
+            <div class="playlist-info">
+              <div class="playlist-mod-title">${item.title}</div>
+              <div class="playlist-duration">⏱️ ${item.duration}</div>
+            </div>
+          </div>
+          ${statusBadge}
+        `;
+
+        card.addEventListener('click', () => {
+          if (item.module !== currentModuleNumber) {
+            switchModule(item.module);
+          }
+        });
+
+        playlistGrid.appendChild(card);
+      });
+    }
+
+    // Switch video module
+    async function switchModule(newModuleNumber) {
+      if (newModuleNumber < 1 || newModuleNumber > 6) return;
+      currentModuleNumber = newModuleNumber;
+      hasCompletedModule = false;
+      hasAppliedInitialSeek = false;
+      initialResumeSeconds = 0;
+
+      if (completionOverlay) completionOverlay.style.display = 'none';
+      if (playerContainer) playerContainer.classList.remove('has-overlay');
+
+      const isFr = isFrench();
+      const courseName = (!INJECTED_COURSE.includes("{{") && INJECTED_COURSE.trim()) 
+        ? INJECTED_COURSE 
+        : (isFr ? "Cours de Réussite Commerciale" : "Business Success Class");
+      
+      const playlist = isFr ? FRENCH_PLAYLIST : ENGLISH_PLAYLIST;
+      const currentItem = playlist.find(p => p.module === newModuleNumber) || playlist[0];
+      moduleTitleEl.textContent = isFr 
+        ? `Module ${newModuleNumber} : ${currentItem.title}`
+        : `Module ${newModuleNumber}: ${currentItem.title}`;
+
+      renderPlaylist();
+      showBuffering(true);
+
+      // Connect video stream for this module
+      const streamUrl = `/api/video/stream/${encodeURIComponent(activeToken)}?module=${newModuleNumber}&sig=${encodeURIComponent(currentDeviceSig)}`;
+      video.src = streamUrl;
+      video.playbackRate = currentSpeed;
+      video.load();
+      try {
+        await video.play();
+      } catch (e) {
+        showBuffering(false);
+        updatePlayPauseUI();
+      }
+    }
+
+    // Initialize player
+    async function initPlayer() {
+      if (!sessionParam) {
+        showDeviceLockScreen("Missing session identifier. Please launch your class link directly from WhatsApp.");
+        return;
+      }
+
+      showBuffering(true);
+
+      try {
+        let data = null;
+        try {
+          const res = await fetch('/api/classroom/handshake', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId: sessionParam, deviceSig: currentDeviceSig })
+          });
+          data = await res.json();
+        } catch (e) {
+          const res2 = await fetch(`/api/video/session?session=${encodeURIComponent(sessionParam)}&deviceSig=${encodeURIComponent(currentDeviceSig)}`);
+          data = await res2.json();
+        }
+
+        if (!data || !data.success) {
+          showBuffering(false);
+          const errMsg = (data && (data.error || data.message)) || "Unauthorized Device Detected. Video links are strictly locked to the registered student's device.";
+          showDeviceLockScreen(errMsg, data ? (data.phone || data.student?.phone) : "");
+          return;
+        }
+
+        activeToken = data.token || sessionParam;
+        studentData = data.student || {};
+
+        if (studentData.name) studentNameEl.textContent = studentData.name.toUpperCase();
+        if (studentData.phone) studentPhoneEl.textContent = studentData.phone;
+
+        currentModuleNumber = studentData.module || studentData.moduleId || currentModuleNumber;
+        const remoteProgress = Number(studentData.progressSeconds ?? studentData.startProgress ?? initialResumeSeconds) || 0;
+        if (remoteProgress > 0) initialResumeSeconds = remoteProgress;
+
+        if (studentData.completedModules && Array.isArray(studentData.completedModules)) {
+          studentData.completedModules.forEach(m => completedModulesSet.add(Number(m)));
+        }
+
+        applyLocalization();
+        renderPlaylist();
+
+        const streamUrl = `/api/video/stream/${encodeURIComponent(activeToken)}?module=${currentModuleNumber}&sig=${encodeURIComponent(currentDeviceSig)}`;
+        video.src = streamUrl;
+        video.playbackRate = currentSpeed;
+        video.load();
+
+        startWatermark();
+      } catch (err) {
+        showBuffering(false);
+        showError(true);
+      }
+    }
+
+    // Auto-Resume logic
+    function applyResumeSeek() {
+      if (!hasAppliedInitialSeek && initialResumeSeconds > 0) {
+        hasAppliedInitialSeek = true;
+        if (video.duration && initialResumeSeconds < video.duration - 2) {
+          video.currentTime = initialResumeSeconds;
+        } else {
+          video.currentTime = initialResumeSeconds;
+        }
+
+        const isFr = isFrench();
+        resumeText.textContent = isFr
+          ? `Reprise à ${formatTime(initialResumeSeconds)} là où vous vous étiez arrêté`
+          : `Resumed at ${formatTime(initialResumeSeconds)} from where you stopped`;
+        resumeBanner.style.display = 'flex';
+        setTimeout(() => { resumeBanner.style.display = 'none'; }, 4500);
+      }
+      showBuffering(false);
+      updatePlayPauseUI();
+    }
+
+    // Buffering & Error Helpers
+    function showBuffering(visible) {
+      if (bufferingOverlay) bufferingOverlay.style.display = visible ? 'flex' : 'none';
+    }
+
+    function showError(visible) {
+      if (playbackErrorOverlay) playbackErrorOverlay.style.display = visible ? 'flex' : 'none';
+    }
+
+    // Controls UI Updater
+    function updatePlayPauseUI() {
+      const isPaused = video.paused || video.ended;
+      iconPlayPause.textContent = isPaused ? "▶" : "❚❚";
+      centerPlayIcon.textContent = isPaused ? "▶" : "❚❚";
+      if (isPaused) {
+        centerPlayOverlay.classList.remove('hidden');
+        showControls();
+      } else {
+        centerPlayOverlay.classList.add('hidden');
+        resetControlsTimeout();
+      }
+    }
+
+    function togglePlayPause() {
+      if (video.paused || video.ended) {
+        video.play().catch(() => {});
+      } else {
+        video.pause();
+      }
+      updatePlayPauseUI();
+    }
+
+    // Controls bar auto-hide
+    function showControls() {
+      controlsBar.classList.remove('hidden-controls');
+      if (controlsHideTimeout) clearTimeout(controlsHideTimeout);
+    }
+
+    function resetControlsTimeout() {
+      showControls();
+      if (!video.paused && !video.ended) {
+        controlsHideTimeout = setTimeout(() => {
+          controlsBar.classList.add('hidden-controls');
+        }, 3200);
+      }
+    }
+
+    playerContainer.addEventListener('mousemove', resetControlsTimeout);
+    playerContainer.addEventListener('touchstart', resetControlsTimeout);
+    playerContainer.addEventListener('mouseleave', () => {
+      if (!video.paused) controlsBar.classList.add('hidden-controls');
+    });
+
+    // Control buttons listeners
+    btnPlayPause.addEventListener('click', togglePlayPause);
+    centerPlayOverlay.addEventListener('click', togglePlayPause);
+    video.addEventListener('click', togglePlayPause);
+
+    // 10s Rewind / Forward
+    btnRewind10.addEventListener('click', () => {
+      video.currentTime = Math.max(0, video.currentTime - 10);
+      resetControlsTimeout();
+    });
+
+    btnForward10.addEventListener('click', () => {
+      video.currentTime = Math.min(video.duration || 0, video.currentTime + 10);
+      resetControlsTimeout();
+    });
+
+    // Navigation buttons
+    btnPrevModule.addEventListener('click', () => {
+      if (currentModuleNumber > 1) switchModule(currentModuleNumber - 1);
+    });
+
+    btnNextModule.addEventListener('click', () => {
+      if (currentModuleNumber < 6) switchModule(currentModuleNumber + 1);
+    });
+
+    // Volume & Mute
+    btnVolume.addEventListener('click', () => {
+      video.muted = !video.muted;
+      iconVolume.textContent = video.muted ? "🔇" : "🔊";
+      volumeSlider.value = video.muted ? 0 : video.volume;
+    });
+
+    volumeSlider.addEventListener('input', (e) => {
+      video.volume = parseFloat(e.target.value);
+      video.muted = (video.volume === 0);
+      iconVolume.textContent = video.muted ? "🔇" : "🔊";
+    });
+
+    // Playback Speed Options
+    btnSpeed.addEventListener('click', (e) => {
+      e.stopPropagation();
+      speedMenu.classList.toggle('show');
+    });
+
+    document.addEventListener('click', () => {
+      speedMenu.classList.remove('show');
+    });
+
+    document.querySelectorAll('.speed-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        const speed = parseFloat(opt.dataset.speed);
+        currentSpeed = speed;
+        video.playbackRate = speed;
+        currentSpeedLabel.textContent = `${speed}x`;
+        document.querySelectorAll('.speed-option').forEach(o => o.classList.remove('active'));
+        opt.classList.add('active');
+        speedMenu.classList.remove('show');
+      });
+    });
+
+    // Fullscreen Toggle
+    btnFullscreen.addEventListener('click', () => {
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        if (playerContainer.requestFullscreen) {
+          playerContainer.requestFullscreen();
+        } else if (playerContainer.webkitRequestFullscreen) {
+          playerContainer.webkitRequestFullscreen();
+        }
+        iconFullscreen.textContent = "⛶";
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        }
+        iconFullscreen.textContent = "⛶";
+      }
+    });
+
+    // Interactive Seekbar
+    function getSeekPercent(e) {
+      const rect = seekTrack.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const offsetX = Math.max(0, Math.min(clientX - rect.left, rect.width));
+      return (offsetX / rect.width);
+    }
+
+    seekContainer.addEventListener('click', (e) => {
+      if (!video.duration) return;
+      const pct = getSeekPercent(e);
+      video.currentTime = pct * video.duration;
+    });
+
+    seekContainer.addEventListener('mousemove', (e) => {
+      if (!video.duration) return;
+      const pct = getSeekPercent(e);
+      const hoverSec = pct * video.duration;
+      seekTooltip.style.left = `${pct * 100}%`;
+      seekTooltip.textContent = formatTime(hoverSec);
+      seekTooltip.style.display = 'block';
+    });
+
+    seekContainer.addEventListener('mouseleave', () => {
+      seekTooltip.style.display = 'none';
+    });
+
+    // Video Lifecycle Events
+    video.addEventListener('waiting', () => showBuffering(true));
+    video.addEventListener('loadstart', () => showBuffering(true));
+    video.addEventListener('canplay', () => {
+      showBuffering(false);
+      showError(false);
+      applyResumeSeek();
+    });
+    video.addEventListener('playing', () => {
+      showBuffering(false);
+      showError(false);
+      updatePlayPauseUI();
+    });
+    video.addEventListener('pause', updatePlayPauseUI);
+    video.addEventListener('error', () => {
+      showBuffering(false);
+      showError(true);
+    });
+
+    // Video Time Update (Progress & Duration)
+    video.addEventListener('timeupdate', () => {
+      const cur = video.currentTime || 0;
+      const dur = video.duration || 1;
+      const pct = Math.min(100, Math.max(0, (cur / dur) * 100));
+
+      seekProgress.style.width = `${pct}%`;
+      seekHandle.style.left = `${pct}%`;
+
+      timeCurrent.textContent = formatTime(cur);
+      timeDuration.textContent = formatTime(dur);
+
+      // Update buffer bar
+      if (video.buffered.length > 0) {
+        const buffEnd = video.buffered.end(video.buffered.length - 1);
+        const buffPct = Math.min(100, (buffEnd / dur) * 100);
+        seekBuffered.style.width = `${buffPct}%`;
+      }
+
+      // Check auto completion
+      if (dur > 5 && cur >= dur - 1.5 && !hasCompletedModule) {
+        handleModuleCompletion();
+      }
+    });
+
+    // Retry Playback Button
+    btnRetryPlayback.addEventListener('click', () => {
+      showError(false);
+      showBuffering(true);
+      video.load();
+      video.play().catch(() => {});
+    });
+
+    // Replay current video
+    btnReplayComp.addEventListener('click', () => {
+      completionOverlay.style.display = 'none';
+      playerContainer.classList.remove('has-overlay');
+      video.currentTime = 0;
+      video.play();
+    });
+
+    // Module Completion
+    async function handleModuleCompletion() {
+      if (hasCompletedModule) return;
+      hasCompletedModule = true;
+
+      completedModulesSet.add(currentModuleNumber);
+      renderPlaylist();
+
+      const isFr = isFrench();
+      saveStatusEl.textContent = isFr ? "🎉 Module Terminé !" : "🎉 Module Completed!";
+      saveStatusEl.classList.add('completed');
+
+      try {
+        const res = await fetch('/api/video/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: activeToken || sessionParam,
+            deviceSig: currentDeviceSig,
+            moduleId: currentModuleNumber
+          })
+        });
+        const data = await res.json();
+        showCompletionModal(data);
+      } catch (err) {
+        showCompletionModal(null);
+      }
+    }
+
+    function showCompletionModal(data) {
+      const isFr = isFrench();
+      const titleEl = document.getElementById('completion-title');
+      const subEl = document.getElementById('completion-subtitle');
+
+      if (currentModuleNumber >= 6) {
+        titleEl.textContent = isFr ? "🎓 Formation Terminée ! 🏆" : "🎓 Course Completed! 🏆";
+        subEl.textContent = isFr
+          ? "Félicitations ! Vous avez terminé tous les modules. Votre attestation officielle est en cours de délivrance !"
+          : "Congratulations! You have finished all 6 modules. Your completion certificate has been registered!";
+        btnNextModuleComp.style.display = 'none';
+      } else {
+        const nextMod = currentModuleNumber + 1;
+        titleEl.textContent = isFr ? `🎉 Module ${currentModuleNumber} Terminé !` : `🎉 Module ${currentModuleNumber} Completed!`;
+        subEl.textContent = isFr
+          ? `Bravo ! Le Module ${nextMod} est maintenant débloqué.`
+          : `Great job! Module ${nextMod} is now unlocked and ready.`;
+        btnNextModuleComp.textContent = isFr ? `▶️ Lancer le Module ${nextMod}` : `▶️ Play Module ${nextMod}`;
+        btnNextModuleComp.style.display = 'inline-flex';
+        btnNextModuleComp.onclick = () => switchModule(nextMod);
+      }
+
+      playerContainer.classList.add('has-overlay');
+      completionOverlay.style.display = 'flex';
+    }
+
+    video.addEventListener('ended', handleModuleCompletion);
+
+    // Save Progress Sync
+    async function syncProgress() {
+      if (!video || video.paused || video.ended || hasCompletedModule) return;
+      const currentSeconds = Math.floor(video.currentTime);
+      if (currentSeconds <= 0) return;
+
+      const isFr = isFrench();
+      try {
+        saveStatusEl.textContent = isFr ? "⏳ Enregistrement..." : "⏳ Saving progress...";
+        const res = await fetch('/api/video/progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: activeToken || sessionParam,
+            currentTime: currentSeconds,
+            progressSeconds: currentSeconds,
+            deviceSig: currentDeviceSig,
+            duration: Math.floor(video.duration || 0),
+            module: currentModuleNumber
+          })
+        });
+        const data = await res.json();
+        if (data && data.success) {
+          saveStatusEl.textContent = isFr
+            ? `☁️ Synchronisé (${formatTime(currentSeconds)})`
+            : `☁️ Synced (${formatTime(currentSeconds)})`;
+        }
+      } catch (err) {}
+    }
+
+    setInterval(syncProgress, 15000);
+    video.addEventListener('pause', syncProgress);
+
+    window.addEventListener('beforeunload', () => {
+      if (video && !video.paused && !hasCompletedModule) {
+        navigator.sendBeacon(
+          '/api/video/progress',
+          new Blob([JSON.stringify({
+            token: activeToken || sessionParam,
+            currentTime: Math.floor(video.currentTime),
+            progressSeconds: Math.floor(video.currentTime),
+            deviceSig: currentDeviceSig,
+            module: currentModuleNumber
+          })], { type: 'application/json' })
+        );
+      }
+    });
+
+    // Anti-Piracy Keyboard Protection
+    window.addEventListener('keydown', (e) => {
+      if (
+        e.key === 'PrintScreen' ||
+        e.key === 'F12' ||
+        (e.ctrlKey && (e.key === 's' || e.key === 'u' || e.key === 'p')) ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'C' || e.key === 'J'))
+      ) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    // Start player
+    initPlayer();
+  </script>
+</body>
+</html>

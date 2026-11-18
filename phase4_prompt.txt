@@ -1,0 +1,1020 @@
+<USER_REQUEST>
+# KAIROS – PHASE 4
+# ENGLISH & FRENCH REGISTRATION APPLICATION INTEGRATION
+
+## 1. ROLE AND OBJECTIVE
+
+Act as a Senior Full-Stack Developer and Software Architect.
+
+Implement Phase 4 of the Kairos WhatsApp Learning Platform.
+
+The objective is to connect the existing English and French Registration Applications to the existing Phase 2 Common Backend and AWS RDS PostgreSQL database.
+
+The final registration workflow must be:
+
+**English/French Registration Form → Common Backend API → PostgreSQL → Payment Staff Dashboard → Payment Status Update → Enrolment Activation**
+
+WhatsApp confirmation and video access will follow in their respective later integration phases.
+
+Do not change the existing payment workflow or WhatsApp Bot during Phase 4.
+
+---
+
+# 2. EXISTING PROJECT STRUCTURE
+
+The project already contains the following applications and folders.
+
+### A. English Registration Application
+
+- React 19
+- Vite
+- React Router
+- Bootstrap 5
+- Firebase Authentication
+- Firestore
+- Existing registration form
+
+Firebase Project ID:
+
+`reg-fe-and-sme-sprout`
+
+### B. French Registration Application
+
+- React 19
+- Vite
+- React Router
+- Bootstrap 5
+- Firebase Authentication
+- Firestore
+- Existing registration form
+
+Firebase Project ID:
+
+`reg-feandsme-sprout`
+
+### C. Common Backend
+
+Existing folder:
+
+`kairos-backend`
+
+Technology:
+
+- Node.js
+- Express.js
+- PostgreSQL
+- AWS RDS
+- JWT authentication
+- REST APIs
+
+### D. Central Staff Portal
+
+Existing folder:
+
+`kairos-staff-portal`
+
+Created during Phase 3.
+
+It contains:
+
+- Staff Login
+- Payment Staff Dashboard
+- Report Staff Dashboard
+- All / English / French filters
+- Role-based access control
+- Payment status dropdown
+- Manual WhatsApp confirmation interface
+
+### E. Existing DB Folder
+
+There is already a DB folder inside the application/project directory.
+
+**Important: Locate and inspect this existing DB folder before creating any database-related files.**
+
+Do not create another DB folder unnecessarily.
+
+Inspect:
+- Existing SQL files.
+- Schema files.
+- Database configuration.
+- Queries.
+- Table definitions.
+- Migration scripts, if any.
+- Existing database documentation.
+
+Reuse relevant existing files.
+
+Do not overwrite, rename, delete or duplicate existing database files without approval.
+
+### F. Existing Kairos Database Handover Folder
+
+An existing handover folder was already prepared:
+
+`Kairos_Database_Handover`
+
+It contains or is intended to contain:
+
+1. `01_database_schema.sql`
+2. `02_table_columns.xlsx`
+3. `03_pgadmin_tables_screenshot.png`
+4. `04_s3_video_mapping_english_french.xlsx`
+5. `05_env.example`
+
+Locate the actual folder and inspect its contents.
+
+Use these documents as reference for:
+- PostgreSQL schema.
+- Existing four table definitions.
+- Column names and data types.
+- Constraints.
+- English and French course mapping.
+- S3 video configuration.
+- Backend environment configuration.
+
+Do not recreate the folder if it already exists.
+
+Do not overwrite existing handover documents.
+
+Do not copy actual passwords, AWS credentials, database credentials or JWT secrets into shared documentation.
+
+The handover folder is reference documentation. The existing Phase 2 backend remains the authoritative API implementation.
+
+---
+
+# 3. PHASE 3 ACCEPTANCE STATUS
+
+The Phase 3 completion report states:
+
+- 15 out of 15 acceptance tests passed.
+- Both staff accounts were verified.
+- English and French dashboard filters worked.
+- Payment status update and enrolment activation were tested.
+- Role-based permissions were verified.
+- Existing four PostgreSQL tables were not altered.
+- English and French applications were not modified.
+- Existing WhatsApp Bot was not modified.
+
+Use the Phase 3 implementation as the starting point.
+
+Do not rebuild the Central Staff Portal.
+
+Do not change its existing UI unnecessarily.
+
+---
+
+# 4. CRITICAL PROTECTION RULES
+
+DO NOT:
+
+1. Modify the existing WhatsApp Bot.
+2. Change the live WhatsApp webhook.
+3. Change Render/Vercel deployment.
+4. Change the existing WhatsApp Bot environment configuration.
+5. Rebuild the Central Staff Portal.
+6. Modify the four existing PostgreSQL tables.
+7. Delete existing Firestore registrations.
+8. Delete or overwrite production student records.
+9. Change Firebase authentication unnecessarily.
+10. Change existing registration UI designs unnecessarily.
+11. Commit secrets to GitHub.
+12. Deploy directly to production without approval.
+
+Use separate development branches for the English and French applications.
+
+Take backups before modifying either application.
+
+---
+
+# 5. STAGE 1 – INSPECT ALL EXISTING FILES
+
+Before coding, inspect:
+
+### English application
+- `Registration.jsx`
+- `RegistrationForm.jsx`
+- `registrationService.js`
+- Firebase configuration
+- Form validation
+- Submit handler
+- Success message
+- Error handling
+- Existing DB folder
+
+### French application
+- `Registration.jsx`
+- `RegistrationForm.jsx`
+- `registrationService.js`
+- Firebase configuration
+- Form validation
+- Submit handler
+- Success message
+- Error handling
+- Existing DB folder
+
+### Phase 2 backend
+- Registration controller
+- Registration service
+- Course service
+- Registration routes
+- Payment service
+- Database connection
+- Transaction handling
+- Validation middleware
+- Error handling
+- `.env.example`
+- README
+
+### Phase 3 Staff Portal
+- Payment Dashboard
+- Report Dashboard
+- API services
+- Authentication
+- Payment status dropdown
+- Language filters
+
+### Existing documentation
+- DB folder.
+- `Kairos_Database_Handover`.
+- Phase 2 README.
+- Phase 2 Postman collection.
+- Phase 3 acceptance testing report.
+
+Prepare an inspection report containing:
+
+1. Files identified.
+2. Existing registration flow.
+3. Existing Firebase write operations.
+4. Existing PostgreSQL schema.
+5. Actual Phase 2 registration API.
+6. Actual API request structure.
+7. Actual API response structure.
+8. Default course records.
+9. Existing payment workflow.
+10. Potential integration issues.
+
+Do not start coding until the inspection is complete.
+
+---
+
+# 6. STAGE 2 – VERIFY DATABASE AND COURSE RECORDS
+
+Use the existing DB folder and handover documentation.
+
+Connect to the existing AWS RDS database through the Phase 2 backend.
+
+Existing database:
+
+- Database: `devdb`
+- Region: `us-east-1`
+- Schema: `public`
+- Port: `5432`
+
+Existing tables:
+
+1. `wa_registrations`
+2. `wa_courses`
+3. `wa_payments`
+4. `wa_enrollments`
+
+Do not modify their schema.
+
+## Verify English course
+
+Expected course:
+
+`Business Success Class`
+
+Expected language:
+
+`en`
+
+Expected active status:
+
+`true`
+
+## Verify French course
+
+Expected course:
+
+`Cours de Réussite Commerciale`
+
+Expected language:
+
+`fr`
+
+Expected active status:
+
+`true`
+
+Use read-only SQL queries to verify the actual records.
+
+Example:
+
+```sql
+SELECT
+    course_id,
+    course_name,
+    language,
+    is_active
+FROM wa_courses
+ORDER BY course_id;
+```
+
+Do not hardcode course IDs in React.
+
+The backend must identify the correct active course based on the submitted language.
+
+If course records do not match the expected names or active status, report the discrepancy before proceeding.
+
+---
+
+# 7. STAGE 3 – ENGLISH REGISTRATION INTEGRATION
+
+Connect the existing English Registration Application to the Phase 2 backend.
+
+Preserve the current:
+- Registration form design.
+- Field labels.
+- Layout.
+- Bootstrap styling.
+- Validation messages.
+- Navigation.
+- Existing authentication functionality.
+
+## Language
+
+The English application must automatically submit:
+
+`language: "en"`
+
+Students must not be able to change this value.
+
+## Registration fields
+
+Submit the fields supported by the actual backend:
+
+- Full Name
+- Country Code
+- Phone Number
+- Email
+- City
+- Profession
+- Language
+
+Example:
+
+```json
+{
+  "full_name": "[PHASE4 TEST] English Student",
+  "country_code": "+91",
+  "phone_number": "9000000001",
+  "email": "english.test@example.com",
+  "city": "Chennai",
+  "profession": "Student",
+  "language": "en"
+}
+```
+
+This is an example payload. Follow the actual Phase 2 API contract if its field names differ.
+
+## Default course
+
+The backend must automatically assign:
+
+`Business Success Class`
+
+Do not show a course selection dropdown in this phase.
+
+Do not send a hardcoded course ID from the frontend.
+
+## Submission behaviour
+
+1. Validate all required fields.
+2. Validate email.
+3. Validate phone number and country code.
+4. Show loading indicator.
+5. Submit to the common backend.
+6. Wait for API response.
+7. Display success only after the backend confirms successful registration.
+8. Display clear validation and server errors.
+9. Prevent accidental duplicate submissions.
+
+---
+
+# 8. STAGE 4 – FRENCH REGISTRATION INTEGRATION
+
+Connect the existing French Registration Application to the same Phase 2 backend.
+
+Preserve all existing French UI elements and language.
+
+## Language
+
+The French application must automatically submit:
+
+`language: "fr"`
+
+## Registration fields
+
+Submit the same supported fields:
+
+- Full Name
+- Country Code
+- Phone Number
+- Email
+- City
+- Profession
+- Language
+
+Example:
+
+```json
+{
+  "full_name": "[PHASE4 TEST] French Student",
+  "country_code": "+33",
+  "phone_number": "6000000001",
+  "email": "french.test@example.com",
+  "city": "Paris",
+  "profession": "Étudiant",
+  "language": "fr"
+}
+```
+
+Follow the actual API contract.
+
+## Default course
+
+The backend must automatically assign:
+
+`Cours de Réussite Commerciale`
+
+Do not show a course selection dropdown.
+
+Do not hardcode the course ID in React.
+
+## Submission behaviour
+
+Follow the same validation, loading, error handling and success handling rules as the English application.
+
+Preserve French-language messages.
+
+---
+
+# 9. STAGE 5 – BACKEND REGISTRATION LOGIC
+
+Use the existing Phase 2 registration API:
+
+`POST /api/registrations`
+
+Inspect the actual implementation before making changes.
+
+The backend must:
+
+1. Validate required fields.
+2. Validate email and phone number.
+3. Accept only `en` or `fr`.
+4. Identify the correct active course.
+5. Create the registration.
+6. Create the corresponding payment record.
+7. Return the generated registration ID.
+8. Return the assigned course details.
+9. Return the registration timestamp.
+10. Return clear validation errors.
+
+Use database transactions for registration and payment creation.
+
+If payment creation fails, roll back the registration transaction.
+
+Do not create duplicate payment records.
+
+Do not modify the existing four database tables.
+
+## Duplicate phone handling
+
+The existing database enforces uniqueness using:
+
+`country_code + phone_number`
+
+Preserve this rule.
+
+Test:
+
+- Same country code + same phone: reject duplicate.
+- Same phone digits + different country code: allow according to the existing unique constraint.
+- Different phone numbers: allow.
+
+Do not introduce email uniqueness without approval.
+
+---
+
+# 10. REGISTRATION DATE AND TIME
+
+The existing `wa_registrations` table already contains:
+
+`registered_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP`
+
+Use this existing column.
+
+Requirements:
+
+1. Do not send `registered_at` from React.
+2. Let PostgreSQL generate the timestamp.
+3. Return `registered_at` in the successful API response.
+4. Display registration date and time in the Payment Dashboard.
+5. Display registration date and time in Report Dashboard where relevant.
+6. Display the time in Indian Standard Time (`Asia/Kolkata`) for staff users.
+7. Preserve the actual stored timestamp.
+8. Do not add or alter database timestamp columns.
+
+Use a consistent timestamp convention in the backend.
+
+If the existing database uses a timestamp without timezone, explicitly document the assumed database timezone and ensure the API converts it consistently.
+
+Do not simply append `Z` to a timestamp unless it is genuinely UTC.
+
+Example response:
+
+```json
+{
+  "success": true,
+  "registration": {
+    "registration_id": 10,
+    "full_name": "[PHASE4 TEST] English Student",
+    "language": "en",
+    "course_name": "Business Success Class",
+    "registered_at": "2026-11-18T09:45:30.000Z"
+  }
+}
+```
+
+This is an illustrative response only. Use the actual backend response structure and timestamp.
+
+---
+
+# 11. STAGE 6 – FIREBASE TRANSITION
+
+The English and French applications currently use Firestore.
+
+Do not delete or migrate existing Firestore records.
+
+Before changing registration write operations, inspect whether any existing feature depends on Firestore registrations.
+
+Requirements:
+
+1. Preserve Firebase Authentication if still required.
+2. Preserve historical Firestore data.
+3. Do not delete existing Firestore collections.
+4. Do not silently dual-write to Firebase and PostgreSQL.
+5. Make PostgreSQL the authoritative source for new registrations only after integration is tested and approved.
+6. Document the transition clearly.
+
+If any other feature depends on Firestore registration data, report the dependency before removing or changing that functionality.
+
+Do not remove existing Firebase code without approval.
+
+---
+
+# 12. STAGE 7 – CENTRAL STAFF PORTAL INTEGRATION
+
+After English and French registrations work, verify the existing Phase 3 Staff Portal.
+
+Do not rebuild it.
+
+Use the existing staff accounts:
+
+Payment Staff:
+- Email: `payment@sprout.com`
+- Password: `sprout123`
+
+Report Staff:
+- Email: `report@sprout.com`
+- Password: `sprout123`
+
+Use only for testing.
+
+## Payment Dashboard
+
+Verify newly registered students appear automatically.
+
+The dashboard must show:
+
+- Registration ID
+- Student Name
+- Phone Number
+- Email
+- City
+- Profession
+- Language
+- Assigned Course
+- Registration Date and Time
+- Payment Status
+
+Verify:
+
+- All filter.
+- English filter.
+- French filter.
+- Search.
+- Payment status dropdown.
+
+## Report Dashboard
+
+Verify:
+
+- Total registrations update.
+- English registration count updates.
+- French registration count updates.
+- Language filters work.
+- Date filters work.
+- Charts update.
+- Excel export contains the new registrations.
+
+---
+
+# 13. IMPORTANT – PRESERVE THE EXISTING PAYMENT WORKFLOW
+
+Do not confuse payment status updates with WhatsApp confirmation.
+
+The existing Kairos workflow must remain:
+
+### Step 1 – Registration
+
+Student submits the English or French form.
+
+### Step 2 – Payment Staff updates the dropdown
+
+Payment Staff can select:
+
+- Pending
+- Contacted
+- Confirmed
+- Paid
+- Cancelled
+
+### Step 3 – Payment becomes Paid
+
+When Payment Staff selects `Paid`:
+
+- Backend updates `wa_payments.status`.
+- Backend records the staff identity and update timestamp.
+- Backend activates the corresponding enrolment in `wa_enrollments`.
+- The operation must use a transaction.
+- Dashboard refreshes to show the updated status.
+
+### Step 4 – Manual WhatsApp Confirmation
+
+After payment becomes Paid, the existing Phase 3 interface provides a separate manual confirmation action.
+
+This is NOT part of the payment dropdown.
+
+The staff member must explicitly choose to send the confirmation.
+
+### Step 5 – Video Access
+
+Student receives appropriate course access through the later video access integration phase.
+
+## Phase 4 restriction
+
+Do not change any of the above payment, enrolment, WhatsApp or video access logic during Phase 4.
+
+Only verify that newly registered students correctly enter the existing Payment Staff workflow.
+
+Do not implement automatic WhatsApp notifications.
+
+Do not modify the existing WhatsApp Bot.
+
+---
+
+# 14. ENVIRONMENT CONFIGURATION
+
+Use the appropriate frontend environment configuration.
+
+Example:
+
+```env
+VITE_API_BASE_URL=http://localhost:5000/api
+```
+
+Create or update `.env.example`.
+
+Do not expose:
+
+- Database passwords.
+- JWT secrets.
+- AWS access keys.
+- Meta WhatsApp tokens.
+
+Configure backend CORS for the approved frontend origins.
+
+Do not allow all origins in production.
+
+Do not commit actual `.env` files.
+
+---
+
+# 15. TEST DATA SAFETY
+
+Use only clearly identifiable Phase 4 test records.
+
+Suggested names:
+
+- `[PHASE4 TEST] English Student`
+- `[PHASE4 TEST] French Student`
+
+Use controlled test email addresses and phone numbers.
+
+Before testing, verify that phone numbers are not already present.
+
+Do not use actual student personal information.
+
+Do not delete or overwrite production records.
+
+Provide a list of all test records created.
+
+If a record cannot confidently be classified as test data, do not modify its payment status.
+
+---
+
+# 16. PHASE 4 ACCEPTANCE TESTS
+
+Execute every test below.
+
+For each test, document:
+
+- Test ID.
+- Scenario.
+- Preconditions.
+- Execution steps.
+- Expected result.
+- Actual result.
+- PASS / FAIL / BLOCKED.
+- Supporting evidence.
+
+## A. English Registration
+
+### TC-401 – English Form Loading
+Expected: Existing English registration form loads without UI regression.
+
+### TC-402 – English Validation
+Expected: Empty fields, invalid email and invalid phone are rejected.
+
+### TC-403 – English Submission
+Expected: Valid student registration is saved through the common backend.
+
+### TC-404 – English Course Assignment
+Expected: English registration receives Business Success Class.
+
+### TC-405 – English Registration Timestamp
+Expected: PostgreSQL generates `registered_at` and API returns it correctly.
+
+## B. French Registration
+
+### TC-406 – French Form Loading
+Expected: Existing French registration form loads with its original French UI.
+
+### TC-407 – French Validation
+Expected: Invalid or incomplete data is rejected.
+
+### TC-408 – French Submission
+Expected: Valid French student registration is saved through the common backend.
+
+### TC-409 – French Course Assignment
+Expected: French registration receives Cours de Réussite Commerciale.
+
+### TC-410 – French Registration Timestamp
+Expected: PostgreSQL generates and API returns the registration timestamp.
+
+## C. Backend and Database
+
+### TC-411 – Database Record Verification
+Expected: Both registrations exist with correct language and student information.
+
+### TC-412 – Payment Record Creation
+Expected: A corresponding Pending payment record is created for each registration.
+
+### TC-413 – Duplicate Phone Rejection
+Expected: Duplicate country-code/phone combination is rejected.
+
+### TC-414 – Different Country Code
+Expected: Same phone digits with different country codes are handled according to the existing unique constraint.
+
+### TC-415 – Invalid Language
+Expected: Any language other than `en` or `fr` is rejected.
+
+### TC-416 – Transaction Integrity
+Expected: Registration and payment creation succeed or roll back together.
+
+### TC-417 – API Error Handling
+Expected: Network and server errors do not display false success messages or create duplicates.
+
+## D. Central Staff Portal
+
+### TC-418 – English Student Visibility
+Expected: New English student appears in Payment Dashboard.
+
+### TC-419 – French Student Visibility
+Expected: New French student appears in Payment Dashboard.
+
+### TC-420 – All Language Filter
+Expected: Both new students appear together.
+
+### TC-421 – English/French Filters
+Expected: Each filter displays only the matching language.
+
+### TC-422 – Report Dashboard
+Expected: Both new records update report KPIs, charts and Excel exports.
+
+### TC-423 – Payment Dropdown Regression
+Expected: All five payment statuses remain available and function correctly.
+
+### TC-424 – Paid Enrolment Regression
+Expected: On a designated test record, changing status to Paid activates its matching enrolment using the existing backend transaction.
+
+### TC-425 – Role Permissions
+Expected: Payment Staff and Report Staff retain their existing restrictions.
+
+## E. Application and Database Safety
+
+### TC-426 – English UI Regression
+Expected: Existing English design and unrelated functionality remain intact.
+
+### TC-427 – French UI Regression
+Expected: Existing French design and unrelated functionality remain intact.
+
+### TC-428 – Phase 3 Regression
+Expected: Both staff accounts, dashboards, filters and reports continue working.
+
+### TC-429 – WhatsApp Bot Protection
+Expected: Existing bot code, webhook and deployment remain unchanged.
+
+### TC-430 – Database Schema Protection
+Expected: Four existing PostgreSQL tables remain unchanged.
+
+### TC-431 – Firebase Data Protection
+Expected: Existing Firebase records and unrelated functionality remain intact.
+
+### TC-432 – Git and Secret Safety
+Expected: No secrets committed, and modifications are limited to approved repositories.
+
+---
+
+# 17. REQUIRED DATABASE EVIDENCE
+
+Provide read-only SQL results for the newly created Phase 4 test registrations.
+
+Example query:
+
+```sql
+SELECT
+    r.registration_id,
+    r.full_name,
+    r.country_code,
+    r.phone_number,
+    r.email,
+    r.city,
+    r.profession,
+    r.language,
+    r.registered_at,
+    c.course_name,
+    p.payment_id,
+    p.status,
+    p.updated_at
+FROM wa_registrations r
+LEFT JOIN wa_payments p
+    ON p.registration_id = r.registration_id
+LEFT JOIN wa_courses c
+    ON c.course_id = p.course_id
+WHERE r.full_name LIKE '[PHASE4 TEST]%'
+ORDER BY r.registration_id;
+```
+
+Adapt only if the actual schema or query requires it.
+
+Provide:
+
+1. English test registration result.
+2. French test registration result.
+3. Assigned course details.
+4. Payment records.
+5. Registration timestamps.
+6. API success responses.
+7. Duplicate rejection response.
+8. Payment Dashboard screenshots.
+9. Report Dashboard screenshots.
+
+Do not expose real student personal information in shared evidence.
+
+---
+
+# 18. IMPLEMENTATION ORDER
+
+Follow these stages in order.
+
+### Stage 1 – Inspection and Backup
+Inspect both applications, DB folder, handover folder and Phase 2 backend. Back up and create development branches.
+
+### Stage 2 – Database Verification
+Verify both default courses, table structures and existing registration API.
+
+### Stage 3 – English Integration
+Connect English form, test validation and verify PostgreSQL storage.
+
+### Stage 4 – French Integration
+Connect French form, test validation and verify PostgreSQL storage.
+
+### Stage 5 – Backend and Timestamp Verification
+Verify course assignment, payment creation, duplicate validation and timestamps.
+
+### Stage 6 – Staff Portal Verification
+Verify new records in both staff dashboards and report filters.
+
+### Stage 7 – Acceptance Testing
+Execute TC-401 through TC-432. Fix failures and retest.
+
+### Stage 8 – Documentation
+Update application READMEs and produce Phase 4 Completion Report.
+
+---
+
+# 19. FINAL DELIVERABLES
+
+Provide:
+
+1. Updated English Registration Application.
+2. Updated French Registration Application.
+3. Backend changes, if any, with explanation.
+4. Existing DB folder inspection report.
+5. Existing handover folder verification report.
+6. Updated `.env.example` files.
+7. Updated README files.
+8. English registration API evidence.
+9. French registration API evidence.
+10. Database query results.
+11. Course assignment verification.
+12. Payment record verification.
+13. Timestamp verification.
+14. Staff Portal screenshots.
+15. All 32 acceptance test results.
+16. Git change summary.
+17. Confirmation that Phase 3 remains functional.
+18. Confirmation that the WhatsApp Bot was untouched.
+19. Confirmation that the four existing database tables were not modified.
+20. Confirmation that existing Firebase data was preserved.
+
+---
+
+# 20. MANDATORY PHASE APPROVAL
+
+Phase 4 is complete only after all required acceptance tests have passed.
+
+For every test provide:
+
+- Test ID.
+- Scenario.
+- Preconditions.
+- Execution steps.
+- Expected result.
+- Actual result.
+- PASS / FAIL / BLOCKED.
+- Evidence.
+
+Rules:
+
+1. Never mark an untested feature as PASS.
+2. Fix failed tests and retest.
+3. Report blocked tests honestly.
+4. Do not hide unresolved issues.
+5. Do not deploy to production without approval.
+6. Do not remove existing Firebase functionality without approval.
+7. Submit the Phase 4 Completion Report.
+8. Wait for my explicit approval before starting Phase 5.
+
+## FINAL INSTRUCTION
+
+Start with Stage 1 – Inspection and Backup.
+
+Locate and reuse the existing DB folder.
+
+Locate and reuse the existing Kairos Database Handover folder.
+
+Do not recreate existing database documentation unnecessarily.
+
+Preserve the current English and French registration UI.
+
+Connect both applications to the tested Phase 2 common backend.
+
+Preserve the Phase 3 payment dropdown and enrolment activation workflow.
+
+Do not implement WhatsApp notification sending or video access changes during Phase 4.
+
+Do not modify the live WhatsApp Bot or the four existing PostgreSQL tables.
+
+**Complete all acceptance tests and wait for my approval before Phase 5.**
+give it fast
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-11-18T15:13:00+05:30.
+
+The user's current state is as follows:
+Active Document: c:\Users\SABARI SJ\Desktop\common-folder\phase3_acceptance_testing_and_completion_report.md (LANGUAGE_UNSPECIFIED)
+Cursor is on line: 1
+</ADDITIONAL_METADATA>

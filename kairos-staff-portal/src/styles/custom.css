@@ -1,0 +1,465 @@
+/* ==========================================================================
+   Sprout & Kairos Custom Design System & Theme
+   Palette derived directly from Sprout | Kairos brand identity:
+   - Sprout Cyan: #00AEEF (Primary sky blue)
+   - Sprout Orange: #FF7A00 (Warm sun accent)
+   - Kairos Green: #70C041 (Fresh growth accent)
+   - Kairos Gold: #F59E0B (Inspiration & clarity)
+   - Kairos Deep Navy: #0B192C (Header & high-contrast typography)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+:root {
+  /* Brand Identity Colors */
+  --sprout-cyan: #00AEEF;
+  --sprout-cyan-hover: #0284c7;
+  --sprout-cyan-light: #e0f2fe;
+  --sprout-cyan-ultra-light: #f0f9ff;
+  --sprout-orange: #FF7A00;
+  --sprout-orange-hover: #ea580c;
+  --sprout-orange-light: #fff7ed;
+  --kairos-green: #70C041;
+  --kairos-green-light: #f0fdf4;
+  --kairos-gold: #F59E0B;
+  --kairos-navy: #0B192C;
+  --kairos-navy-muted: #334155;
+
+  /* Neutrals & Surfaces */
+  --app-bg: #f8fafc;
+  --app-surface: #ffffff;
+  --app-text: #0f172a;
+  --app-text-muted: #64748b;
+  --app-border: #e2e8f0;
+  --app-border-focus: #00AEEF;
+  --app-error: #dc2626;
+  --app-error-bg: #fef2f2;
+  --app-error-border: #fecaca;
+  --app-success: #16a34a;
+  --app-success-bg: #f0fdf4;
+
+  /* Elevations & Shapes */
+  --app-radius-lg: 1.25rem;
+  --app-radius-md: 0.75rem;
+  --app-radius-sm: 0.5rem;
+  --app-shadow-card: 0 20px 40px -15px rgba(11, 25, 44, 0.08), 0 0 0 1px rgba(226, 232, 240, 0.8);
+  --app-shadow-hover: 0 25px 50px -12px rgba(0, 174, 239, 0.15), 0 0 0 1px rgba(0, 174, 239, 0.2);
+}
+
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--app-bg);
+  color: var(--app-text);
+  min-height: 100vh;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* ==========================================================================
+   Page Background with Sprout | Kairos Mesh Gradients
+   ========================================================================== */
+.registration-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem 1.25rem;
+  position: relative;
+  background-color: #f8fafc;
+  background-image:
+    radial-gradient(at 10% 12%, rgba(0, 174, 239, 0.13) 0px, transparent 45%),
+    radial-gradient(at 90% 15%, rgba(255, 122, 0, 0.11) 0px, transparent 48%),
+    radial-gradient(at 50% 90%, rgba(112, 192, 65, 0.09) 0px, transparent 52%),
+    radial-gradient(at 85% 85%, rgba(0, 174, 239, 0.07) 0px, transparent 45%);
+  background-attachment: fixed;
+}
+
+/* Background Subtle Decorative Accent Lines */
+.registration-wrapper::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--sprout-cyan) 0%, var(--sprout-orange) 50%, var(--kairos-green) 100%);
+  z-index: 10;
+}
+
+/* ==========================================================================
+   Logo & Header Presentation
+   ========================================================================== */
+.brand-logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.75rem;
+}
+
+.brand-logo-img {
+  max-height: 60px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.04));
+  transition: transform 0.25s ease;
+}
+
+.brand-logo-img:hover {
+  transform: scale(1.02);
+}
+
+/* Card Container */
+.registration-card {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(16px);
+  border-radius: var(--app-radius-lg);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: var(--app-shadow-card);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  width: 100%;
+  max-width: 680px;
+  position: relative;
+  z-index: 1;
+}
+
+.registration-card:hover {
+  box-shadow: var(--app-shadow-hover);
+}
+
+/* Badge & Headings */
+.form-header-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.9rem;
+  background: linear-gradient(135deg, rgba(0, 174, 239, 0.1) 0%, rgba(255, 122, 0, 0.08) 100%);
+  border: 1px solid rgba(0, 174, 239, 0.25);
+  color: var(--kairos-navy);
+  border-radius: 9999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  margin-bottom: 0.875rem;
+}
+
+.form-header-badge i {
+  color: var(--sprout-orange);
+}
+
+.form-heading {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: var(--kairos-navy);
+  letter-spacing: -0.025em;
+  margin-bottom: 0.5rem;
+}
+
+.form-subtitle {
+  color: var(--app-text-muted);
+  font-size: 0.975rem;
+  line-height: 1.55;
+  margin-bottom: 0;
+}
+
+/* ==========================================================================
+   Form Controls & Themed Focus States
+   ========================================================================== */
+.form-label {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--kairos-navy);
+  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.required-indicator {
+  color: var(--sprout-orange);
+  font-weight: 700;
+}
+
+.input-icon-group {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  left: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 1rem;
+  pointer-events: none;
+  transition: color 0.2s ease;
+  z-index: 4;
+}
+
+.input-with-icon {
+  padding-left: 2.75rem !important;
+}
+
+.form-control, .form-select {
+  border-radius: var(--app-radius-md);
+  border: 1.5px solid var(--app-border);
+  padding: 0.72rem 1rem;
+  font-size: 0.95rem;
+  transition: all 0.2s ease-in-out;
+  background-color: #ffffff;
+  color: var(--app-text);
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--sprout-cyan);
+  box-shadow: 0 0 0 4px rgba(0, 174, 239, 0.16);
+  outline: none;
+}
+
+.input-icon-group:focus-within .input-icon {
+  color: var(--sprout-cyan);
+}
+
+.form-control.is-invalid, .form-select.is-invalid {
+  border-color: var(--app-error);
+  background-image: none;
+}
+
+.form-control.is-invalid:focus, .form-select.is-invalid:focus {
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.12);
+}
+
+.invalid-feedback {
+  display: block;
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--app-error);
+  margin-top: 0.35rem;
+}
+
+/* ==========================================================================
+   Alert Banners
+   ========================================================================== */
+.custom-alert {
+  border-radius: var(--app-radius-md);
+  padding: 0.95rem 1.15rem;
+  font-size: 0.925rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-weight: 500;
+}
+
+.custom-alert-danger {
+  background-color: var(--app-error-bg);
+  border: 1.5px solid var(--app-error-border);
+  color: #b91c1c;
+}
+
+.custom-alert-success {
+  background-color: var(--app-success-bg);
+  border: 1.5px solid #bbf7d0;
+  color: #15803d;
+}
+
+/* ==========================================================================
+   Brand Buttons
+   ========================================================================== */
+.btn-submit {
+  background: linear-gradient(135deg, var(--sprout-cyan) 0%, var(--sprout-cyan-hover) 100%);
+  border: none;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 1rem;
+  padding: 0.9rem 1.5rem;
+  border-radius: var(--app-radius-md);
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(0, 174, 239, 0.28);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-submit::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.btn-submit:hover:not(:disabled) {
+  background: linear-gradient(135deg, #0db4f2 0%, #0369a1 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0, 174, 239, 0.35);
+}
+
+.btn-submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-submit:disabled {
+  background: #cbd5e1;
+  color: #64748b;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ==========================================================================
+   Thank You Screen
+   ========================================================================== */
+.thankyou-card {
+  max-width: 540px;
+  text-align: center;
+  padding: 3rem 2rem;
+}
+
+.success-icon-wrapper {
+  width: 86px;
+  height: 86px;
+  margin: 0 auto 1.5rem auto;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+  border: 2px solid rgba(112, 192, 65, 0.3);
+  color: var(--kairos-green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  animation: pulse-badge 2s infinite ease-in-out;
+}
+
+@keyframes pulse-badge {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(112, 192, 65, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 12px rgba(112, 192, 65, 0);
+  }
+}
+
+.thankyou-heading {
+  font-size: 2.15rem;
+  font-weight: 800;
+  color: var(--kairos-navy);
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.02em;
+}
+
+.thankyou-main-msg {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--kairos-navy-muted);
+  margin-bottom: 0.5rem;
+}
+
+.thankyou-sub-msg {
+  font-size: 0.95rem;
+  color: var(--app-text-muted);
+  margin-bottom: 2rem;
+}
+
+.btn-back {
+  background-color: #ffffff;
+  border: 1.5px solid var(--app-border);
+  color: var(--kairos-navy);
+  font-weight: 600;
+  padding: 0.75rem 1.75rem;
+  border-radius: var(--app-radius-md);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.btn-back:hover {
+  background-color: var(--sprout-cyan-ultra-light);
+  border-color: var(--sprout-cyan);
+  color: var(--sprout-cyan-hover);
+  transform: translateY(-1px);
+}
+
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+.app-footer {
+  text-align: center;
+  padding: 1.25rem 1rem;
+  font-size: 0.85rem;
+  color: #64748b;
+  background-color: rgba(255, 255, 255, 0.7);
+  border-top: 1px solid rgba(226, 232, 240, 0.6);
+  backdrop-filter: blur(8px);
+}
+
+.app-footer-brand {
+  font-weight: 600;
+  color: var(--kairos-navy);
+}
+
+@media (max-width: 576px) {
+  .registration-wrapper {
+    padding: 1.5rem 0.875rem;
+  }
+  .brand-logo-img {
+    max-height: 48px;
+  }
+  .form-heading {
+    font-size: 1.5rem;
+  }
+  .thankyou-card {
+    padding: 2.25rem 1.25rem;
+  }
+}
+
+/* ==========================================================================
+   Dashboard Utilities & Animations
+   ========================================================================== */
+.hover-primary:hover {
+  background-color: var(--sprout-cyan-ultra-light) !important;
+  border-color: var(--sprout-cyan) !important;
+  color: var(--sprout-cyan-hover) !important;
+  transform: translateY(-1px);
+}
+
+.transition-all {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.transition-all:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--app-shadow-hover) !important;
+}
+
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-pulse {
+  animation: pulse-soft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}

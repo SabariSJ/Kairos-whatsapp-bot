@@ -1,0 +1,47 @@
+[
+  {
+    "registration_id": "11",
+    "full_name": "[PHASE4 TEST] English Student",
+    "country_code": "+91",
+    "phone_number": "9876540001",
+    "email": "phase4.en.student@sprout.com",
+    "city": "Chennai",
+    "profession": "Student",
+    "language": "en",
+    "registered_at": "2026-11-18T04:34:47.138Z",
+    "course_name": "Business Success Class",
+    "payment_id": "7",
+    "status": "Paid",
+    "updated_at": "2026-11-18T04:35:01.010Z"
+  },
+  {
+    "registration_id": "12",
+    "full_name": "[PHASE4 TEST] French Student",
+    "country_code": "+33",
+    "phone_number": "6876540001",
+    "email": "phase4.fr.student@sprout.com",
+    "city": "Paris",
+    "profession": "Étudiant",
+    "language": "fr",
+    "registered_at": "2026-11-18T04:34:48.308Z",
+    "course_name": "Cours de Réussite Commerciale",
+    "payment_id": "8",
+    "status": "Pending",
+    "updated_at": "2026-11-18T04:34:48.308Z"
+  },
+  {
+    "registration_id": "14",
+    "full_name": "[PHASE4 TEST] UK Student Same Phone",
+    "country_code": "+44",
+    "phone_number": "9876540001",
+    "email": "uk.student@example.com",
+    "city": "London",
+    "profession": "Consultant",
+    "language": "en",
+    "registered_at": "2026-11-18T04:34:50.896Z",
+    "course_name": "Business Success Class",
+    "payment_id": "9",
+    "status": "Pending",
+    "updated_at": "2026-11-18T04:34:59.589Z"
+  }
+]

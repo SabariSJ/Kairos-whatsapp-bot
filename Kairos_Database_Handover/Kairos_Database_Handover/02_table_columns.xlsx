@@ -1,0 +1,27 @@
+"table_name","column_name","data_type","character_maximum_length","is_nullable","column_default"
+"wa_courses","course_id","bigint",NULL,"NO","nextval('wa_courses_course_id_seq'::regclass)"
+"wa_courses","course_name","character varying",150,"NO",NULL
+"wa_courses","language","character varying",2,"NO",NULL
+"wa_courses","is_active","boolean",NULL,"NO","true"
+"wa_enrollments","enrollment_id","bigint",NULL,"NO","nextval('wa_enrollments_enrollment_id_seq'::regclass)"
+"wa_enrollments","registration_id","bigint",NULL,"NO",NULL
+"wa_enrollments","course_id","bigint",NULL,"NO",NULL
+"wa_enrollments","payment_id","bigint",NULL,"NO",NULL
+"wa_enrollments","course_start_date","date",NULL,"YES",NULL
+"wa_enrollments","enrollment_status","character varying",20,"NO","'Pending'::character varying"
+"wa_enrollments","enrolled_at","timestamp without time zone",NULL,"NO","CURRENT_TIMESTAMP"
+"wa_payments","payment_id","bigint",NULL,"NO","nextval('wa_payments_payment_id_seq'::regclass)"
+"wa_payments","registration_id","bigint",NULL,"NO",NULL
+"wa_payments","course_id","bigint",NULL,"NO",NULL
+"wa_payments","status","character varying",20,"NO","'Pending'::character varying"
+"wa_payments","updated_by","character varying",100,"YES",NULL
+"wa_payments","updated_at","timestamp without time zone",NULL,"NO","CURRENT_TIMESTAMP"
+"wa_registrations","registration_id","bigint",NULL,"NO","nextval('wa_registrations_registration_id_seq'::regclass)"
+"wa_registrations","full_name","character varying",150,"NO",NULL
+"wa_registrations","country_code","character varying",10,"NO",NULL
+"wa_registrations","phone_number","character varying",20,"NO",NULL
+"wa_registrations","email","character varying",150,"NO",NULL
+"wa_registrations","city","character varying",100,"NO",NULL
+"wa_registrations","profession","character varying",100,"NO",NULL
+"wa_registrations","language","character varying",2,"NO",NULL
+"wa_registrations","registered_at","timestamp without time zone",NULL,"NO","CURRENT_TIMESTAMP"

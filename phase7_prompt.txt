@@ -1,0 +1,734 @@
+<USER_REQUEST>
+# PHASE 7 – KAIROS SECURE VIDEO LEARNING PLATFORM, AWS S3 INTEGRATION & EXISTING MEDIA PLAYER IMPROVEMENT
+
+## 1. Project Objective
+
+Complete the Kairos video-learning platform using the existing infrastructure.
+
+The main objective is to allow eligible English and French students to watch their assigned course videos through the existing Kairos video player.
+
+**Important architectural decision:**
+
+- Continue using the existing AWS S3 bucket for video storage.
+- Continue using the existing Kairos Common Backend.
+- Continue using the existing WhatsApp Bot.
+- Continue using the existing classroom and DRM implementation.
+- Retain the existing media player if it is suitable.
+- Improve the existing player by adding missing playback controls.
+- Do not replace the existing player unnecessarily.
+- Do not introduce paid video players or DRM services without my explicit approval.
+
+Shaka Player may be evaluated as an alternative only if the existing player cannot meet the requirements. Do not integrate or replace anything without approval.
+
+---
+
+## 2. Existing Infrastructure – Reuse Everything
+
+### A. AWS S3 Video Storage
+
+- Bucket name: `kairos-whatsapp-vid`
+- Region: `us-east-1`
+- Bucket access: Private
+
+**English videos**
+
+1. `english/video1.mp4`
+2. `english/video2.mp4`
+3. `english/video3.mp4`
+4. `english/video4.mp4`
+5. `english/video5.mp4`
+6. `english/video6.mp4`
+
+**French videos**
+
+1. `french/french_video1.mp4`
+2. `french/french_video2.mp4`
+3. `french/french_video3.mp4`
+4. `french/french_video4.mp4`
+5. `french/french_video5.mp4`
+6. `french/french_video6.mp4`
+
+Do not create another S3 bucket or duplicate video storage.
+
+### B. Existing Kairos Components
+
+Reuse:
+
+1. WhatsApp Bot.
+2. Common Backend (`kairos-backend`).
+3. AWS PostgreSQL database (`devdb`).
+4. Existing student registration records.
+5. Existing payment records.
+6. Existing enrolment records.
+7. Existing classroom/session routes.
+8. Existing DRM implementation.
+9. Existing video streaming endpoints.
+10. Existing media player.
+
+Do not create another registration system, authentication system or database.
+
+---
+
+## 3. Mandatory Initial Inspection – Existing Media Player
+
+**Before modifying any code, inspect the actual existing media player and DRM implementation.**
+
+Do not assume the existing player is unsuitable.
+
+Inspect the following:
+
+- Existing player frontend and source files.
+- Player library or technology currently used.
+- Existing player controls.
+- DRM implementation.
+- Video streaming endpoints.
+- Classroom/session routes.
+- AWS S3 integration.
+- Backend video authorisation.
+- WhatsApp Bot video access flow.
+
+### Player inspection and improvement requirements
+
+| Requirement | What to do |
+|---|---|
+| Existing player | Keep it if suitable |
+| Play/Pause | Ensure it works |
+| Rewind 10 seconds | Add if missing |
+| Forward 10 seconds | Add if missing |
+| Playback speed | Add if missing |
+| Progress bar | Add if missing |
+| Seek video | Add if missing |
+| Resume video | Add if missing |
+| Volume/Mute | Ensure it works |
+| Fullscreen | Ensure it works |
+| Loading/Buffering | Add if missing |
+| Download/Share | Remove controls |
+| Forward video | Remove controls |
+| Security | Preserve existing protection |
+
+### Submit an initial audit report
+
+Before implementation, provide:
+
+1. Which player technology/library is currently used?
+2. Which files contain the existing player?
+3. What controls are already available?
+4. Which controls are missing?
+5. How are videos streamed from AWS S3?
+6. Is genuine DRM implemented, or is the current protection based on URL/session access restrictions?
+7. Can the existing player support the required controls?
+8. Can the existing DRM and streaming architecture be retained?
+9. What exact modifications are necessary?
+
+**Decision rule:**
+
+- If the existing player can meet the requirements, improve it.
+- If the existing player needs only additional controls, add those controls.
+- If the existing player cannot meet the requirements, explain why and propose a suitable alternative.
+- Shaka Player can be considered as a free alternative, but wait for my approval before replacing the existing player.
+
+Do not replace working components unnecessarily.
+
+---
+
+## 4. Student Authentication and Video Eligibility
+
+The existing Common Backend and PostgreSQL database must remain the authority for payment and enrolment status.
+
+Before granting video access, verify:
+
+1. Student registration exists.
+2. Registered phone number and country code match.
+3. Payment status is `Paid`.
+4. Enrolment status is `Active`.
+5. Student's assigned course language is valid.
+6. Requested video belongs to the student's assigned course.
+
+### Access control rules
+
+| Student status | Video access |
+|---|---|
+| Registered, payment Pending | Denied |
+| Payment Contacted | Denied |
+| Payment Confirmed but not Paid | Denied |
+| Payment Paid, enrolment not Active | Denied |
+| Payment Paid and enrolment Active | Allowed |
+| Unknown student | Denied |
+| Cancelled payment/enrolment | Denied |
+
+Never trust payment status, phone number, language or course ID supplied only by the frontend.
+
+The Common Backend must verify eligibility whenever a new playback session is created.
+
+The student must not be able to bypass these checks by changing a URL or API parameter.
+
+---
+
+## 5. Language-Based Video Access
+
+Automatically identify the student's assigned course language.
+
+- English student → English videos only.
+- French student → French videos only.
+
+### English course
+
+`Business Success Class`
+
+### French course
+
+`Cours de Réussite Commerciale`
+
+Display all six videos for the student's assigned language.
+
+Do not allow English students to access French videos or French students to access English videos.
+
+The backend must validate the requested video against the student's assigned course.
+
+---
+
+## 6. Secure AWS S3 Video Delivery
+
+Continue using the existing private AWS S3 bucket.
+
+Requirements:
+
+1. Keep the S3 bucket private.
+2. Do not make video objects publicly accessible.
+3. Never expose AWS access keys or secret keys in frontend code.
+4. Use backend IAM permissions with least privilege.
+5. Verify payment and active enrolment before granting video access.
+6. Use secure, short-lived playback authorisation.
+7. Do not expose permanent reusable S3 URLs.
+8. Ensure playback access expires when the authorised session expires.
+9. Validate requested video keys against the approved video mapping.
+10. Prevent unauthorised direct S3 access.
+11. Preserve existing DRM and streaming functionality.
+
+### Important
+
+Videos must be delivered from the existing AWS S3 storage through the existing backend/streaming/DRM architecture.
+
+The browser player must receive video through an authorised streaming mechanism.
+
+Do not expose unrestricted public S3 links.
+
+Do not introduce a different storage provider or migrate videos without approval.
+
+If the current player requires a protected streaming endpoint, continue using that endpoint.
+
+Do not change the streaming method in a way that breaks the existing DRM implementation.
+
+---
+
+## 7. Existing Media Player – Required Features
+
+Improve the existing player to provide a professional video-watching experience.
+
+Do not replace the existing player if these features can be implemented in it.
+
+### A. Playback controls
+
+The player must provide:
+
+1. Play.
+2. Pause.
+3. Rewind 10 seconds.
+4. Forward 10 seconds.
+5. Video progress bar.
+6. Seek backward and forward using the progress bar.
+7. Current playback time.
+8. Total video duration.
+9. Volume control.
+10. Mute/Unmute.
+11. Fullscreen.
+12. Playback speed selection.
+13. Loading indicator.
+14. Buffering indicator.
+15. Playback error message.
+16. Retry playback option.
+
+### B. Playback speed
+
+Provide the following options:
+
+- 0.5x
+- 0.75x
+- 1x (Default)
+- 1.25x
+- 1.5x
+- 2x
+
+The selected playback speed must remain active while watching the current video.
+
+### C. Resume playback
+
+Implement:
+
+1. Save the last watched position.
+2. Resume from the previous position when the student returns.
+3. Save playback progress periodically.
+4. Save progress when the student pauses or exits where possible.
+5. Store progress against the authenticated student, course and video.
+6. Validate progress updates through the backend.
+7. Prevent students from accessing or modifying another student's progress.
+
+If a video is completed, provide an option to replay it.
+
+### D. Video navigation
+
+Display the course video playlist.
+
+Include:
+
+- Previous Video.
+- Next Video.
+- Video number.
+- Video title.
+- Watched status.
+- In Progress status.
+- Not Started status.
+- Clear indication of the currently playing video.
+
+Only show videos belonging to the student's assigned language and course.
+
+### E. Responsive player interface
+
+The player must work on:
+
+- Android mobile browsers.
+- iPhone Safari.
+- Desktop Chrome.
+- Microsoft Edge.
+- Other supported modern browsers.
+
+Ensure controls are appropriately sized and easy to use on mobile screens.
+
+### F. Optional features
+
+Add only if supported by the existing video files and streaming implementation:
+
+- Subtitles/captions.
+- Video quality selection.
+- Adaptive streaming.
+
+Do not display non-functional controls.
+
+---
+
+## 8. Download, Sharing and Forwarding Restrictions
+
+The player interface must not provide:
+
+- Download button.
+- Share button.
+- Forward video button.
+- Copy video URL button.
+- Public video links.
+- Direct S3 object links.
+- External sharing actions.
+- Picture-in-picture playback, where supported and controllable.
+- Unnecessary external casting options, where controllable.
+
+Additional requirements:
+
+1. Use a custom player interface if necessary.
+2. Disable native download controls where supported.
+3. Do not expose permanent video URLs.
+4. Use short-lived playback authorisation.
+5. Prevent unauthorised playback session reuse.
+6. Implement appropriate session expiry.
+7. Consider concurrent-session restrictions.
+8. Consider a student-specific visible watermark if technically feasible.
+
+The watermark should use a registration ID or masked identifier and timestamp. Do not expose unnecessary personal information.
+
+**Important security limitation:** Hiding download/share controls does not guarantee that video copying is impossible. Screen recording, screenshots and external cameras cannot be completely prevented by a web player.
+
+Use existing DRM where available, private S3 storage, secure sessions and backend authorisation together.
+
+Do not claim absolute prevention of copying.
+
+Do not weaken existing DRM protection to make player controls work.
+
+---
+
+## 9. Existing DRM – Preserve and Verify
+
+Inspect the existing DRM implementation.
+
+Determine:
+
+1. What DRM or video protection is currently implemented?
+2. Whether it is genuine DRM or session/URL-based access control.
+3. Whether the existing player and streaming endpoints support the required controls.
+4. Whether the current protection works on Android, iPhone and desktop.
+5. Whether additional infrastructure is necessary.
+
+Preserve the existing DRM and classroom functionality.
+
+Do not replace the DRM system without approval.
+
+Do not use ClearKey as production DRM.
+
+Do not introduce paid DRM services without approval.
+
+If genuine DRM is not available, submit a separate proposal explaining:
+
+- Current protection.
+- Missing protection.
+- Available free options.
+- Limitations of the free-only approach.
+- Whether Widevine/FairPlay integration needs additional licensing infrastructure.
+- Estimated recurring costs, if applicable.
+
+Wait for my approval before implementing any paid DRM service.
+
+---
+
+## 10. WhatsApp Bot Integration – Complete Student Flow
+
+Preserve the existing WhatsApp Bot and its existing production functionality.
+
+### Expected student journey
+
+**Step 1 – Student sends a WhatsApp message**
+
+Student sends a message to the Kairos WhatsApp Bot.
+
+**Step 2 – Student identification**
+
+The bot identifies the student using the registered WhatsApp phone number.
+
+**Step 3 – Backend verification**
+
+The bot calls the Common Backend.
+
+The backend verifies:
+
+- Student registration.
+- Payment status.
+- Enrolment status.
+- Assigned course.
+- Assigned language.
+
+**Step 4 – Eligibility decision**
+
+If the student has Paid status and Active enrolment, allow video access.
+
+If not eligible, display an appropriate message.
+
+**Step 5 – Course display**
+
+Show the assigned course:
+
+- English: Business Success Class.
+- French: Cours de Réussite Commerciale.
+
+**Step 6 – Video selection**
+
+Display the six available videos in the assigned language.
+
+**Step 7 – Secure player access**
+
+When the student selects a video, the bot provides a secure classroom/player access link.
+
+**Step 8 – Player session verification**
+
+The Common Backend validates the student's session and video authorisation.
+
+**Step 9 – Video streaming**
+
+The existing streaming/DRM system securely delivers the selected video from the private AWS S3 bucket to the existing media player.
+
+**Step 10 – Student watches the video**
+
+The student watches using the improved existing player with:
+
+- Play/Pause.
+- Rewind 10 seconds.
+- Forward 10 seconds.
+- Progress bar.
+- Playback speed.
+- Volume.
+- Fullscreen.
+- Resume playback.
+- Previous/Next video.
+
+### Ineligible student messages
+
+- Payment pending: Payment confirmation is pending.
+- Not enrolled: Active enrolment is required.
+- Unknown student: Please register first.
+- Expired session: Please reopen the video through WhatsApp.
+
+Do not expose internal database details or security errors to students.
+
+Do not allow the bot or frontend to directly update payment or enrolment status.
+
+---
+
+## 11. API Integration
+
+First inspect existing API routes and reuse them wherever possible.
+
+Add or modify APIs only when necessary.
+
+Backend responsibilities include:
+
+- Verify student video eligibility.
+- Retrieve the language-specific video playlist.
+- Create a secure playback session.
+- Validate the playback session.
+- Authorise video streaming.
+- Save playback progress.
+- Retrieve playback progress.
+- Expire or revoke playback sessions.
+
+Every endpoint must implement:
+
+- Authentication.
+- Authorisation.
+- Input validation.
+- Language/course validation.
+- Secure error handling.
+- Appropriate HTTP status codes.
+- Logging without exposing secrets.
+
+Document the actual API routes and request/response contracts after implementation.
+
+Do not assume proposed route names already exist.
+
+---
+
+## 12. Database Changes
+
+Inspect the existing database before proposing changes.
+
+Do not modify these original tables:
+
+- `wa_registrations`
+- `wa_courses`
+- `wa_payments`
+- `wa_enrollments`
+
+Do not modify the approved Phase 6 `wa_notifications` table.
+
+If new tables are required for playback progress or session tracking:
+
+1. Prepare the proposed schema.
+2. Explain why the changes are required.
+3. Explain how existing data will remain unaffected.
+4. Submit the proposal for approval.
+
+Do not create or alter tables without explicit approval.
+
+Do not delete or modify existing student, payment, enrolment or notification records.
+
+---
+
+## 13. Security Requirements
+
+Verify all of the following:
+
+- S3 bucket remains private.
+- No public video object access.
+- No AWS credentials in frontend.
+- No permanent S3 URLs exposed.
+- Unauthorised video access is denied.
+- Cross-language access is denied.
+- Unpaid students are denied.
+- Inactive enrolments are denied.
+- Expired sessions are rejected.
+- Tampered video identifiers are rejected.
+- Student-specific progress authorisation works.
+- Sensitive endpoints have rate limiting.
+- CORS is configured securely.
+- No secrets are committed to GitHub.
+- Logs do not expose unnecessary personal information.
+- Existing DRM protection remains functional.
+
+---
+
+## 14. Acceptance Testing – Phase 7
+
+Run all tests and provide actual execution evidence.
+
+### A. Existing player inspection
+
+- TC-701: Existing player technology is identified.
+- TC-702: Existing player source files are documented.
+- TC-703: Existing DRM and streaming implementation is inspected.
+- TC-704: Existing player controls are demonstrated.
+- TC-705: Missing player features are documented.
+- TC-706: Decision to retain or propose replacement is documented.
+
+### B. S3 and access security
+
+- TC-707: S3 bucket remains private.
+- TC-708: Direct unauthenticated S3 access is denied.
+- TC-709: Backend does not expose AWS credentials.
+- TC-710: Expired playback credentials are rejected.
+- TC-711: Permanent public video URLs are not exposed.
+- TC-712: Tampered video identifiers are rejected.
+
+### C. Student eligibility
+
+- TC-713: Paid + Active English student can access English videos.
+- TC-714: Paid + Active French student can access French videos.
+- TC-715: Pending payment student is denied.
+- TC-716: Paid but inactive enrolment is denied.
+- TC-717: Unknown student is denied.
+- TC-718: Cancelled enrolment is denied.
+- TC-719: English student cannot access French videos.
+- TC-720: French student cannot access English videos.
+
+### D. Media player functionality
+
+- TC-721: Existing player loads successfully.
+- TC-722: Play and Pause work.
+- TC-723: Rewind 10 seconds works.
+- TC-724: Forward 10 seconds works.
+- TC-725: Progress bar seeking works.
+- TC-726: Playback speed options work.
+- TC-727: Volume and mute work.
+- TC-728: Fullscreen works.
+- TC-729: Current time and total duration display correctly.
+- TC-730: Loading and buffering indicators work.
+- TC-731: Playback errors display a retry option.
+- TC-732: Resume playback restores the correct position.
+- TC-733: Previous and next video navigation work.
+- TC-734: Playlist displays the correct language's videos.
+- TC-735: Player works without breaking existing classroom routes.
+
+### E. Download and sharing restrictions
+
+- TC-736: No download button is displayed.
+- TC-737: No share or forward button is displayed.
+- TC-738: No copy-video-link action is available.
+- TC-739: Permanent S3 URLs are not exposed.
+- TC-740: Picture-in-picture restrictions work where supported.
+- TC-741: Existing DRM protection remains functional.
+
+### F. WhatsApp integration and compatibility
+
+- TC-742: Eligible student can open the player through WhatsApp.
+- TC-743: Ineligible student receives an appropriate message.
+- TC-744: Expired WhatsApp/player session is rejected.
+- TC-745: Android mobile playback works.
+- TC-746: iPhone Safari playback works.
+- TC-747: Desktop Chrome playback works.
+- TC-748: Microsoft Edge playback works.
+
+### G. Regression and database safety
+
+- TC-749: Existing WhatsApp Bot webhook still works.
+- TC-750: Existing registration applications still work.
+- TC-751: Payment Staff login and dashboard still work.
+- TC-752: Report Staff login and dashboard still work.
+- TC-753: Phase 6 automatic payment confirmation workflow still works.
+- TC-754: Original four database tables remain unchanged.
+- TC-755: Phase 6 notification table remains unchanged.
+- TC-756: Existing DRM/classroom functionality remains operational.
+
+---
+
+## 15. Mandatory Working Demonstration
+
+Before declaring Phase 7 complete, demonstrate the actual working system.
+
+Show:
+
+1. Existing player before modifications.
+2. Eligible English student opening an English video.
+3. Eligible French student opening a French video.
+4. Unpaid student being denied access.
+5. Play/Pause.
+6. Rewind 10 seconds.
+7. Forward 10 seconds.
+8. Progress bar seeking.
+9. Playback speed changing from 1x to 1.5x and 2x.
+10. Volume and mute.
+11. Fullscreen.
+12. Resume playback after closing and reopening.
+13. Next and previous video.
+14. No download or share controls.
+15. Direct unauthorised video access being denied.
+16. Player working on Android.
+17. Player working on iPhone Safari.
+18. Player working on desktop Chrome and Edge.
+19. Video streaming from the existing private AWS S3 bucket.
+20. Existing classroom and DRM functionality working after modifications.
+
+Provide actual screenshots or a short screen recording.
+
+Test reports alone are not sufficient to demonstrate the user experience.
+
+---
+
+## 16. Delivery Report
+
+Submit a complete Phase 7 completion report containing:
+
+1. Initial code audit findings.
+2. Existing player technology and source files.
+3. Existing DRM and streaming implementation reviewed.
+4. Decision to retain the existing player or proposed alternative.
+5. Files created and modified.
+6. Backend APIs added or modified.
+7. Database changes, if any.
+8. S3 integration details.
+9. Player controls implemented.
+10. Download/share restrictions implemented.
+11. WhatsApp integration details.
+12. Security test results.
+13. Browser/device compatibility results.
+14. Screenshots or demonstration recording.
+15. Test matrix with PASS / FAIL / BLOCKED.
+16. Evidence for failed or blocked tests.
+17. Outstanding limitations and recommendations.
+18. Any proposed paid services and estimated costs.
+
+Do not mark any test PASS without actual execution and evidence.
+
+---
+
+## 17. Strict Phase Boundaries
+
+- Do not start Phase 8.
+- Do not deploy to the live production environment.
+- Do not change the existing production WhatsApp webhook.
+- Do not replace the existing player without approval.
+- Do not replace the existing DRM system without approval.
+- Do not make the S3 bucket public.
+- Do not modify existing database tables.
+- Do not modify Phase 6 notification functionality.
+- Do not remove existing working features.
+- Do not introduce paid DRM, paid player or paid encoding services without approval.
+- Do not use ClearKey as production DRM.
+- Do not expose secrets in source code or GitHub.
+- Do not migrate existing videos to another storage provider.
+
+Use development/staging configuration for testing.
+
+### FINAL INSTRUCTION
+
+First inspect and demonstrate the existing player.
+
+Retain the existing player if suitable and implement the missing features.
+
+Continue using the existing AWS S3 bucket for video storage and the existing Kairos backend, WhatsApp Bot, classroom and DRM architecture.
+
+Complete Phase 7 only.
+
+Submit the initial audit, implementation, working demonstration and complete acceptance test report.
+
+**Stop after Phase 7 and wait for my explicit approval before starting Phase 8 or making any production deployment changes.**
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-11-18T17:26:37+05:30.
+
+The user's current state is as follows:
+Active Document: c:\Users\SABARI SJ\Desktop\common-folder\phase6_acceptance_testing_and_completion_report.md (LANGUAGE_UNSPECIFIED)
+Cursor is on line: 1
+</ADDITIONAL_METADATA>

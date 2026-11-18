@@ -1,0 +1,32 @@
+{
+  "name": "kairos-backend",
+  "version": "1.0.0",
+  "description": "Kairos WhatsApp Learning Platform - Central Common Backend API",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node tests/run-all-tests.js",
+    "verify-db": "node src/config/verify-db-schema.js"
+  },
+  "keywords": [
+    "kairos",
+    "express",
+    "postgresql",
+    "rds",
+    "whatsapp"
+  ],
+  "author": "Kairos Engineering",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.1171.0",
+    "@aws-sdk/s3-request-presigner": "^3.1171.0",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.13.1"
+  }
+}

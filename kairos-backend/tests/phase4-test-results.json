@@ -1,0 +1,512 @@
+{
+  "total": 32,
+  "passedCount": 32,
+  "failedCount": 0,
+  "results": [
+    {
+      "testId": "TC-401",
+      "name": "English Form Loading",
+      "category": "English Registration",
+      "status": "PASS",
+      "expected": "English registration form components load properly with inputs",
+      "actual": "Form component and inputs verified",
+      "evidence": {
+        "file": "C:\\Users\\SABARI SJ\\Desktop\\common-folder\\Reg_Sprout_english1\\Reg_Sprout_english\\src\\components\\RegistrationForm.jsx",
+        "hasInputs": true
+      }
+    },
+    {
+      "testId": "TC-402",
+      "name": "English Validation",
+      "category": "English Registration",
+      "status": "PASS",
+      "expected": "HTTP 400 returned for invalid/empty registration fields",
+      "actual": "HTTP 400: Full name is required (minimum 2 characters).",
+      "evidence": {
+        "success": false,
+        "errorType": "VALIDATION",
+        "error": "Full name is required (minimum 2 characters)."
+      }
+    },
+    {
+      "testId": "TC-403",
+      "name": "English Submission",
+      "category": "English Registration",
+      "status": "PASS",
+      "expected": "HTTP 201 with success:true and generated registration_id",
+      "actual": "HTTP 201, ID: 11",
+      "evidence": {
+        "success": true,
+        "message": "Registration completed successfully.",
+        "registration": {
+          "registration_id": "11",
+          "registrationId": "11",
+          "full_name": "[PHASE4 TEST] English Student",
+          "fullName": "[PHASE4 TEST] English Student",
+          "country_code": "+91",
+          "countryCode": "+91",
+          "phone_number": "9876540001",
+          "phoneNumber": "9876540001",
+          "email": "phase4.en.student@sprout.com",
+          "city": "Chennai",
+          "profession": "Student",
+          "language": "en",
+          "registered_at": "2026-11-18T04:34:47.138Z",
+          "registeredAt": "2026-11-18T04:34:47.138Z",
+          "course_id": "1",
+          "courseId": "1",
+          "course_name": "Business Success Class",
+          "courseName": "Business Success Class",
+          "payment_id": "7",
+          "paymentId": "7",
+          "payment_status": "Pending",
+          "paymentStatus": "Pending"
+        }
+      }
+    },
+    {
+      "testId": "TC-404",
+      "name": "English Course Assignment",
+      "category": "English Registration",
+      "status": "PASS",
+      "expected": "Automatically assigned to \"Business Success Class\" (course_id 1)",
+      "actual": "Assigned course: \"Business Success Class\" (ID: 1)",
+      "evidence": {
+        "course_name": "Business Success Class",
+        "course_id": "1"
+      }
+    },
+    {
+      "testId": "TC-405",
+      "name": "English Registration Timestamp",
+      "category": "English Registration",
+      "status": "PASS",
+      "expected": "PostgreSQL generates registered_at timestamp and API returns it",
+      "actual": "Registered at: 2026-11-18T04:34:47.138Z",
+      "evidence": {
+        "registered_at": "2026-11-18T04:34:47.138Z"
+      }
+    },
+    {
+      "testId": "TC-406",
+      "name": "French Form Loading",
+      "category": "French Registration",
+      "status": "PASS",
+      "expected": "French registration form components load properly with original French UI",
+      "actual": "Form component and French elements verified",
+      "evidence": {
+        "file": "C:\\Users\\SABARI SJ\\Desktop\\common-folder\\Reg_Sprout_French1\\Reg_Sprout_French\\src\\components\\RegistrationForm.jsx",
+        "hasInputs": true
+      }
+    },
+    {
+      "testId": "TC-407",
+      "name": "French Validation",
+      "category": "French Registration",
+      "status": "PASS",
+      "expected": "HTTP 400 returned for invalid or incomplete French data",
+      "actual": "HTTP 400: Full name is required (minimum 2 characters).",
+      "evidence": {
+        "success": false,
+        "errorType": "VALIDATION",
+        "error": "Full name is required (minimum 2 characters)."
+      }
+    },
+    {
+      "testId": "TC-408",
+      "name": "French Submission",
+      "category": "French Registration",
+      "status": "PASS",
+      "expected": "HTTP 201 with success:true and generated registration_id",
+      "actual": "HTTP 201, ID: 12",
+      "evidence": {
+        "success": true,
+        "message": "Inscription effectuée avec succès.",
+        "registration": {
+          "registration_id": "12",
+          "registrationId": "12",
+          "full_name": "[PHASE4 TEST] French Student",
+          "fullName": "[PHASE4 TEST] French Student",
+          "country_code": "+33",
+          "countryCode": "+33",
+          "phone_number": "6876540001",
+          "phoneNumber": "6876540001",
+          "email": "phase4.fr.student@sprout.com",
+          "city": "Paris",
+          "profession": "Étudiant",
+          "language": "fr",
+          "registered_at": "2026-11-18T04:34:48.308Z",
+          "registeredAt": "2026-11-18T04:34:48.308Z",
+          "course_id": "2",
+          "courseId": "2",
+          "course_name": "Cours de Réussite Commerciale",
+          "courseName": "Cours de Réussite Commerciale",
+          "payment_id": "8",
+          "paymentId": "8",
+          "payment_status": "Pending",
+          "paymentStatus": "Pending"
+        }
+      }
+    },
+    {
+      "testId": "TC-409",
+      "name": "French Course Assignment",
+      "category": "French Registration",
+      "status": "PASS",
+      "expected": "Automatically assigned to \"Cours de Réussite Commerciale\" (course_id 2)",
+      "actual": "Assigned course: \"Cours de Réussite Commerciale\" (ID: 2)",
+      "evidence": {
+        "course_name": "Cours de Réussite Commerciale",
+        "course_id": "2"
+      }
+    },
+    {
+      "testId": "TC-410",
+      "name": "French Registration Timestamp",
+      "category": "French Registration",
+      "status": "PASS",
+      "expected": "PostgreSQL generates registered_at timestamp and API returns it",
+      "actual": "Registered at: 2026-11-18T04:34:48.308Z",
+      "evidence": {
+        "registered_at": "2026-11-18T04:34:48.308Z"
+      }
+    },
+    {
+      "testId": "TC-411",
+      "name": "Database Record Verification",
+      "category": "Backend & Database",
+      "status": "PASS",
+      "expected": "Both registrations exist in wa_registrations with correct languages and data",
+      "actual": "Found 2 rows: EN ID 11, FR ID 12",
+      "evidence": [
+        {
+          "registration_id": "11",
+          "full_name": "[PHASE4 TEST] English Student",
+          "country_code": "+91",
+          "phone_number": "9876540001",
+          "email": "phase4.en.student@sprout.com",
+          "city": "Chennai",
+          "profession": "Student",
+          "language": "en",
+          "registered_at": "2026-11-18T04:34:47.138Z"
+        },
+        {
+          "registration_id": "12",
+          "full_name": "[PHASE4 TEST] French Student",
+          "country_code": "+33",
+          "phone_number": "6876540001",
+          "email": "phase4.fr.student@sprout.com",
+          "city": "Paris",
+          "profession": "Étudiant",
+          "language": "fr",
+          "registered_at": "2026-11-18T04:34:48.308Z"
+        }
+      ]
+    },
+    {
+      "testId": "TC-412",
+      "name": "Payment Record Creation",
+      "category": "Backend & Database",
+      "status": "PASS",
+      "expected": "Pending payment records created for each registration with matching course_id",
+      "actual": "Found 2 payments with status \"Pending\"",
+      "evidence": [
+        {
+          "payment_id": "7",
+          "registration_id": "11",
+          "course_id": "1",
+          "status": "Pending",
+          "updated_at": "2026-11-18T04:34:47.138Z"
+        },
+        {
+          "payment_id": "8",
+          "registration_id": "12",
+          "course_id": "2",
+          "status": "Pending",
+          "updated_at": "2026-11-18T04:34:48.308Z"
+        }
+      ]
+    },
+    {
+      "testId": "TC-413",
+      "name": "Duplicate Phone Rejection",
+      "category": "Backend & Database",
+      "status": "PASS",
+      "expected": "HTTP 409 DUPLICATE_PHONE when same country_code and phone_number submitted",
+      "actual": "HTTP 409: This phone number is already registered.",
+      "evidence": {
+        "success": false,
+        "errorType": "DUPLICATE_PHONE",
+        "error": "This phone number is already registered."
+      }
+    },
+    {
+      "testId": "TC-414",
+      "name": "Different Country Code",
+      "category": "Backend & Database",
+      "status": "PASS",
+      "expected": "Allowed according to unique constraint (country_code, phone_number)",
+      "actual": "HTTP 201, ID: 14",
+      "evidence": {
+        "success": true,
+        "message": "Registration completed successfully.",
+        "registration": {
+          "registration_id": "14",
+          "registrationId": "14",
+          "full_name": "[PHASE4 TEST] UK Student Same Phone",
+          "fullName": "[PHASE4 TEST] UK Student Same Phone",
+          "country_code": "+44",
+          "countryCode": "+44",
+          "phone_number": "9876540001",
+          "phoneNumber": "9876540001",
+          "email": "uk.student@example.com",
+          "city": "London",
+          "profession": "Consultant",
+          "language": "en",
+          "registered_at": "2026-11-18T04:34:50.896Z",
+          "registeredAt": "2026-11-18T04:34:50.896Z",
+          "course_id": "1",
+          "courseId": "1",
+          "course_name": "Business Success Class",
+          "courseName": "Business Success Class",
+          "payment_id": "9",
+          "paymentId": "9",
+          "payment_status": "Pending",
+          "paymentStatus": "Pending"
+        }
+      }
+    },
+    {
+      "testId": "TC-415",
+      "name": "Invalid Language",
+      "category": "Backend & Database",
+      "status": "PASS",
+      "expected": "HTTP 400 rejecting any language other than en or fr",
+      "actual": "HTTP 400: Invalid language. Permitted values: 'en' or 'fr'.",
+      "evidence": {
+        "success": false,
+        "errorType": "VALIDATION",
+        "error": "Invalid language. Permitted values: 'en' or 'fr'."
+      }
+    },
+    {
+      "testId": "TC-416",
+      "name": "Transaction Integrity",
+      "category": "Backend & Database",
+      "status": "PASS",
+      "expected": "Database transaction rolls back atomically if payment insert fails",
+      "actual": "Rollback triggered cleanly, zero orphaned registration records created",
+      "evidence": {
+        "rollbackSuccess": true,
+        "countAfterRollback": 0
+      }
+    },
+    {
+      "testId": "TC-417",
+      "name": "API Error Handling",
+      "category": "Backend & Database",
+      "status": "PASS",
+      "expected": "API handles error safely and returns standard structured JSON error",
+      "actual": "HTTP 400: Unexpected token 'M', \"MALFORMED_\"... is not valid JSON",
+      "evidence": {
+        "success": false,
+        "error": "Unexpected token 'M', \"MALFORMED_\"... is not valid JSON"
+      }
+    },
+    {
+      "testId": "TC-418",
+      "name": "English Student Visibility",
+      "category": "Staff Portal",
+      "status": "PASS",
+      "expected": "English student appears in Payment Dashboard",
+      "actual": "Found registration ID 11",
+      "evidence": {
+        "enStudentRegId": "11",
+        "totalEnPayments": 4
+      }
+    },
+    {
+      "testId": "TC-419",
+      "name": "French Student Visibility",
+      "category": "Staff Portal",
+      "status": "PASS",
+      "expected": "French student appears in Payment Dashboard",
+      "actual": "Found registration ID 12",
+      "evidence": {
+        "frStudentRegId": "12",
+        "totalFrPayments": 3
+      }
+    },
+    {
+      "testId": "TC-420",
+      "name": "All Language Filter",
+      "category": "Staff Portal",
+      "status": "PASS",
+      "expected": "Both English and French students appear together in All filter",
+      "actual": "Found EN: true, Found FR: true in 7 total records",
+      "evidence": {
+        "hasEn": true,
+        "hasFr": true
+      }
+    },
+    {
+      "testId": "TC-421",
+      "name": "English/French Filters",
+      "category": "Staff Portal",
+      "status": "PASS",
+      "expected": "Language filter strictly isolates records to matching language",
+      "actual": "EN filter pure: true, FR filter pure: true",
+      "evidence": {
+        "enOnlyHasEn": true,
+        "frOnlyHasFr": true
+      }
+    },
+    {
+      "testId": "TC-422",
+      "name": "Report Dashboard",
+      "category": "Staff Portal",
+      "status": "PASS",
+      "expected": "KPI counts reflect new registrations across languages",
+      "actual": "Total: 7, EN: 4, FR: 3",
+      "evidence": {
+        "total": 7,
+        "englishCount": 4,
+        "frenchCount": 3,
+        "today": 7,
+        "yesterday": 0,
+        "thisWeek": 7,
+        "lastWeek": 0,
+        "thisMonth": 7
+      }
+    },
+    {
+      "testId": "TC-423",
+      "name": "Payment Dropdown Regression",
+      "category": "Staff Portal",
+      "status": "PASS",
+      "expected": "All 5 payment statuses function correctly on payment dropdown",
+      "actual": "Successfully tested Contacted, Confirmed, Cancelled, Pending",
+      "evidence": {
+        "testPaymentId": "9"
+      }
+    },
+    {
+      "testId": "TC-424",
+      "name": "Paid Enrolment Regression",
+      "category": "Staff Portal",
+      "status": "PASS",
+      "expected": "Status change to \"Paid\" activates matching enrolment atomically",
+      "actual": "Payment 7 Paid, Enrollment ID 3 status: Active",
+      "evidence": {
+        "enrollment_id": "3",
+        "registration_id": "11",
+        "course_id": "1",
+        "payment_id": "7",
+        "enrollment_status": "Active",
+        "course_start_date": "2026-11-17T18:30:00.000Z",
+        "enrolled_at": "2026-11-18T04:35:01.010Z"
+      }
+    },
+    {
+      "testId": "TC-425",
+      "name": "Role Permissions",
+      "category": "Staff Portal",
+      "status": "PASS",
+      "expected": "Payment staff blocked from reports (403), Report staff blocked from payments mutation (403)",
+      "actual": "Payment Staff on Reports: HTTP 403, Report Staff on Payment Update: HTTP 403",
+      "evidence": {
+        "pBlocked": 403,
+        "rBlocked": 403
+      }
+    },
+    {
+      "testId": "TC-426",
+      "name": "English UI Regression",
+      "category": "Safety & Zero Regression",
+      "status": "PASS",
+      "expected": "English app builds successfully without syntax or UI regression",
+      "actual": "Vite production build verified in dist/",
+      "evidence": {
+        "distExists": true
+      }
+    },
+    {
+      "testId": "TC-427",
+      "name": "French UI Regression",
+      "category": "Safety & Zero Regression",
+      "status": "PASS",
+      "expected": "French app builds successfully without syntax or UI regression",
+      "actual": "Vite production build verified in dist/",
+      "evidence": {
+        "distExists": true
+      }
+    },
+    {
+      "testId": "TC-428",
+      "name": "Phase 3 Regression",
+      "category": "Safety & Zero Regression",
+      "status": "PASS",
+      "expected": "Staff Portal remains functional and production-ready",
+      "actual": "Staff Portal build and routes verified",
+      "evidence": {
+        "portalDistExists": true
+      }
+    },
+    {
+      "testId": "TC-429",
+      "name": "WhatsApp Bot Protection",
+      "category": "Safety & Zero Regression",
+      "status": "PASS",
+      "expected": "WhatsApp bot directory remains completely untouched (zero changes)",
+      "actual": "Git working tree is completely clean",
+      "evidence": {
+        "gitStatus": ""
+      }
+    },
+    {
+      "testId": "TC-430",
+      "name": "Database Schema Protection",
+      "category": "Safety & Zero Regression",
+      "status": "PASS",
+      "expected": "The four existing tables remain intact without modification or extra tables created",
+      "actual": "Found all 4 required tables: wa_courses, wa_enrollments, wa_payments, wa_registrations",
+      "evidence": [
+        {
+          "table_name": "wa_courses"
+        },
+        {
+          "table_name": "wa_enrollments"
+        },
+        {
+          "table_name": "wa_payments"
+        },
+        {
+          "table_name": "wa_registrations"
+        }
+      ]
+    },
+    {
+      "testId": "TC-431",
+      "name": "Firebase Data Protection",
+      "category": "Safety & Zero Regression",
+      "status": "PASS",
+      "expected": "Firebase configurations and historical service modules remain intact",
+      "actual": "Both Firebase configurations and services verified intact",
+      "evidence": {
+        "enFbExists": true,
+        "frFbExists": true
+      }
+    },
+    {
+      "testId": "TC-432",
+      "name": "Git and Secret Safety",
+      "category": "Safety & Zero Regression",
+      "status": "PASS",
+      "expected": "All .gitignore files protect .env secrets from accidental git commits",
+      "actual": ".env properly ignored across all repositories",
+      "evidence": {
+        "passed": true
+      }
+    }
+  ]
+}

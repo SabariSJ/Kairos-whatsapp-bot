@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0a0c13">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Kairos | {{COURSE_NAME}}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 0%, #151928 0%, #0a0c13 100%);
+      background-color: #0a0c13;
+      color: #f1f5f9;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    /* Top Navigation Bar */
+    header.top-header {
+      background: rgba(13, 21, 39, 0.88);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 19px;
+      font-weight: 800;
+      color: #ffffff;
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.45);
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -0.2px;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    .badge-secure {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.32);
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 11.5px;
+      color: #34d399;
+      font-weight: 600;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+    }
+
+    .badge-secure .pulse {
+      width: 7px;
+      height: 7px;
+      background: #10b981;
+      border-radius: 50%;
+      animation: pulseDot 2s infinite ease-in-out;
+      flex-shrink: 0;
+    }
+
+    @keyframes pulseDot {
+      0% { transform: scale(0.9); opacity: 0.7; }
+      50% { transform: scale(1.3); opacity: 1; }
+      100% { transform: scale(0.9); opacity: 0.7; }
+    }
+
+    /* Main Container */
+    main.portal-main {
+      flex: 1;
+      max-width: 980px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      box-sizing: border-box;
+    }
+
+    /* Video Player Card */
+    .player-card {
+      position: relative;
+      background: #000000;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.8), 0 0 30px rgba(6, 182, 212, 0.08);
+      aspect-ratio: 16 / 9;
+      width: 100%;
+      max-height: 75vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: min-height 0.3s ease, aspect-ratio 0.3s ease;
+    }
+
+    /* When celebration overlay or lock screen is active, unlock aspect-ratio so buttons NEVER get cut off */
+    .player-card.has-overlay {
+      aspect-ratio: auto !important;
+      min-height: 310px !important;
+      height: auto !important;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+      background: #000000;
+      outline: none;
+    }
+
+    /* Dynamic Anti-Piracy Watermark Overlay */
+    #watermark-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      pointer-events: none;
+      z-index: 20;
+      overflow: hidden;
+    }
+
+    .floating-watermark {
+      position: absolute;
+      padding: 5px 10px;
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.35);
+      white-space: nowrap;
+      transition: all 3.5s ease-in-out;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+
+    /* Resume Notification Banner */
+    .resume-banner {
+      position: absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 23, 42, 0.94);
+      border: 1px solid #06b6d4;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 8px 16px;
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+      color: #e2e8f0;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      z-index: 30;
+      animation: fadeInDown 0.35s ease-out;
+      white-space: nowrap;
+      max-width: 90%;
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translate(-50%, -12px); }
+      to { opacity: 1; transform: translate(-50%, 0); }
+    }
+
+    /* Module Completed Celebration Overlay */
+    .completion-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(10, 12, 19, 0.94);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 40;
+      text-align: center;
+      padding: 20px 16px;
+      box-sizing: border-box;
+      overflow-y: auto;
+      max-height: 100%;
+      animation: fadeIn 0.35s ease-out;
+    }
+
+    .player-card.has-overlay .completion-overlay {
+      position: relative;
+      min-height: 310px;
+      height: auto;
+      width: 100%;
+    }
+
+    .completion-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      max-width: 420px;
+      width: 100%;
+      margin: auto;
+    }
+
+    .completion-celebration {
+      font-size: 38px;
+      line-height: 1;
+      animation: bounce 1.5s infinite;
+      margin-bottom: 2px;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    .completion-content h2 {
+      font-size: 20px;
+      font-weight: 800;
+      color: #34d399;
+      letter-spacing: -0.3px;
+      line-height: 1.25;
+    }
+
+    .completion-content p {
+      font-size: 13px;
+      color: #94a3b8;
+      line-height: 1.45;
+      max-width: 340px;
+    }
+
+    .completion-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 320px;
+      margin-top: 6px;
+    }
+
+    .btn-completion {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      padding: 10px 18px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+      cursor: pointer;
+      border: none;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .btn-primary-comp {
+      background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+      color: #ffffff;
+      box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-primary-comp:hover, .btn-primary-comp:active {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.55);
+    }
+
+    .btn-wa-comp {
+      background: #25d366;
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(37, 211, 102, 0.35);
+    }
+
+    .btn-wa-comp:hover, .btn-wa-comp:active {
+      background: #22c35e;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(37, 211, 102, 0.5);
+    }
+
+    /* Lesson Metadata Card */
+    .info-card {
+      background: rgba(20, 27, 45, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.5);
+    }
+
+    .info-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .info-header-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .lesson-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.2px;
+      line-height: 1.3;
+    }
+
+    .student-tag {
+      font-size: 13px;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .student-tag strong {
+      color: #38bdf8;
+      font-weight: 600;
+    }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(6, 182, 212, 0.12);
+      border: 1px solid rgba(6, 182, 212, 0.3);
+      padding: 5px 12px;
+      border-radius: 9999px;
+      font-size: 12px;
+      color: #38bdf8;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .badge-status.completed {
+      background: rgba(16, 185, 129, 0.15);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #34d399;
+    }
+
+    /* Progress Bar */
+    .progress-bar-container {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    .progress-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #94a3b8;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 9999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #10b981 0%, #06b6d4 100%);
+      transition: width 0.25s ease;
+      box-shadow: 0 0 10px rgba(6, 182, 212, 0.4);
+    }
+
+    /* Anti-Sharing Device Lockout Screen */
+    .lock-screen-card {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      background: linear-gradient(145deg, rgba(30, 20, 25, 0.95) 0%, rgba(15, 18, 30, 0.95) 100%);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: 18px;
+      padding: 36px 20px;
+      box-shadow: 0 20px 45px rgba(239, 68, 68, 0.15);
+      margin-bottom: 20px;
+      animation: fadeIn 0.35s ease;
+      box-sizing: border-box;
+    }
+
+    .lock-icon-wrap {
+      width: 68px;
+      height: 68px;
+      background: rgba(239, 68, 68, 0.12);
+      border: 2px solid rgba(239, 68, 68, 0.3);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      margin-bottom: 16px;
+      box-shadow: 0 0 25px rgba(239, 68, 68, 0.25);
+    }
+
+    .lock-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #fca5a5;
+      margin-bottom: 10px;
+      letter-spacing: -0.3px;
+    }
+
+    .lock-message {
+      font-size: 14px;
+      color: #cbd5e1;
+      max-width: 500px;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .lock-policy-box {
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px dashed rgba(239, 68, 68, 0.4);
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 12.5px;
+      color: #94a3b8;
+      max-width: 480px;
+      text-align: left;
+      line-height: 1.55;
+      margin-bottom: 24px;
+    }
+
+    .lock-policy-box strong {
+      color: #f87171;
+    }
+
+    .lock-action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #25d366;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 12px 24px;
+      border-radius: 12px;
+      text-decoration: none;
+      box-shadow: 0 8px 20px rgba(37, 211, 102, 0.3);
+      cursor: pointer;
+      border: none;
+    }
+
+    /* Page Footer */
+    footer.portal-footer {
+      text-align: center;
+      padding: 18px 20px;
+      font-size: 12px;
+      color: #64748b;
+      margin-top: auto;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive Mobile Styles */
+    @media (max-width: 640px) {
+      header.top-header {
+        padding: 10px 14px;
+      }
+      .brand-logo {
+        width: 32px;
+        height: 32px;
+        font-size: 17px;
+        border-radius: 8px;
+      }
+      .brand-title {
+        font-size: 14px;
+      }
+      .brand-sub {
+        font-size: 10px;
+      }
+      .badge-secure {
+        padding: 3px 8px;
+        font-size: 11px;
+      }
+      .badge-secure-text {
+        display: none;
+      }
+      .badge-secure-short {
+        display: inline;
+      }
+
+      main.portal-main {
+        padding: 12px 12px;
+        gap: 12px;
+      }
+
+      .player-card {
+        border-radius: 14px;
+      }
+
+      .player-card.has-overlay {
+        min-height: 295px !important;
+      }
+
+      .completion-content {
+        gap: 8px;
+      }
+      .completion-celebration {
+        font-size: 34px;
+      }
+      .completion-content h2 {
+        font-size: 18px;
+      }
+      .completion-content p {
+        font-size: 12.5px;
+        line-height: 1.4;
+      }
+      .completion-buttons {
+        gap: 8px;
+        margin-top: 4px;
+      }
+      .btn-completion {
+        min-height: 42px;
+        font-size: 13.5px;
+        padding: 8px 16px;
+      }
+
+      .info-card {
+        padding: 14px 14px;
+        border-radius: 12px;
+        gap: 10px;
+      }
+      .lesson-title {
+        font-size: 16px;
+      }
+      .student-tag {
+        font-size: 12px;
+      }
+      .badge-status {
+        font-size: 11px;
+        padding: 4px 10px;
+      }
+      .progress-labels {
+        font-size: 11px;
+      }
+    }
+
+    @media (min-width: 641px) {
+      .badge-secure-short {
+        display: none;
+      }
+      .badge-secure-text {
+        display: inline;
+      }
+    }
+  </style>
+</head>
+<body oncontextmenu="return false;">
+
+  <!-- Top Navigation Header -->
+  <header class="top-header">
+    <div class="brand">
+      <div class="brand-logo">K</div>
+      <div>
+        <div class="brand-title">Kairos</div>
+        <div class="brand-sub">Official Student Portal</div>
+      </div>
+    </div>
+    <div class="badge-secure">
+      <span class="pulse"></span>
+      <span class="badge-secure-text">DRM Protected Session</span>
+      <span class="badge-secure-short">DRM Active</span>
+    </div>
+  </header>
+
+  <main class="portal-main">
+    <!-- Anti-Sharing Lockdown Modal -->
+    <div id="device-lock-screen" class="lock-screen-card">
+      <div class="lock-icon-wrap">🛡️</div>
+      <h2 class="lock-title">Access Restricted: Device Locked</h2>
+      <p id="lock-screen-message" class="lock-message">
+        This video lesson is locked to the original student's device.
+        Link sharing and forwarding are strictly prohibited under Kairos Security Policy.
+      </p>
+      <div class="lock-policy-box">
+        ⚠️ <strong>Single-Device Security Policy:</strong><br>
+        • Video lessons cannot be shared, forwarded, or accessed across multiple devices.<br>
+        • This link has already been claimed by the student's registered browser session.<br>
+        • <span id="lock-screen-phone" style="color: #cbd5e1;">Original Account Verification Active</span>
+      </div>
+      <a id="lock-wa-btn" href="https://wa.me/919629531891?text=Hi" class="lock-action-btn">
+        <span>💬 Open WhatsApp to Start Your Class</span>
+      </a>
+    </div>
+
+    <!-- Video Player Box -->
+    <div class="player-card" id="player-container">
+      <div id="resume-banner" class="resume-banner" style="display: none;">
+        <span>⏱️</span>
+        <span id="resume-text">Resuming from where you left off...</span>
+      </div>
+
+      <!-- Dynamic Anti-Piracy Watermark -->
+      <div id="watermark-overlay">
+        <div id="floating-watermark" class="floating-watermark">KAIROS DRM PROTECTED</div>
+      </div>
+
+      <!-- Module Completed Celebration Overlay -->
+      <div id="completion-overlay" class="completion-overlay">
+        <div class="completion-content">
+          <div class="completion-celebration">🎉</div>
+          <h2 id="completion-title">Module Completed!</h2>
+          <p id="completion-subtitle">The next video lesson has been sent to your WhatsApp!</p>
+          <div class="completion-buttons">
+            <a id="btn-next-module" href="#" class="btn-completion btn-primary-comp" style="display: none;">
+              ▶️ Play Next Module
+            </a>
+            <a id="btn-wa-portal" href="https://wa.me/919629531891?text=Hi" class="btn-completion btn-wa-comp">
+              💬 Open WhatsApp
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <video 
+        id="video-player" 
+        controls 
+        controlsList="nodownload noplaybackrate" 
+        disablePictureInPicture 
+        playsinline
+        webkit-playsinline
+        x5-playsinline
+        preload="auto"
+      >
+        Your browser does not support video playback.
+      </video>
+    </div>
+
+    <!-- Info & Progress Details Card -->
+    <div class="info-card" id="info-card">
+      <div class="info-header">
+        <div class="info-header-left">
+          <h1 class="lesson-title" id="module-title">Module {{MODULE_NUMBER}}: {{COURSE_NAME}}</h1>
+          <div class="student-tag">
+            Student: <strong id="student-name">{{STUDENT_NAME_UPPER}}</strong> (<span id="student-phone">{{STUDENT_PHONE}}</span>)
+          </div>
+        </div>
+        <div class="badge-status" id="save-status">
+          <span>☁️ Synced with Google Sheets</span>
+        </div>
+      </div>
+
+      <div class="progress-bar-container">
+        <div class="progress-labels">
+          <span id="time-current">00:00</span>
+          <span id="time-remaining">--:--</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="portal-footer">
+    &copy; 2026 Kairos Academy. All rights reserved.
+  </footer>
+
+  <script>
+    // Server Injected Template Parameters
+    const INJECTED_SESSION = "{{SESSION_ID}}";
+    const INJECTED_NAME = "{{STUDENT_NAME}}";
+    const INJECTED_NAME_UPPER = "{{STUDENT_NAME_UPPER}}";
+    const INJECTED_PHONE = "{{STUDENT_PHONE}}";
+    const INJECTED_MODULE = "{{MODULE_NUMBER}}";
+    const INJECTED_COURSE = "{{COURSE_NAME}}";
+    const INJECTED_PROGRESS = "{{INITIAL_PROGRESS}}";
+    const INJECTED_LANGUAGE = "{{LANGUAGE}}";
+
+    // Extract Session Token from Template OR Query Params OR Path (/classroom/:sessionId)
+    const urlParams = new URLSearchParams(window.location.search);
+    let sessionParam = (!INJECTED_SESSION.includes("{{") && INJECTED_SESSION.trim() !== "") ? INJECTED_SESSION.trim() : null;
+    if (!sessionParam) {
+      sessionParam = urlParams.get('token') || urlParams.get('session');
+    }
+    if (!sessionParam) {
+      const pathParts = window.location.pathname.split('/').filter(Boolean);
+      if (pathParts.length >= 2 && pathParts[0] === 'classroom') {
+        sessionParam = pathParts[1];
+      }
+    }
+
+    const video = document.getElementById('video-player');
+    const playerContainer = document.getElementById('player-container');
+    const infoCard = document.getElementById('info-card');
+    const resumeBanner = document.getElementById('resume-banner');
+    const resumeText = document.getElementById('resume-text');
+    const studentNameEl = document.getElementById('student-name');
+    const studentPhoneEl = document.getElementById('student-phone');
+    const moduleTitleEl = document.getElementById('module-title');
+    const saveStatusEl = document.getElementById('save-status');
+    const progressFill = document.getElementById('progress-fill');
+    const timeCurrent = document.getElementById('time-current');
+    const timeRemaining = document.getElementById('time-remaining');
+    const watermarkEl = document.getElementById('floating-watermark');
+    const btnWaPortal = document.getElementById('btn-wa-portal');
+    const lockWaBtn = document.getElementById('lock-wa-btn');
+
+    let initialResumeSeconds = parseInt(INJECTED_PROGRESS, 10) || 0;
+    let hasAppliedInitialSeek = false;
+    let studentData = null;
+    let activeToken = null;
+    let watermarkInterval = null;
+    let hasCompletedModule = false;
+
+    // Helper: format seconds to MM:SS
+    function formatTime(sec) {
+      const total = Math.max(0, Math.floor(sec || 0));
+      const m = Math.floor(total / 60);
+      const s = total % 60;
+      return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+    }
+
+    // Helper: detect French language from injected tags or student profile
+    function isFrench() {
+      if (!INJECTED_LANGUAGE.includes("{{") && (INJECTED_LANGUAGE === "fr" || INJECTED_LANGUAGE === "français" || INJECTED_LANGUAGE.startsWith("fr") || INJECTED_LANGUAGE === "f")) return true;
+      if (studentData && (studentData.language === "fr" || studentData.languageCode === "fr" || studentData.language === "français" || studentData.language === "f")) return true;
+      return false;
+    }
+
+    function applyLanguageLocalization() {
+      if (isFrench()) {
+        const brandSub = document.querySelector('.brand-sub');
+        if (brandSub) brandSub.textContent = "Portail Étudiant Officiel";
+
+        const badgeSecureText = document.querySelector('.badge-secure-text');
+        if (badgeSecureText) badgeSecureText.textContent = "Session Sécurisée DRM";
+
+        const badgeSecureShort = document.querySelector('.badge-secure-short');
+        if (badgeSecureShort) badgeSecureShort.textContent = "DRM Actif";
+
+        const studentTag = document.querySelector('.student-tag');
+        if (studentTag) {
+          studentTag.innerHTML = `Étudiant : <strong id="student-name">${studentNameEl.textContent}</strong> (<span id="student-phone">${studentPhoneEl.textContent}</span>)`;
+        }
+
+        if (saveStatusEl && !saveStatusEl.classList.contains('completed')) {
+          saveStatusEl.textContent = "☁️ Synchronisé avec Google Sheets";
+        }
+
+        const lockBtn = document.getElementById('lock-wa-btn');
+        if (lockBtn) {
+          lockBtn.innerHTML = "<span>💬 Ouvrir WhatsApp pour commencer votre cours</span>";
+        }
+        const lockTitle = document.querySelector('.lock-title');
+        if (lockTitle) lockTitle.textContent = "Accès Restreint : Appareil Verrouillé";
+      }
+    }
+
+    // Set initial display values from injected template tags
+    if (!INJECTED_NAME_UPPER.includes("{{") && INJECTED_NAME_UPPER.trim()) {
+      studentNameEl.textContent = INJECTED_NAME_UPPER;
+    }
+    if (!INJECTED_PHONE.includes("{{") && INJECTED_PHONE.trim()) {
+      studentPhoneEl.textContent = INJECTED_PHONE;
+      const cleanPhone = INJECTED_PHONE.replace(/\D/g, "");
+      if (cleanPhone) {
+        if (btnWaPortal) btnWaPortal.href = `https://wa.me/${cleanPhone}`;
+        if (lockWaBtn) lockWaBtn.href = `https://wa.me/${cleanPhone}`;
+      }
+    }
+    if (!INJECTED_MODULE.includes("{{") && INJECTED_MODULE.trim()) {
+      const isFr = isFrench();
+      const defaultCourse = isFr ? "Cours de Réussite Commerciale" : "Business Success Class";
+      const course = (!INJECTED_COURSE.includes("{{") && INJECTED_COURSE.trim()) ? INJECTED_COURSE : defaultCourse;
+      moduleTitleEl.textContent = isFr ? `Module ${INJECTED_MODULE} : ${course}` : `Module ${INJECTED_MODULE}: ${course}`;
+    }
+    if (initialResumeSeconds > 0) {
+      timeCurrent.textContent = formatTime(initialResumeSeconds);
+    }
+    applyLanguageLocalization();
+
+    // Hardware/Device Signature for Anti-Sharing Device Lock
+    function getOrCreateDeviceSig() {
+      let sig = localStorage.getItem('sproutks_device_sig');
+      if (!sig) {
+        try {
+          const arr = new Uint8Array(16);
+          window.crypto.getRandomValues(arr);
+          sig = Array.from(arr).map(b => b.toString(16).padStart(2, '0')).join('');
+        } catch (e) {
+          sig = 'dev_' + Math.random().toString(36).substring(2) + Date.now().toString(36);
+        }
+        localStorage.setItem('sproutks_device_sig', sig);
+      }
+      return sig;
+    }
+
+    const currentDeviceSig = getOrCreateDeviceSig();
+
+    function showDeviceLockScreen(message, phone) {
+      if (playerContainer) playerContainer.style.display = 'none';
+      if (infoCard) infoCard.style.display = 'none';
+
+      const lockScreen = document.getElementById('device-lock-screen');
+      const lockMsg = document.getElementById('lock-screen-message');
+      const lockPhone = document.getElementById('lock-screen-phone');
+
+      if (lockMsg && message) lockMsg.innerText = message;
+      if (lockPhone && phone) lockPhone.innerText = `Original Account Verification: ...${phone}`;
+      if (lockScreen) lockScreen.style.display = 'flex';
+    }
+
+    // Dynamic Anti-Piracy Watermark positioning
+    function updateWatermarkPosition() {
+      if (!watermarkEl || !playerContainer) return;
+      const rect = playerContainer.getBoundingClientRect();
+      const w = rect.width || 320;
+      const h = rect.height || 180;
+      const minX = 70;
+      const maxX = Math.max(minX, w - 120);
+      const minY = 35;
+      const maxY = Math.max(minY, h - 35);
+
+      const randX = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
+      const randY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
+
+      watermarkEl.style.left = `${randX}px`;
+      watermarkEl.style.top = `${randY}px`;
+
+      const now = new Date().toLocaleTimeString();
+      const phoneTxt = studentPhoneEl.textContent || "";
+      const nameTxt = studentNameEl.textContent || "STUDENT";
+      watermarkEl.textContent = `${phoneTxt ? phoneTxt + ' • ' : ''}${nameTxt} • KAIROS DRM • ${now}`;
+    }
+
+    function startWatermark() {
+      updateWatermarkPosition();
+      if (watermarkInterval) clearInterval(watermarkInterval);
+      watermarkInterval = setInterval(updateWatermarkPosition, 3500);
+    }
+
+    // Initialize Classroom Session & Handshake
+    async function initPlayer() {
+      if (!sessionParam) {
+        showDeviceLockScreen("Missing session identifier. Please launch your class link directly from WhatsApp.");
+        return;
+      }
+
+      try {
+        // Try handshake endpoint (supports both /api/classroom/handshake and /api/video/session)
+        let data = null;
+        try {
+          const res = await fetch('/api/classroom/handshake', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              sessionId: sessionParam,
+              deviceSig: currentDeviceSig
+            })
+          });
+          data = await res.json();
+        } catch (e1) {
+          // Fallback to /api/video/session
+          const res2 = await fetch(`/api/video/session?session=${encodeURIComponent(sessionParam)}&deviceSig=${encodeURIComponent(currentDeviceSig)}`);
+          data = await res2.json();
+        }
+
+        if (!data || !data.success) {
+          const errMsg = (data && (data.error || data.message)) || "Unauthorized Device Detected. Video links are strictly locked to the registered student's device.";
+          showDeviceLockScreen(errMsg, data ? (data.phone || data.student?.phone) : "");
+          return;
+        }
+
+        activeToken = data.token || sessionParam;
+        studentData = data.student || {};
+
+        if (studentData.name) {
+          studentNameEl.textContent = studentData.name.toUpperCase();
+        }
+        if (studentData.phone) {
+          studentPhoneEl.textContent = studentData.phone;
+          const cleanPhone = studentData.phone.replace(/\D/g, "");
+          if (cleanPhone) {
+            if (btnWaPortal) btnWaPortal.href = `https://wa.me/${cleanPhone}`;
+            if (lockWaBtn) lockWaBtn.href = `https://wa.me/${cleanPhone}`;
+          }
+        }
+        const modId = studentData.module || studentData.moduleId || parseInt(INJECTED_MODULE, 10) || 1;
+        const course = studentData.course || (!INJECTED_COURSE.includes("{{") ? INJECTED_COURSE : "Business Success Class");
+        moduleTitleEl.textContent = `Module ${modId}: ${course}`;
+
+        const remoteProgress = Number(studentData.progressSeconds ?? studentData.startProgress ?? initialResumeSeconds) || 0;
+        if (remoteProgress > 0) {
+          initialResumeSeconds = remoteProgress;
+        }
+
+        applyLanguageLocalization();
+
+        // Connect secure DRM stream locked to this device signature
+        const streamUrl = `/api/video/stream/${encodeURIComponent(activeToken)}?sig=${encodeURIComponent(currentDeviceSig)}`;
+        video.src = streamUrl;
+        video.load();
+
+        startWatermark();
+      } catch (err) {
+        console.error("Initialization error:", err);
+        showDeviceLockScreen(isFrench() ? "Impossible d'établir une connexion sécurisée au flux vidéo." : "Unable to establish secure connection to video stream.");
+      }
+    }
+
+    // Auto-Resume playback from stored progress
+    function applyResumeSeek() {
+      if (!hasAppliedInitialSeek && initialResumeSeconds > 0) {
+        hasAppliedInitialSeek = true;
+        if (video.duration && initialResumeSeconds < video.duration - 2) {
+          video.currentTime = initialResumeSeconds;
+        } else {
+          video.currentTime = initialResumeSeconds;
+        }
+
+        const isFr = isFrench();
+        resumeText.textContent = isFr
+          ? `Reprise à ${formatTime(initialResumeSeconds)} là où vous vous étiez arrêté`
+          : `Resumed at ${formatTime(initialResumeSeconds)} from where you stopped`;
+        resumeBanner.style.display = 'flex';
+
+        setTimeout(() => {
+          resumeBanner.style.display = 'none';
+        }, 5000);
+      }
+    }
+
+    video.addEventListener('loadedmetadata', applyResumeSeek);
+    video.addEventListener('canplay', applyResumeSeek);
+    video.addEventListener('play', applyResumeSeek);
+
+    // Module Completion Celebration & Auto-Progression
+    async function handleModuleCompletion() {
+      if (hasCompletedModule) return;
+      hasCompletedModule = true;
+
+      const isFr = isFrench();
+      saveStatusEl.textContent = isFr ? "🎉 Module Terminé !" : "🎉 Module Completed!";
+      saveStatusEl.classList.add('completed');
+
+      try {
+        const res = await fetch('/api/video/complete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: activeToken || sessionParam,
+            deviceSig: currentDeviceSig,
+            moduleId: studentData ? (studentData.module || studentData.moduleId) : parseInt(INJECTED_MODULE, 10) || 1
+          })
+        });
+        const data = await res.json();
+        showCompletionOverlay(data);
+      } catch (err) {
+        console.warn("[Video Player] Completion notification error:", err.message);
+        showCompletionOverlay(null);
+      }
+    }
+
+    function showCompletionOverlay(data) {
+      const overlay = document.getElementById('completion-overlay');
+      const titleEl = document.getElementById('completion-title');
+      const subEl = document.getElementById('completion-subtitle');
+      const nextBtn = document.getElementById('btn-next-module');
+
+      const currentMod = studentData ? (studentData.module || studentData.moduleId || 1) : (parseInt(INJECTED_MODULE, 10) || 1);
+      const isFr = isFrench();
+
+      if (data && (data.isGraduated || data.allCompleted)) {
+        if (titleEl) titleEl.textContent = isFr ? "🎓 Formation Terminée ! 🏆" : "🎓 Course Completed! 🏆";
+        if (subEl) subEl.textContent = isFr
+          ? "Félicitations ! Vous avez terminé tous les modules du Cours de Réussite Commerciale. Votre attestation a été envoyée sur WhatsApp !"
+          : "Congratulations! You have finished all modules of Business Success Class. Your graduation message has been sent to WhatsApp!";
+        if (nextBtn) nextBtn.style.display = 'none';
+      } else {
+        const nextMod = (data && data.nextModule) ? data.nextModule : (currentMod + 1);
+        if (titleEl) titleEl.textContent = isFr ? `🎉 Module ${currentMod} Terminé !` : `🎉 Module ${currentMod} Completed!`;
+        if (subEl) subEl.textContent = isFr
+          ? `Excellent travail ! Le lien du Module ${nextMod} a été envoyé sur votre WhatsApp.`
+          : `Fantastic job! Module ${nextMod} link has been sent to your WhatsApp.`;
+
+        if (data && data.nextClassroomUrl && nextBtn) {
+          nextBtn.href = data.nextClassroomUrl;
+          nextBtn.textContent = isFr ? `▶️ Lancer le Module ${nextMod}` : `▶️ Play Module ${nextMod}`;
+          nextBtn.style.display = 'inline-flex';
+        } else if (nextBtn) {
+          nextBtn.style.display = 'none';
+        }
+      }
+
+      if (btnWaPortal) {
+        btnWaPortal.textContent = isFr ? "💬 Ouvrir WhatsApp" : "💬 Open WhatsApp";
+      }
+
+      // Crucial fix: expand player card so mobile never cuts buttons off
+      if (playerContainer) {
+        playerContainer.classList.add('has-overlay');
+      }
+      if (overlay) {
+        overlay.style.display = 'flex';
+      }
+    }
+
+    video.addEventListener('ended', handleModuleCompletion);
+
+    // Track playback progress & time labels
+    video.addEventListener('timeupdate', () => {
+      const cur = video.currentTime;
+      const dur = video.duration || 1;
+      const percent = Math.min(100, Math.max(0, (cur / dur) * 100));
+
+      progressFill.style.width = `${percent}%`;
+      timeCurrent.textContent = formatTime(cur);
+      timeRemaining.textContent = formatTime(dur);
+
+      // Detect end of video if within last 1.5 seconds
+      if (dur > 5 && cur >= dur - 1.5 && !hasCompletedModule) {
+        handleModuleCompletion();
+      }
+    });
+
+    // Synchronize watch progress with Google Sheets CRM every 5 seconds
+    async function syncProgress() {
+      if (!video || video.paused || video.ended || hasCompletedModule) return;
+      const currentSeconds = Math.floor(video.currentTime);
+      if (currentSeconds <= 0) return;
+
+      const isFr = isFrench();
+
+      try {
+        saveStatusEl.textContent = isFr ? "⏳ Enregistrement..." : "⏳ Saving progress...";
+        const res = await fetch('/api/video/progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            token: activeToken || sessionParam,
+            currentTime: currentSeconds,
+            progressSeconds: currentSeconds,
+            deviceSig: currentDeviceSig,
+            duration: Math.floor(video.duration || 0)
+          })
+        });
+        const data = await res.json();
+        if (data && data.success) {
+          saveStatusEl.textContent = isFr
+            ? `☁️ Synchronisé (${formatTime(currentSeconds)})`
+            : `☁️ Synced (${formatTime(currentSeconds)})`;
+        }
+      } catch (err) {
+        // Silently continue on temporary network drop
+      }
+    }
+
+    // Synchronize watch progress with Google Sheets CRM every 15 seconds (optimized for 100+ concurrent students)
+    setInterval(syncProgress, 15000);
+    video.addEventListener('pause', syncProgress);
+
+    window.addEventListener('beforeunload', () => {
+      if (video && !video.paused && !hasCompletedModule) {
+        navigator.sendBeacon(
+          '/api/video/progress',
+          new Blob([JSON.stringify({
+            token: activeToken || sessionParam,
+            currentTime: Math.floor(video.currentTime),
+            progressSeconds: Math.floor(video.currentTime),
+            deviceSig: currentDeviceSig
+          })], { type: 'application/json' })
+        );
+      }
+    });
+
+    // Anti-Piracy Keyboard & Developer Tools Protection
+    window.addEventListener('keydown', (e) => {
+      if (
+        e.key === 'PrintScreen' ||
+        e.key === 'F12' ||
+        (e.ctrlKey && (e.key === 's' || e.key === 'u' || e.key === 'p')) ||
+        (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'C' || e.key === 'J'))
+      ) {
+        e.preventDefault();
+        return false;
+      }
+    });
+
+    // Start player
+    initPlayer();
+  </script>
+</body>
+</html>

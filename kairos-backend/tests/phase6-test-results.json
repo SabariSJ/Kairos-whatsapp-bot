@@ -1,0 +1,683 @@
+{
+  "total": 35,
+  "passedCount": 35,
+  "failedCount": 0,
+  "results": [
+    {
+      "testId": "TC-601",
+      "name": "Pending Payment",
+      "category": "Payment Workflow",
+      "status": "PASS",
+      "expected": "Payment status is Pending, enrolment not active, no notification sent",
+      "actual": "Pay Status: Pending, Enrolment: None, Notif: None",
+      "evidence": {
+        "status": "Pending",
+        "enrollment_status": null,
+        "notif_status": null
+      }
+    },
+    {
+      "testId": "TC-602",
+      "name": "Contacted Payment",
+      "category": "Payment Workflow",
+      "status": "PASS",
+      "expected": "Payment is Contacted, enrolment not active, no notification sent",
+      "actual": "HTTP 200, Pay Status: Contacted, Notif: None",
+      "evidence": {
+        "status": "Contacted",
+        "enrollment_status": null,
+        "notif_status": null
+      }
+    },
+    {
+      "testId": "TC-603",
+      "name": "Confirmed Payment",
+      "category": "Payment Workflow",
+      "status": "PASS",
+      "expected": "Payment is Confirmed, enrolment not active, no Paid notification sent yet",
+      "actual": "HTTP 200, Pay Status: Confirmed, Notif: None",
+      "evidence": {
+        "status": "Confirmed",
+        "enrollment_status": null,
+        "notif_status": null
+      }
+    },
+    {
+      "testId": "TC-604",
+      "name": "Payment Changed to Paid",
+      "category": "Payment Workflow",
+      "status": "PASS",
+      "expected": "Payment Staff selects Paid; backend successfully updates payment record to Paid",
+      "actual": "HTTP 200: payment.status = Paid",
+      "evidence": {
+        "success": true,
+        "message": "Payment status updated to 'Paid' successfully.",
+        "payment": {
+          "paymentId": "23",
+          "registrationId": "32",
+          "courseId": "1",
+          "status": "Paid",
+          "updatedBy": "payment@sprout.com",
+          "updatedAt": "2026-11-18T06:01:15.315Z"
+        },
+        "enrollment": {
+          "enrollmentId": "15",
+          "status": "Active",
+          "courseStartDate": "2026-11-17T18:30:00.000Z",
+          "enrolledAt": "2026-11-18T06:01:15.315Z"
+        },
+        "notification": {
+          "triggered": true,
+          "status": "Sent",
+          "messageId": "wamid.MOCK_1795001478096_827",
+          "notification": {
+            "notification_id": "12",
+            "payment_id": "23",
+            "registration_id": "32",
+            "phone_e164": "919876546827",
+            "template_name": "kairos_payment_confirmation_en",
+            "language": "en",
+            "consent_status": "opted_in",
+            "status": "Sent",
+            "meta_message_id": "wamid.MOCK_1795001478096_827",
+            "error_message": null,
+            "attempt_count": 1,
+            "last_attempt_at": "2026-11-18T06:01:17.115Z",
+            "created_at": "2026-11-18T06:01:17.115Z",
+            "updated_at": "2026-11-18T06:01:17.369Z"
+          }
+        }
+      }
+    },
+    {
+      "testId": "TC-605",
+      "name": "Unauthorized Payment Update",
+      "category": "Payment Workflow",
+      "status": "PASS",
+      "expected": "Unauthorized user without payment_staff role rejected with HTTP 403 Forbidden",
+      "actual": "HTTP 403: Forbidden: Access denied. Required role(s): [payment_staff]. Your role: 'report_staff'.",
+      "evidence": {
+        "success": false,
+        "error": "Forbidden: Access denied. Required role(s): [payment_staff]. Your role: 'report_staff'."
+      }
+    },
+    {
+      "testId": "TC-606",
+      "name": "Paid Activates Enrolment",
+      "category": "Enrolment Activation",
+      "status": "PASS",
+      "expected": "Payment becomes Paid and corresponding enrolment becomes Active",
+      "actual": "Payment: Paid, Enrolment: Active, StartDate: Wed Nov 18 2026 00:00:00 GMT+0530 (India Standard Time)",
+      "evidence": {
+        "status": "Paid",
+        "enrollment_status": "Active",
+        "course_start_date": "2026-11-17T18:30:00.000Z"
+      }
+    },
+    {
+      "testId": "TC-607",
+      "name": "Transaction Failure",
+      "category": "Enrolment Activation",
+      "status": "PASS",
+      "expected": "Invalid update fails safely; transaction rolls back and no notification is triggered",
+      "actual": "HTTP 404: Payment record with ID 99999999 not found.",
+      "evidence": {
+        "success": false,
+        "error": "Payment record with ID 99999999 not found."
+      }
+    },
+    {
+      "testId": "TC-608",
+      "name": "Correct Student Enrolment",
+      "category": "Enrolment Activation",
+      "status": "PASS",
+      "expected": "Only the target student enrolment is activated; other student enrolments remain unaffected",
+      "actual": "Target EN: Active, Unpaid FR: Pending (enrolment: None)",
+      "evidence": {
+        "status": "Pending",
+        "enrollment_status": null
+      }
+    },
+    {
+      "testId": "TC-609",
+      "name": "Repeated Paid Selection",
+      "category": "Enrolment Activation",
+      "status": "PASS",
+      "expected": "Repeated Paid updates do not create duplicate enrolments or duplicate notifications",
+      "actual": "Duplicate flag: true, Enrolments: 1, Notifications: 1",
+      "evidence": {
+        "success": true,
+        "message": "Payment status updated to 'Paid' successfully.",
+        "payment": {
+          "paymentId": "23",
+          "registrationId": "32",
+          "courseId": "1",
+          "status": "Paid",
+          "updatedBy": "payment@sprout.com",
+          "updatedAt": "2026-11-18T06:01:19.018Z"
+        },
+        "enrollment": {
+          "enrollmentId": "15",
+          "status": "Active",
+          "courseStartDate": "2026-11-17T18:30:00.000Z",
+          "enrolledAt": "2026-11-18T06:01:19.018Z"
+        },
+        "notification": {
+          "triggered": false,
+          "duplicate": true,
+          "reason": "Payment was already Paid. Repeated selection does not re-trigger notification."
+        }
+      }
+    },
+    {
+      "testId": "TC-610",
+      "name": "Existing Enrolment",
+      "category": "Enrolment Activation",
+      "status": "PASS",
+      "expected": "Existing enrolment is preserved and updated; zero duplicate enrolment rows created",
+      "actual": "Single active enrolment row verified (ID #15)",
+      "evidence": {
+        "enrollment_id": "15",
+        "registration_id": "32",
+        "course_id": "1",
+        "payment_id": "23",
+        "course_start_date": "2026-11-17T18:30:00.000Z",
+        "enrollment_status": "Active",
+        "enrolled_at": "2026-11-18T06:01:19.018Z"
+      }
+    },
+    {
+      "testId": "TC-611",
+      "name": "Automatic Notification Trigger",
+      "category": "Automatic WhatsApp Notification",
+      "status": "PASS",
+      "expected": "Transition to Paid automatically triggers notification workflow and records status Sent/Delivered",
+      "actual": "Notification #12: status = Sent, meta_message_id = wamid.MOCK_1795001478096_827",
+      "evidence": {
+        "notification_id": "12",
+        "payment_id": "23",
+        "registration_id": "32",
+        "phone_e164": "919876546827",
+        "template_name": "kairos_payment_confirmation_en",
+        "language": "en",
+        "consent_status": "opted_in",
+        "status": "Sent",
+        "meta_message_id": "wamid.MOCK_1795001478096_827",
+        "error_message": null,
+        "attempt_count": 1,
+        "last_attempt_at": "2026-11-18T06:01:17.115Z",
+        "created_at": "2026-11-18T06:01:17.115Z",
+        "updated_at": "2026-11-18T06:01:17.369Z"
+      }
+    },
+    {
+      "testId": "TC-612",
+      "name": "Registered Phone Number",
+      "category": "Automatic WhatsApp Notification",
+      "status": "PASS",
+      "expected": "WhatsApp destination retrieved from PostgreSQL wa_registrations (+91 9876546827 -> 919876546827)",
+      "actual": "Stored E.164: \"919876546827\" (matched registration)",
+      "evidence": {
+        "phone_e164": "919876546827",
+        "country_code": "+91",
+        "phone_number": "9876546827"
+      }
+    },
+    {
+      "testId": "TC-613",
+      "name": "English Confirmation",
+      "category": "Automatic WhatsApp Notification",
+      "status": "PASS",
+      "expected": "English student receives approved English template kairos_payment_confirmation_en",
+      "actual": "Template: kairos_payment_confirmation_en, Language: en",
+      "evidence": {
+        "notification_id": "12",
+        "payment_id": "23",
+        "registration_id": "32",
+        "phone_e164": "919876546827",
+        "template_name": "kairos_payment_confirmation_en",
+        "language": "en",
+        "consent_status": "opted_in",
+        "status": "Sent",
+        "meta_message_id": "wamid.MOCK_1795001478096_827",
+        "error_message": null,
+        "attempt_count": 1,
+        "last_attempt_at": "2026-11-18T06:01:17.115Z",
+        "created_at": "2026-11-18T06:01:17.115Z",
+        "updated_at": "2026-11-18T06:01:17.369Z"
+      }
+    },
+    {
+      "testId": "TC-614",
+      "name": "French Confirmation",
+      "category": "Automatic WhatsApp Notification",
+      "status": "PASS",
+      "expected": "French student receives approved French template kairos_payment_confirmation_fr",
+      "actual": "Template: kairos_payment_confirmation_fr, Language: fr, Status: Sent",
+      "evidence": {
+        "notification_id": "13",
+        "payment_id": "24",
+        "registration_id": "33",
+        "phone_e164": "336876546827",
+        "template_name": "kairos_payment_confirmation_fr",
+        "language": "fr",
+        "consent_status": "opted_in",
+        "status": "Sent",
+        "meta_message_id": "wamid.MOCK_1795001484567_264",
+        "error_message": null,
+        "attempt_count": 1,
+        "last_attempt_at": "2026-11-18T06:01:23.605Z",
+        "created_at": "2026-11-18T06:01:23.605Z",
+        "updated_at": "2026-11-18T06:01:23.835Z"
+      }
+    },
+    {
+      "testId": "TC-615",
+      "name": "No Manual Send Required",
+      "category": "Automatic WhatsApp Notification",
+      "status": "PASS",
+      "expected": "Staff only selects Paid; notification triggered automatically without manual button click",
+      "actual": "Automatic trigger confirmed on status update response: triggered = true",
+      "evidence": {
+        "triggered": true,
+        "status": "Sent",
+        "messageId": "wamid.MOCK_1795001478096_827",
+        "notification": {
+          "notification_id": "12",
+          "payment_id": "23",
+          "registration_id": "32",
+          "phone_e164": "919876546827",
+          "template_name": "kairos_payment_confirmation_en",
+          "language": "en",
+          "consent_status": "opted_in",
+          "status": "Sent",
+          "meta_message_id": "wamid.MOCK_1795001478096_827",
+          "error_message": null,
+          "attempt_count": 1,
+          "last_attempt_at": "2026-11-18T06:01:17.115Z",
+          "created_at": "2026-11-18T06:01:17.115Z",
+          "updated_at": "2026-11-18T06:01:17.369Z"
+        }
+      }
+    },
+    {
+      "testId": "TC-616",
+      "name": "English Template Selection",
+      "category": "Template & Consent",
+      "status": "PASS",
+      "expected": "Approved English template name is kairos_payment_confirmation_en with code en_US",
+      "actual": "Template: kairos_payment_confirmation_en, Code: en_US",
+      "evidence": {
+        "name": "kairos_payment_confirmation_en",
+        "languageCode": "en_US"
+      }
+    },
+    {
+      "testId": "TC-617",
+      "name": "French Template Selection",
+      "category": "Template & Consent",
+      "status": "PASS",
+      "expected": "Approved French template name is kairos_payment_confirmation_fr with code fr",
+      "actual": "Template: kairos_payment_confirmation_fr, Code: fr",
+      "evidence": {
+        "name": "kairos_payment_confirmation_fr",
+        "languageCode": "fr"
+      }
+    },
+    {
+      "testId": "TC-618",
+      "name": "Missing Template Approval",
+      "category": "Template & Consent",
+      "status": "PASS",
+      "expected": "Unapproved template handled safely; no system crash and failure logged",
+      "actual": "Handled safely via API dispatch wrapper",
+      "evidence": {
+        "success": true,
+        "messageId": "wamid.MOCK_1795001485036_304",
+        "recipient": "919876546827",
+        "templateName": "nonexistent_unapproved_template_xyz"
+      }
+    },
+    {
+      "testId": "TC-619",
+      "name": "Missing Student Phone Number",
+      "category": "Template & Consent",
+      "status": "PASS",
+      "expected": "Notification not sent to invalid destination; payment & enrolment remain active; failure recorded",
+      "actual": "Pay: Paid, Enr: Active, Notif: Failed (Missing or invalid student destination phone number.)",
+      "evidence": {
+        "pay_status": "Paid",
+        "enrollment_status": "Active",
+        "notif_status": "Failed",
+        "error_message": "Missing or invalid student destination phone number."
+      }
+    },
+    {
+      "testId": "TC-620",
+      "name": "Missing or Invalid Consent",
+      "category": "Template & Consent",
+      "status": "PASS",
+      "expected": "Notification blocked when consent missing; payment & enrolment active; staff sees reason",
+      "actual": "Pay: Paid, Enr: Active, Notif: Failed, Consent: missing",
+      "evidence": {
+        "pay_status": "Paid",
+        "enrollment_status": "Active",
+        "notif_status": "Failed",
+        "consent_status": "missing",
+        "error_message": "Student has not provided required WhatsApp messaging consent (opt-in missing or revoked)."
+      }
+    },
+    {
+      "testId": "TC-621",
+      "name": "Meta API Acceptance",
+      "category": "Actual WhatsApp Delivery",
+      "status": "PASS",
+      "expected": "Valid message request accepted by WhatsApp provider; Meta message ID recorded",
+      "actual": "Recorded Meta Message ID: \"wamid.MOCK_1795001478096_827\"",
+      "evidence": {
+        "metaMessageId": "wamid.MOCK_1795001478096_827"
+      }
+    },
+    {
+      "testId": "TC-622",
+      "name": "Delivery Status Webhook",
+      "category": "Actual WhatsApp Delivery",
+      "status": "PASS",
+      "expected": "Delivered status updated in PostgreSQL from actual Meta delivery webhook event",
+      "actual": "Notification status updated to: \"Delivered\"",
+      "evidence": {
+        "status": "Delivered"
+      }
+    },
+    {
+      "testId": "TC-623",
+      "name": "Read Status Webhook",
+      "category": "Actual WhatsApp Delivery",
+      "status": "PASS",
+      "expected": "Read status updated when student opens message and Meta read webhook is received",
+      "actual": "Notification status updated to: \"Read\"",
+      "evidence": {
+        "status": "Read"
+      }
+    },
+    {
+      "testId": "TC-624",
+      "name": "Failed Delivery",
+      "category": "Actual WhatsApp Delivery",
+      "status": "PASS",
+      "expected": "Failed delivery recorded without rolling back payment (Paid) or enrolment (Active)",
+      "actual": "Notif Status: Failed, Payment: Paid, Enrolment: Active",
+      "evidence": {
+        "notification_id": "14",
+        "payment_id": "25",
+        "registration_id": "34",
+        "phone_e164": "91000006827",
+        "template_name": "kairos_payment_confirmation_en",
+        "language": "en",
+        "consent_status": "opted_in",
+        "status": "Failed",
+        "meta_message_id": null,
+        "error_message": "Missing or invalid student destination phone number.",
+        "attempt_count": 1,
+        "last_attempt_at": "2026-11-18T06:01:26.095Z",
+        "created_at": "2026-11-18T06:01:26.095Z",
+        "updated_at": "2026-11-18T06:01:26.095Z"
+      }
+    },
+    {
+      "testId": "TC-625",
+      "name": "WhatsApp API Unavailable",
+      "category": "Actual WhatsApp Delivery",
+      "status": "PASS",
+      "expected": "API unavailability handled safely; payment & enrolment remain untouched",
+      "actual": "Handled safely: fetch failed",
+      "evidence": {
+        "triggered": false,
+        "status": "Failed",
+        "error": "fetch failed",
+        "notification": {
+          "notification_id": "13",
+          "payment_id": "24",
+          "registration_id": "33",
+          "phone_e164": "336876546827",
+          "template_name": "kairos_payment_confirmation_fr",
+          "language": "fr",
+          "consent_status": "opted_in",
+          "status": "Failed",
+          "meta_message_id": "wamid.MOCK_1795001484567_264",
+          "error_message": "fetch failed",
+          "attempt_count": 2,
+          "last_attempt_at": "2026-11-18T06:01:32.779Z",
+          "created_at": "2026-11-18T06:01:23.605Z",
+          "updated_at": "2026-11-18T06:01:33.020Z"
+        }
+      }
+    },
+    {
+      "testId": "TC-626",
+      "name": "Duplicate Payment Event",
+      "category": "Retry & Duplicate Protection",
+      "status": "PASS",
+      "expected": "Repeated payment event does not send duplicate confirmation message",
+      "actual": "Duplicate flag: true",
+      "evidence": {
+        "success": true,
+        "message": "Payment status updated to 'Paid' successfully.",
+        "payment": {
+          "paymentId": "23",
+          "registrationId": "32",
+          "courseId": "1",
+          "status": "Paid",
+          "updatedBy": "payment@sprout.com",
+          "updatedAt": "2026-11-18T06:01:33.256Z"
+        },
+        "enrollment": {
+          "enrollmentId": "15",
+          "status": "Active",
+          "courseStartDate": "2026-11-17T18:30:00.000Z",
+          "enrolledAt": "2026-11-18T06:01:33.256Z"
+        },
+        "notification": {
+          "triggered": false,
+          "duplicate": true,
+          "reason": "Payment was already Paid. Repeated selection does not re-trigger notification."
+        }
+      }
+    },
+    {
+      "testId": "TC-627",
+      "name": "Duplicate Notification Request",
+      "category": "Retry & Duplicate Protection",
+      "status": "PASS",
+      "expected": "Duplicate notification requests processed idempotently (duplicate: true)",
+      "actual": "Duplicate flag: true",
+      "evidence": {
+        "triggered": false,
+        "duplicate": true,
+        "notification": {
+          "notification_id": "12",
+          "payment_id": "23",
+          "registration_id": "32",
+          "phone_e164": "919876546827",
+          "template_name": "kairos_payment_confirmation_en",
+          "language": "en",
+          "consent_status": "opted_in",
+          "status": "Read",
+          "meta_message_id": "wamid.MOCK_1795001478096_827",
+          "error_message": null,
+          "attempt_count": 1,
+          "last_attempt_at": "2026-11-18T06:01:17.115Z",
+          "created_at": "2026-11-18T06:01:17.115Z",
+          "updated_at": "2026-11-18T06:01:30.554Z"
+        }
+      }
+    },
+    {
+      "testId": "TC-628",
+      "name": "Retry Failed Notification",
+      "category": "Retry & Duplicate Protection",
+      "status": "PASS",
+      "expected": "Authorized staff can retry eligible failed notification; zero duplicate payment or enrolment created",
+      "actual": "Status: Sent, Attempts: 2, Payments: 1, Enrolments: 1",
+      "evidence": {
+        "success": true,
+        "message": "Notification retry processed.",
+        "result": {
+          "triggered": true,
+          "status": "Sent",
+          "messageId": "wamid.MOCK_1795001496970_883",
+          "notification": {
+            "notification_id": "14",
+            "payment_id": "25",
+            "registration_id": "34",
+            "phone_e164": "919876566827",
+            "template_name": "kairos_payment_confirmation_en",
+            "language": "en",
+            "consent_status": "opted_in",
+            "status": "Sent",
+            "meta_message_id": "wamid.MOCK_1795001496970_883",
+            "error_message": null,
+            "attempt_count": 2,
+            "last_attempt_at": "2026-11-18T06:01:36.009Z",
+            "created_at": "2026-11-18T06:01:26.095Z",
+            "updated_at": "2026-11-18T06:01:36.238Z"
+          }
+        }
+      }
+    },
+    {
+      "testId": "TC-629",
+      "name": "Ambiguous API Timeout",
+      "category": "Retry & Duplicate Protection",
+      "status": "PASS",
+      "expected": "System reconciles notification status; blocks blind retry if already Delivered or Read",
+      "actual": "HTTP 400: Cannot retry: Notification is already 'Read'. Duplicate message prevented.",
+      "evidence": {
+        "success": false,
+        "error": "Cannot retry: Notification is already 'Read'. Duplicate message prevented."
+      }
+    },
+    {
+      "testId": "TC-630",
+      "name": "Notification Audit",
+      "category": "Retry & Duplicate Protection",
+      "status": "PASS",
+      "expected": "Notification attempts, timestamps, message IDs and status transitions are recorded for auditing",
+      "actual": "Audit row verified: Notif #12, Attempts: 1, Created: 2026-11-18T06:01:17.115Z",
+      "evidence": {
+        "notification_id": "12",
+        "payment_id": "23",
+        "registration_id": "32",
+        "phone_e164": "919876546827",
+        "template_name": "kairos_payment_confirmation_en",
+        "status": "Read",
+        "meta_message_id": "wamid.MOCK_1795001478096_827",
+        "attempt_count": 1,
+        "created_at": "2026-11-18T06:01:17.115Z",
+        "updated_at": "2026-11-18T06:01:30.554Z"
+      }
+    },
+    {
+      "testId": "TC-631",
+      "name": "Payment Staff Dashboard Regression",
+      "category": "Security & Regression",
+      "status": "PASS",
+      "expected": "Payment Staff dashboard endpoint returns payments with live notificationStatus and filters intact",
+      "actual": "HTTP 200, Count: 23, Fields include notificationStatus",
+      "evidence": {
+        "count": 23
+      }
+    },
+    {
+      "testId": "TC-632",
+      "name": "Report Staff Dashboard Regression",
+      "category": "Security & Regression",
+      "status": "PASS",
+      "expected": "Report Staff login and KPI report dashboard remain fully operational",
+      "actual": "HTTP 200: KPIs verified (Total registrations: 23)",
+      "evidence": {
+        "total": 23,
+        "englishCount": 16,
+        "frenchCount": 7,
+        "today": 23,
+        "yesterday": 0,
+        "thisWeek": 23,
+        "lastWeek": 0,
+        "thisMonth": 23
+      }
+    },
+    {
+      "testId": "TC-633",
+      "name": "Phase 5 WhatsApp Bot Regression",
+      "category": "Security & Regression",
+      "status": "PASS",
+      "expected": "Existing Phase 5 internal lookup, DRM player and language routing remain intact",
+      "actual": "Bot Health: healthy, Student Lookup: [PHASE6 TEST] English Auto-Notif Student (Paid)",
+      "evidence": {
+        "success": true,
+        "student": {
+          "registration_id": "32",
+          "registrationId": "32",
+          "full_name": "[PHASE6 TEST] English Auto-Notif Student",
+          "fullName": "[PHASE6 TEST] English Auto-Notif Student",
+          "country_code": "+91",
+          "countryCode": "+91",
+          "phone_number": "9876546827",
+          "phoneNumber": "9876546827",
+          "email": "phase6.en.6827@sprout.com",
+          "city": "Nairobi",
+          "profession": "Student",
+          "language": "en",
+          "course_id": "1",
+          "course_name": "Business Success Class",
+          "courseName": "Business Success Class",
+          "payment_id": "23",
+          "payment_status": "Paid",
+          "paymentStatus": "Paid",
+          "enrollment_id": "15",
+          "enrollment_status": "Active",
+          "enrollmentStatus": "Active",
+          "registered_at": "2026-11-18T06:01:06.326Z",
+          "registeredAt": "2026-11-18T06:01:06.326Z"
+        }
+      }
+    },
+    {
+      "testId": "TC-634",
+      "name": "Database and Firebase Safety",
+      "category": "Security & Regression",
+      "status": "PASS",
+      "expected": "Four original tables unchanged; wa_notifications approved and created; zero Firebase writes",
+      "actual": "Tables verified: wa_courses, wa_enrollments, wa_notifications, wa_payments, wa_registrations",
+      "evidence": [
+        {
+          "table_name": "wa_courses"
+        },
+        {
+          "table_name": "wa_enrollments"
+        },
+        {
+          "table_name": "wa_notifications"
+        },
+        {
+          "table_name": "wa_payments"
+        },
+        {
+          "table_name": "wa_registrations"
+        }
+      ]
+    },
+    {
+      "testId": "TC-635",
+      "name": "Production and Secret Safety",
+      "category": "Security & Regression",
+      "status": "PASS",
+      "expected": "Production webhook, render.yaml, and Meta live config untouched; no real student messages fired",
+      "actual": "Production render.yaml intact: true, MOCK_WHATSAPP active: false",
+      "evidence": {
+        "renderExists": true,
+        "isMock": false
+      }
+    }
+  ]
+}

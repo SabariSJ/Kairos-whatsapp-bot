@@ -1,0 +1,221 @@
+{
+  "info": {
+    "name": "Kairos Common Backend API - Phase 2 Collection",
+    "description": "Postman API Collection for Kairos WhatsApp Learning Common Backend API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000" },
+    { "key": "paymentToken", "value": "" },
+    { "key": "reportToken", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Health Checks",
+      "item": [
+        {
+          "name": "Basic Health Check",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/health"
+          }
+        },
+        {
+          "name": "Database Connectivity Health",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/health/db"
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Courses",
+      "item": [
+        {
+          "name": "Get English Courses",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/courses?language=en"
+          }
+        },
+        {
+          "name": "Get French Courses",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/courses?language=fr"
+          }
+        },
+        {
+          "name": "Get All Courses",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/courses"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Student Registrations",
+      "item": [
+        {
+          "name": "Register English Student",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/registrations",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"John Doe\",\n  \"countryCode\": \"+91\",\n  \"phoneNumber\": \"9876543210\",\n  \"email\": \"john.doe@example.com\",\n  \"city\": \"Chennai\",\n  \"profession\": \"Student\",\n  \"language\": \"en\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Register French Student",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/registrations",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Pierre Martin\",\n  \"countryCode\": \"+225\",\n  \"phoneNumber\": \"0708446411\",\n  \"email\": \"pierre.martin@example.com\",\n  \"city\": \"Abidjan\",\n  \"profession\": \"Planning to start a business\",\n  \"language\": \"fr\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Staff Authentication",
+      "item": [
+        {
+          "name": "Payment Staff Login",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@sprout.app\",\n  \"password\": \"sprout\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Report Staff Login",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/auth/login",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"data@sprout.app\",\n  \"password\": \"sprout\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Authenticated Staff Profile",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/auth/me",
+            "header": [{ "key": "Authorization", "value": "Bearer {{paymentToken}}" }]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Payment Staff APIs",
+      "item": [
+        {
+          "name": "List All Payments (language=all)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/staff/payments?language=all",
+            "header": [{ "key": "Authorization", "value": "Bearer {{paymentToken}}" }]
+          }
+        },
+        {
+          "name": "List English Payments (language=en)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/staff/payments?language=en",
+            "header": [{ "key": "Authorization", "value": "Bearer {{paymentToken}}" }]
+          }
+        },
+        {
+          "name": "List French Payments (language=fr)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/staff/payments?language=fr",
+            "header": [{ "key": "Authorization", "value": "Bearer {{paymentToken}}" }]
+          }
+        },
+        {
+          "name": "Update Payment Status (Contacted)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/staff/payments/1/status",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{paymentToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Contacted\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update Payment Status (Paid - Activates Enrollment)",
+          "request": {
+            "method": "PATCH",
+            "url": "{{baseUrl}}/api/staff/payments/1/status",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{paymentToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"Paid\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Report Staff APIs",
+      "item": [
+        {
+          "name": "Get Summary Analytics (language=all)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/staff/reports/summary?language=all",
+            "header": [{ "key": "Authorization", "value": "Bearer {{reportToken}}" }]
+          }
+        },
+        {
+          "name": "Get Summary Analytics (language=en)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/staff/reports/summary?language=en",
+            "header": [{ "key": "Authorization", "value": "Bearer {{reportToken}}" }]
+          }
+        },
+        {
+          "name": "Get Summary Analytics (language=fr)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/staff/reports/summary?language=fr",
+            "header": [{ "key": "Authorization", "value": "Bearer {{reportToken}}" }]
+          }
+        },
+        {
+          "name": "Get Exportable Records for Excel (language=all)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/staff/reports/records?language=all",
+            "header": [{ "key": "Authorization", "value": "Bearer {{reportToken}}" }]
+          }
+        }
+      ]
+    }
+  ]
+}

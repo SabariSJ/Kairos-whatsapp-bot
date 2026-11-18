@@ -1,0 +1,594 @@
+<USER_REQUEST>
+# PHASE 8 – COMPLETE SYSTEM INTEGRATION TESTING & PRODUCTION READINESS
+
+## Project: Kairos WhatsApp Learning Platform
+
+### Objective
+
+Perform complete end-to-end integration testing of the existing Kairos platform, covering:
+
+1. English student registration.
+2. French student registration.
+3. Payment processing and verification.
+4. Enrolment activation.
+5. WhatsApp payment notifications.
+6. Student authentication and authorisation.
+7. Secure classroom access.
+8. Video streaming and playback.
+9. S3 video security.
+10. Staff dashboards and reporting.
+11. Security and regression testing.
+12. Backup, recovery, and production-readiness assessment.
+
+This phase is focused on testing, verification, bug fixing, and documentation.
+
+**Do not deploy to production during Phase 8.**
+
+---
+
+## 1. Mandatory Pre-Testing Checks
+
+Before starting Phase 8 testing:
+
+- Review the Phase 7 implementation and completion report.
+- Review all Phase 7 acceptance test results.
+- Verify the actual implementation against the reported results.
+- Verify that all 12 expected S3 videos exist.
+- Clarify the reported discrepancy between 12 and 14 S3 video objects.
+- Verify the actual classroom URL configuration.
+- Do not use localhost URLs as proof of WhatsApp-accessible student links.
+- Verify playback progress persistence and resume functionality after a backend restart.
+- Confirm that the existing video player and application-level protection remain intact.
+- Confirm that no unapproved database migration has been executed.
+- Confirm that the original four PostgreSQL tables and Phase 6 `wa_notifications` table remain unchanged.
+
+Document any unresolved Phase 7 issues before proceeding.
+
+Do not assume that a test passed simply because the previous report marked it PASS.
+
+---
+
+## 2. English Student – Complete End-to-End Journey
+
+Test the complete English student workflow:
+
+1. Register a new English student.
+2. Verify registration details in PostgreSQL.
+3. Verify the correct English course assignment.
+4. Create a payment record.
+5. Test payment statuses:
+   - Pending
+   - Contacted
+   - Confirmed
+   - Paid
+6. Confirm that only Paid students receive Active enrolment.
+7. Verify the WhatsApp payment confirmation workflow.
+8. Verify notification delivery status and failure handling.
+9. Access the classroom through the authorised student flow.
+10. Verify access to all six English videos.
+11. Test video playback.
+12. Test rewind and forward controls.
+13. Test seeking and playback speed.
+14. Test playlist navigation and previous/next functionality.
+15. Verify playback progress and resume functionality.
+16. Verify that an unauthorised student cannot access videos.
+
+Capture actual test evidence for each important step.
+
+---
+
+## 3. French Student – Complete End-to-End Journey
+
+Repeat the complete workflow for French students.
+
+Verify:
+
+- French student registration.
+- Correct French course assignment.
+- Payment record creation.
+- Payment status updates.
+- Active enrolment after successful payment.
+- French WhatsApp notification template.
+- Correct student phone number and country code.
+- Access to all six French videos.
+- French-only language restrictions.
+- Video playback and playlist navigation.
+- Playback progress and resume functionality.
+
+Ensure English and French student journeys remain independent.
+
+---
+
+## 4. Payment and Enrolment Access-Control Testing
+
+Test the following conditions:
+
+| Scenario | Expected Result |
+|---|---|
+| Pending payment | Access denied |
+| Contacted payment | Access denied |
+| Confirmed but unpaid | Access denied |
+| Paid + Active enrolment | Access allowed |
+| Cancelled payment | Access denied |
+| Inactive enrolment | Access denied |
+| Unknown registration | Access denied |
+| English student accessing French videos | Access denied |
+| French student accessing English videos | Access denied |
+| Expired classroom link | Access denied |
+| Invalid session token | Access denied |
+| Reused or revoked session | Access denied, according to session policy |
+
+Important:
+
+- Verify eligibility against PostgreSQL.
+- Do not rely only on frontend status or browser-side checks.
+- Verify registration, payment, enrolment, course, and language relationships.
+- Confirm that unauthorised access cannot be achieved by modifying request parameters.
+
+---
+
+## 5. WhatsApp Integration Testing
+
+Verify:
+
+1. English payment confirmation.
+2. French payment confirmation.
+3. Correct student phone number and country code.
+4. Correct language-specific message template.
+5. Notification statuses:
+   - Sent
+   - Delivered
+   - Read
+   - Failed
+6. Failed notification handling.
+7. Controlled notification retry.
+8. Duplicate notification prevention.
+9. Webhook signature verification.
+10. Duplicate payment and enrolment prevention.
+11. Correct handling of WhatsApp API errors.
+
+**Important:**
+
+Clearly distinguish:
+
+- Mock-provider test results.
+- Simulated webhook results.
+- Actual Meta WhatsApp API delivery.
+
+Do not report a mock WhatsApp response as an actual delivered message.
+
+If actual Meta delivery cannot be tested in staging, mark it as BLOCKED and explain why.
+
+Do not modify the existing live WhatsApp webhook.
+
+---
+
+## 6. Video Security and Playback Testing
+
+Test the existing video player and backend streaming implementation without replacing the existing player or DRM implementation.
+
+### A. S3 Video Storage and URL Security
+
+Kairos has 12 expected video objects in the private AWS S3 bucket:
+
+**Bucket:** `kairos-whatsapp-vid`
+
+**Region:** `us-east-1`
+
+Expected English videos:
+
+- `english/video1.mp4`
+- `english/video2.mp4`
+- `english/video3.mp4`
+- `english/video4.mp4`
+- `english/video5.mp4`
+- `english/video6.mp4`
+
+Expected French videos:
+
+- `french/french_video1.mp4`
+- `french/french_video2.mp4`
+- `french/french_video3.mp4`
+- `french/french_video4.mp4`
+- `french/french_video5.mp4`
+- `french/french_video6.mp4`
+
+Verify all 12 actual S3 object URLs and permissions.
+
+Required tests:
+
+1. Confirm that the S3 bucket is private.
+2. Confirm that all 12 video objects are private.
+3. Test each direct S3 object URL without authentication.
+4. Expected result: Access Denied (403).
+5. Test direct S3 access through an incognito browser.
+6. Verify that no permanent public S3 video URLs are exposed in:
+   - Frontend HTML.
+   - JavaScript files.
+   - API responses.
+   - Browser Network requests.
+7. Verify that AWS access keys and secret keys are never exposed in frontend code.
+8. Verify that S3 access is performed through the authorised backend.
+9. Verify the actual S3 permissions and IAM policy.
+10. Confirm that the S3 bucket has not been made public.
+
+**Important:**
+
+Check and document the actual video delivery architecture.
+
+Identify whether the application uses:
+
+- Protected backend video streaming; or
+- Temporary presigned S3 URLs.
+
+If backend streaming is used:
+
+- Confirm that the backend validates student eligibility before streaming.
+- Confirm that the backend retrieves the private S3 object.
+- Confirm that the student does not receive a permanent public S3 URL.
+
+If temporary presigned URLs are used:
+
+- Document how they are generated.
+- Verify their expiry.
+- Verify that they cannot bypass payment, enrolment, and language eligibility checks.
+- Confirm that they are not permanent public URLs.
+- Explain the security implications of sharing a presigned URL while it remains valid.
+
+Do not assume that backend streaming is implemented. Verify the actual code and browser Network requests.
+
+### B. Backend Authorisation and Streaming
+
+Verify:
+
+- Backend authorisation before video streaming.
+- Valid student registration.
+- Paid payment status.
+- Active enrolment.
+- Correct course assignment.
+- Correct language access.
+- Expired token rejection.
+- Invalid session rejection.
+- Revoked session rejection.
+- HTTP Range requests.
+- HTTP 206 Partial Content responses where appropriate.
+- Video seeking through Range requests.
+- Correct handling of invalid or missing Range headers.
+- Secure handling of S3 access failures.
+
+### C. Player Functionality
+
+Verify all existing player features:
+
+- Play and Pause.
+- Rewind 10 seconds.
+- Forward 10 seconds.
+- Interactive progress bar and seeking.
+- Current playback time.
+- Total video duration.
+- Volume control.
+- Mute and unmute.
+- Fullscreen.
+- Playback speed:
+  - 0.5x
+  - 0.75x
+  - 1x
+  - 1.25x
+  - 1.5x
+  - 2x
+- Loading indicator.
+- Buffering indicator.
+- Error message and retry.
+- Resume playback.
+- Playlist navigation.
+- Previous and Next video.
+- Watched, In Progress, and Not Started status.
+- Mobile-responsive player.
+- Watermark functionality.
+- Session expiry handling.
+
+Verify that the player works with actual video files, not just mocked video responses.
+
+### D. Playback Progress and Recovery
+
+Verify:
+
+1. Student starts watching a video.
+2. Student watches for a specific duration.
+3. Playback progress is saved.
+4. Student closes the classroom.
+5. Student opens the classroom again.
+6. Video resumes from the saved position.
+7. Progress remains available after backend restart.
+8. Progress is correctly associated with the student, course, and video.
+9. Progress from one student is never visible to another student.
+
+If playback progress is stored in an in-memory session store or Google Sheets, document the actual persistence mechanism and its limitations.
+
+Do not create a new PostgreSQL table without explicit approval.
+
+### E. Session and Device Security
+
+Verify:
+
+- Session expiry.
+- Invalid session rejection.
+- Single-device lock behaviour.
+- Device-change recovery.
+- Concurrent session handling.
+- Token validation.
+- Correct handling of revoked sessions.
+
+Document how device fingerprints are generated and stored.
+
+Do not describe browser fingerprinting or application-level session protection as hardware DRM.
+
+### F. Mobile Browser Compatibility
+
+Test video playback on:
+
+- Android mobile browser.
+- iPhone Safari.
+
+Verify:
+
+- Video loading.
+- Playback.
+- Seeking.
+- Fullscreen.
+- Volume behaviour where supported.
+- Playback speed.
+- Network interruptions.
+- Session expiry.
+- Resume playback.
+
+Clearly distinguish actual physical-device testing from desktop browser viewport emulation.
+
+Do not claim physical-device compatibility based only on responsive viewport testing.
+
+### G. DRM and Content Protection
+
+Inspect and document the existing implementation.
+
+Clearly distinguish:
+
+- Application-level access protection.
+- Session-token protection.
+- Device locking.
+- Genuine hardware-backed DRM such as Widevine or FairPlay.
+
+Do not describe application-level protection as Widevine/FairPlay DRM.
+
+Do not introduce ClearKey as a production DRM solution.
+
+Do not replace the existing player or DRM implementation.
+
+Explain the limitations of browser-level protection, including the possibility of screen recording and external-camera capture.
+
+---
+
+## 7. Security and Regression Testing
+
+Verify:
+
+### Authentication and API Security
+
+- JWT authentication.
+- Role-based access control.
+- Password hashing.
+- API input validation.
+- SQL injection protection.
+- CORS configuration.
+- Environment-variable protection.
+- No sensitive credentials in frontend bundles.
+- No sensitive information in application logs.
+
+### Existing Application Regression
+
+Verify that the following existing features continue working:
+
+- WhatsApp registration workflow.
+- Existing WhatsApp webhook.
+- Payment confirmation workflow.
+- Notification status tracking.
+- Payment Staff dashboard.
+- Report Staff dashboard.
+- Payment status updates.
+- Reports and summaries.
+- Export functionality.
+- English registration application.
+- French registration application.
+- Classroom routes.
+- Existing DRM/session functionality.
+- Existing video player.
+
+Do not break existing production functionality.
+
+---
+
+## 8. Backup, Monitoring and Recovery
+
+Review and document:
+
+1. PostgreSQL backup availability.
+2. PostgreSQL restore procedure.
+3. Database connection failure handling.
+4. Backend restart and recovery.
+5. S3 access failure handling.
+6. WhatsApp API failure handling.
+7. Application logs and error monitoring.
+8. Notification retry and recovery.
+9. Session expiry and recovery.
+10. Playback progress recovery.
+
+Do not perform destructive restore operations or production database changes without approval.
+
+---
+
+## 9. Database Integrity and Migration Restrictions
+
+The existing database is AWS RDS PostgreSQL.
+
+Verify that the following tables remain intact:
+
+- `wa_registrations`
+- `wa_courses`
+- `wa_payments`
+- `wa_enrollments`
+- `wa_notifications`
+
+Do not modify the original four tables or the Phase 6 `wa_notifications` table.
+
+Do not execute any new database migration without explicit approval.
+
+If a new table or schema change is necessary, submit:
+
+- Reason for the change.
+- Proposed table structure.
+- SQL migration script.
+- Foreign-key relationships.
+- Unique constraints.
+- Rollback script.
+- Impact on existing applications.
+
+Wait for approval before execution.
+
+---
+
+## 10. Test Evidence and Acceptance Report
+
+Prepare a comprehensive Phase 8 test report.
+
+For every test, include:
+
+- Test Case ID.
+- Test description.
+- Expected result.
+- Actual result.
+- PASS / FAIL / BLOCKED.
+- Evidence.
+- Defect details.
+- Corrective action.
+- Retest result.
+
+Provide the following evidence:
+
+1. English end-to-end testing.
+2. French end-to-end testing.
+3. PostgreSQL verification.
+4. Payment and enrolment verification.
+5. WhatsApp notification evidence.
+6. Actual Meta delivery evidence, where available.
+7. S3 bucket permission evidence.
+8. S3 direct URL access-denied evidence for all 12 videos.
+9. Backend streaming evidence.
+10. Browser Network tab screenshots.
+11. Video playback screenshots or screen recordings.
+12. Android testing evidence.
+13. iPhone Safari testing evidence.
+14. Security test results.
+15. Existing application regression results.
+16. Backup and recovery documentation.
+
+Screenshots must be actual image attachments or accessible evidence files.
+
+Do not provide only local file paths from the developer's computer.
+
+Do not count source-code inspection, mocked responses, or simulated tests as successful real end-to-end tests.
+
+Clearly identify which tests were performed using:
+
+- Automated tests.
+- Manual browser tests.
+- Mock services.
+- Staging environment.
+- Actual external services.
+- Physical mobile devices.
+
+---
+
+## 11. Production-Readiness Checklist
+
+Before recommending production deployment, confirm:
+
+- [ ] English registration workflow passes.
+- [ ] French registration workflow passes.
+- [ ] Payment workflow passes.
+- [ ] Enrolment activation works correctly.
+- [ ] WhatsApp notifications work correctly.
+- [ ] Actual Meta delivery has been demonstrated or its limitations documented.
+- [ ] Payment and enrolment access restrictions work.
+- [ ] All 12 S3 videos are private.
+- [ ] All 12 direct S3 URL access tests are completed.
+- [ ] Backend video authorisation works.
+- [ ] Video streaming and seeking work.
+- [ ] Playback progress and resume work after backend restart.
+- [ ] English/French video restrictions work.
+- [ ] Session and device restrictions work.
+- [ ] Android browser playback is verified.
+- [ ] iPhone Safari playback is verified.
+- [ ] Staff dashboards work.
+- [ ] Existing WhatsApp bot functionality is preserved.
+- [ ] Existing classroom and DRM routes are preserved.
+- [ ] Security tests pass.
+- [ ] Regression tests pass.
+- [ ] Backup and recovery procedures are documented.
+- [ ] No unapproved database changes exist.
+- [ ] No critical or high-severity unresolved defects remain.
+
+If any mandatory item is not completed, mark it BLOCKED or FAIL. Do not claim full production readiness.
+
+---
+
+## 12. Strict Production Deployment Restrictions
+
+During Phase 8:
+
+- Do not deploy to production.
+- Do not modify the live WhatsApp webhook.
+- Do not change production environment variables.
+- Do not execute unapproved database migrations.
+- Do not make the S3 bucket or video objects public.
+- Do not expose AWS credentials.
+- Do not introduce paid services.
+- Do not replace the existing video player.
+- Do not replace the existing DRM implementation.
+- Do not change existing production workflows.
+
+All testing and bug fixes must be performed in the approved staging/development environment.
+
+---
+
+## 13. Final Deliverables
+
+Submit:
+
+1. Phase 8 completion report.
+2. Complete acceptance test results.
+3. English and French end-to-end test evidence.
+4. S3 video URL security verification report.
+5. Video player and streaming verification report.
+6. WhatsApp integration verification report.
+7. Security and regression report.
+8. Database integrity report.
+9. Backup and recovery report.
+10. List of unresolved defects.
+11. Production-readiness recommendation.
+
+Provide a clear final status:
+
+- READY FOR PRODUCTION REVIEW
+- NOT READY – ISSUES FOUND
+- BLOCKED – ADDITIONAL VERIFICATION REQUIRED
+
+Explain the reasons for the selected status.
+
+**STOP after Phase 8 testing and report submission. Wait for explicit approval before any production deployment or Phase 9 work.**
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-11-18T18:59:03+05:30.
+
+The user's current state is as follows:
+Active Document: c:\Users\SABARI SJ\Desktop\common-folder\phase7_test_results.json (LANGUAGE_UNSPECIFIED)
+Cursor is on line: 1
+</ADDITIONAL_METADATA>
