@@ -422,18 +422,50 @@ app.post("/api/internal/send-payment-notification", async (req, res) => {
       return res.status(401).json({ error: "Unauthorized: Invalid or missing service key" });
     }
 
-    const { phone, templateName, parameters, languageCode, paymentId } = req.body;
-    if (!phone || !templateName) {
-      return res.status(400).json({ error: "Phone number and templateName are required." });
+    const { phone, templateName, parameters, languageCode, paymentId, studentName, courseName, language } = req.body;
+    if (!phone) {
+      return res.status(400).json({ error: "Phone number is required." });
     }
 
     const whatsappService = require("./services/whatsappService");
-    const result = await whatsappService.sendTemplateMessage(
-      phone,
-      templateName,
-      parameters || [],
-      languageCode || "en_US"
-    );
+    const isFrench = String(language || languageCode || '').toLowerCase().startsWith('fr');
+    const sName = (studentName || parameters?.[0] || 'Student').trim();
+    const cName = (courseName || parameters?.[1] || (isFrench ? 'Cours de Réussite Commerciale' : 'Business Success Class')).trim();
+
+    let confirmationText = '';
+    if (isFrench) {
+      confirmationText = 
+`Bonjour ${sName} ! 🎉
+
+Votre paiement pour ${cName} a été confirmé avec succès.
+
+Votre inscription est maintenant active. Vous pouvez accéder à votre formation via la plateforme d’apprentissage WhatsApp Kairos.
+
+Bonne formation ! 📚✨
+
+— L’équipe Kairos`;
+    } else {
+      confirmationText = 
+`Hello ${sName}! 🎉
+
+Your payment for ${cName} has been confirmed successfully.
+
+Your enrolment is now active. You can access your course through the Kairos WhatsApp Learning Platform.
+
+Happy Learning! 📚✨
+
+— Team Kairos`;
+    }
+
+    let result = await whatsappService.sendTextMessage(phone, confirmationText);
+    if (!result && templateName) {
+      result = await whatsappService.sendTemplateMessage(
+        phone,
+        templateName,
+        parameters || [sName, cName],
+        languageCode || (isFrench ? "fr" : "en_US")
+      );
+    }
 
     if (result && result.messages && result.messages.length > 0) {
       const messageId = result.messages[0].id;

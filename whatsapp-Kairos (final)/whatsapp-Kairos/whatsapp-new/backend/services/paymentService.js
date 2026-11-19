@@ -1,6 +1,144 @@
 const { query, getClient } = require('../config/db');
+const whatsappService = require('./whatsappService');
 
 const VALID_STATUSES = ['Pending', 'Contacted', 'Confirmed', 'Paid', 'Cancelled'];
+
+/**
+ * Format phone to international E.164 digits without '+' (e.g. +91 9500406150 -> 919500406150)
+ */
+function formatE164Phone(countryCode, phoneNumber) {
+  const cc = String(countryCode || '').replace(/\D/g, '');
+  const phone = String(phoneNumber || '').replace(/\D/g, '');
+  if (!phone) return '';
+  if (cc && phone.startsWith(cc) && phone.length > 10) return phone;
+  if (cc) return `${cc}${phone}`;
+  if (phone.length === 10 && ['6', '7', '8', '9'].includes(phone[0])) return `91${phone}`;
+  return phone;
+}
+
+/**
+ * Dispatch one-time payment confirmation message to the student via WhatsApp
+ * and record the dispatch in wa_notifications.
+ * @param {object} payment
+ */
+async function dispatchPaymentConfirmationNotification(payment) {
+  if (!payment || !payment.payment_id || !payment.registration_id) return;
+
+  try {
+    // 1. Check if a confirmation notification has already been successfully sent for this payment
+    const notifCheck = await query(`
+      SELECT notification_id FROM public.wa_notifications
+      WHERE payment_id = $1 AND template_name = 'payment_confirmed' AND status = 'Sent'
+      LIMIT 1
+    `, [payment.payment_id]);
+
+    if (notifCheck.rows.length > 0) {
+      console.log(`[Payment Staff Notification] Payment confirmation already sent for payment #${payment.payment_id}. Skipping duplicate send.`);
+      return;
+    }
+
+    // 2. Fetch student details and course details
+    const studentRes = await query(`
+      SELECT 
+        r.registration_id,
+        r.full_name,
+        r.country_code,
+        r.phone_number,
+        r.language,
+        COALESCE(
+          c.course_name,
+          (SELECT course_name FROM public.wa_courses WHERE language = r.language AND is_active = true LIMIT 1),
+          (CASE WHEN r.language = 'fr' THEN 'Cours de Réussite Commerciale' ELSE 'Business Success Class' END)
+        ) AS course_name
+      FROM public.wa_registrations r
+      LEFT JOIN public.wa_courses c ON c.course_id = $2
+      WHERE r.registration_id = $1
+    `, [payment.registration_id, payment.course_id]);
+
+    if (studentRes.rows.length === 0) {
+      console.warn(`[Payment Staff Notification] Registration record #${payment.registration_id} not found.`);
+      return;
+    }
+
+    const student = studentRes.rows[0];
+    const studentName = (student.full_name || 'Student').trim();
+    const courseName = (student.course_name || (student.language === 'fr' ? 'Cours de Réussite Commerciale' : 'Business Success Class')).trim();
+    const isFrench = String(student.language || '').toLowerCase().trim() === 'fr';
+
+    // 3. Compose exact message template as requested
+    let confirmationText = '';
+    if (isFrench) {
+      confirmationText = 
+`Bonjour ${studentName} ! 🎉
+
+Votre paiement pour ${courseName} a été confirmé avec succès.
+
+Votre inscription est maintenant active. Vous pouvez accéder à votre formation via la plateforme d’apprentissage WhatsApp Kairos.
+
+Bonne formation ! 📚✨
+
+— L’équipe Kairos`;
+    } else {
+      confirmationText = 
+`Hello ${studentName}! 🎉
+
+Your payment for ${courseName} has been confirmed successfully.
+
+Your enrolment is now active. You can access your course through the Kairos WhatsApp Learning Platform.
+
+Happy Learning! 📚✨
+
+— Team Kairos`;
+    }
+
+    // 4. Construct clean international phone number
+    const targetPhone = formatE164Phone(student.country_code, student.phone_number);
+    if (!targetPhone) {
+      console.error(`[Payment Staff Notification] Invalid phone for student #${student.registration_id}`);
+      return;
+    }
+
+    console.log(`[Payment Staff Notification] Sending one-time Paid confirmation WhatsApp message to +${targetPhone} (${student.language})...`);
+
+    // 5. Send WhatsApp message
+    let sendResult = null;
+    let sendError = null;
+    try {
+      sendResult = await whatsappService.sendTextMessage(targetPhone, confirmationText);
+    } catch (err) {
+      sendError = err.message;
+      console.error(`[Payment Staff Notification] WhatsApp send failed:`, err.message);
+    }
+
+    const sendSuccess = Boolean(sendResult && (sendResult.messages || sendResult.messaging_product));
+    const metaMsgId = sendResult?.messages?.[0]?.id || null;
+
+    // 6. Record notification attempt in wa_notifications
+    try {
+      await query(`
+        INSERT INTO public.wa_notifications (
+          payment_id, registration_id, phone_e164, template_name, language,
+          consent_status, status, meta_message_id, error_message, attempt_count,
+          last_attempt_at, created_at, updated_at
+        ) VALUES ($1, $2, $3, 'payment_confirmed', $4, 'opted_in', $5, $6, $7, 1, NOW(), NOW(), NOW())
+      `, [
+        payment.payment_id,
+        payment.registration_id,
+        targetPhone,
+        student.language || 'en',
+        sendSuccess ? 'Sent' : 'Failed',
+        metaMsgId,
+        sendSuccess ? null : (sendError || 'Failed to dispatch via WhatsApp Cloud API')
+      ]);
+
+      console.log(`[Payment Staff Notification] Logged to wa_notifications: status = ${sendSuccess ? 'Sent' : 'Failed'}, metaId = ${metaMsgId}`);
+    } catch (dbErr) {
+      console.error(`[Payment Staff Notification] Failed to record in wa_notifications:`, dbErr.message);
+    }
+  } catch (err) {
+    console.error(`[Payment Staff Notification Error]:`, err.message);
+  }
+}
 
 /**
  * Retrieve payments list with joined registration, course, and enrollment details
@@ -85,6 +223,7 @@ async function updatePaymentStatus(paymentId, newStatus, staffEmail) {
 
   const client = await getClient();
   let payment;
+  let previousStatus = null;
 
   try {
     await client.query('BEGIN');
@@ -123,7 +262,9 @@ async function updatePaymentStatus(paymentId, newStatus, staffEmail) {
       `, [reg.registration_id, courseId, newStatus, staffEmail || 'staff@sprout.com']);
 
       payment = newPayRes.rows[0];
+      previousStatus = 'Pending';
     } else {
+      previousStatus = payRes.rows[0].status;
       const updateRes = await client.query(`
         UPDATE public.wa_payments
         SET 
@@ -171,6 +312,15 @@ async function updatePaymentStatus(paymentId, newStatus, staffEmail) {
       const backendStudentService = require('./backendStudentService');
       backendStudentService.clearCache();
     } catch (_) {}
+
+    // One-time WhatsApp confirmation dispatch when payment status becomes 'Paid'
+    if (newStatus === 'Paid' && previousStatus !== 'Paid') {
+      try {
+        await dispatchPaymentConfirmationNotification(payment);
+      } catch (notifErr) {
+        console.error('[Payment Staff Notification Dispatch Error]:', notifErr.message);
+      }
+    }
 
     return payment;
   } catch (err) {
