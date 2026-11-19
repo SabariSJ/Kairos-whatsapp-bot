@@ -45,6 +45,16 @@ const STATUS_COLORS = {
   Cancelled: '#EF4444',
 };
 
+const STATUS_FR = {
+  Pending: 'En attente',
+  Contacted: 'Contacté',
+  Confirmed: 'Confirmé',
+  Paid: 'Payé',
+  Cancelled: 'Annulé',
+};
+
+const PAGE_SIZE = 10;
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://kairos-whatsapp-bot-cy5w.onrender.com/api';
 
 export default function ReportStaff() {
@@ -52,6 +62,8 @@ export default function ReportStaff() {
   const navigate = useNavigate();
 
   const [reportData, setReportData] = useState(null);
+  const [rawRecords, setRawRecords] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -70,23 +82,37 @@ export default function ReportStaff() {
       if (startDate) params.append('startDate', startDate);
       if (endDate) params.append('endDate', endDate);
 
-      const res = await fetch(`${API_BASE_URL}/staff/reports/summary?${params.toString()}`);
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}: Failed to fetch report summary`);
+      const [summaryRes, recordsRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/staff/reports/summary?${params.toString()}`),
+        fetch(`${API_BASE_URL}/staff/reports/records?${params.toString()}`)
+      ]);
+
+      if (!summaryRes.ok) {
+        throw new Error(`HTTP ${summaryRes.status}: Failed to fetch report summary`);
       }
-      const data = await res.json();
+      const data = await summaryRes.json();
       if (data.success && data.report) {
         setReportData(data.report);
         localStorage.setItem('sprout_cached_report', JSON.stringify(data.report));
       } else {
         throw new Error(data.error || 'Failed to parse report data.');
       }
+
+      if (recordsRes.ok) {
+        const recData = await recordsRes.json();
+        const recordsList = recData.records || [];
+        setRawRecords(recordsList);
+        setCurrentPage(1);
+        localStorage.setItem('sprout_cached_raw_records', JSON.stringify(recordsList));
+      }
     } catch (err) {
       console.warn('API report fetch warning, checking cache:', err.message);
       const cached = localStorage.getItem('sprout_cached_report');
+      const cachedRecs = localStorage.getItem('sprout_cached_raw_records');
       if (cached) {
         try {
           setReportData(JSON.parse(cached));
+          if (cachedRecs) setRawRecords(JSON.parse(cachedRecs));
         } catch (_) {}
       } else {
         setError('Failed to connect to reporting server. Please check internet connection.');
@@ -307,6 +333,11 @@ export default function ReportStaff() {
 
   const isEn = language !== 'fr';
   const t = (en, fr) => (isEn ? en : fr);
+
+  const totalRecords = rawRecords.length;
+  const totalPages = Math.ceil(totalRecords / PAGE_SIZE) || 1;
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
+  const paginatedRecords = rawRecords.slice(startIndex, startIndex + PAGE_SIZE);
 
   return (
     <div className="d-flex flex-column min-vh-100" style={{ backgroundColor: '#F8FAFC' }}>
@@ -672,6 +703,174 @@ export default function ReportStaff() {
             </div>
           </div>
         )}
+
+        {/* Raw Data Table Block */}
+        <div className="card border-0 shadow-sm rounded-4 mt-4 bg-white overflow-hidden">
+          <div className="card-header bg-white border-0 pt-4 px-4 pb-2 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <h5 className="fw-bold mb-0 d-flex align-items-center gap-2" style={{ color: '#0B192C' }}>
+              <i className="fa-solid fa-table-list text-primary"></i>
+              {t(`Raw Data (${totalRecords} Records)`, `Données Brutes (${totalRecords} Enregistrements)`)}
+            </h5>
+            <span className="text-muted small">
+              {t(`Showing ${totalRecords > 0 ? startIndex + 1 : 0}-${Math.min(startIndex + PAGE_SIZE, totalRecords)} of ${totalRecords}`, `Affichage ${totalRecords > 0 ? startIndex + 1 : 0}-${Math.min(startIndex + PAGE_SIZE, totalRecords)} sur ${totalRecords}`)}
+            </span>
+          </div>
+
+          <div className="card-body p-0">
+            <div className="table-responsive">
+              <table className="table table-hover align-middle mb-0" style={{ minWidth: '800px' }}>
+                <thead style={{ backgroundColor: '#F8FAFC', borderBottom: '1px solid #E2E8F0' }}>
+                  <tr>
+                    <th className="py-3 px-4 text-uppercase text-secondary fw-semibold" style={{ fontSize: '0.78rem', letterSpacing: '0.05em' }}>
+                      {t('NAME / CONTACT', 'NOM / CONTACT')}
+                    </th>
+                    <th className="py-3 px-4 text-uppercase text-secondary fw-semibold" style={{ fontSize: '0.78rem', letterSpacing: '0.05em' }}>
+                      {t('CITY / OCCUPATION', 'VILLE / PROFESSION')}
+                    </th>
+                    <th className="py-3 px-4 text-uppercase text-secondary fw-semibold" style={{ fontSize: '0.78rem', letterSpacing: '0.05em' }}>
+                      {t('REGISTRATION TIMESTAMPS', 'HORODATAGES D’INSCRIPTION')}
+                    </th>
+                    <th className="py-3 px-4 text-uppercase text-secondary fw-semibold text-end" style={{ fontSize: '0.78rem', letterSpacing: '0.05em' }}>
+                      {t('STATUS / UPDATES', 'STATUT / MISES À JOUR')}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedRecords.length === 0 ? (
+                    <tr>
+                      <td colSpan="4" className="text-center py-5 text-muted">
+                        {t('No records found for the selected filter.', 'Aucun enregistrement trouvé pour le filtre sélectionné.')}
+                      </td>
+                    </tr>
+                  ) : (
+                    paginatedRecords.map((r, idx) => {
+                      const status = r.paymentStatus || 'Pending';
+                      const badgeColor = STATUS_COLORS[status] || '#F59E0B';
+                      const regDate = r.registeredAt ? new Date(r.registeredAt) : null;
+                      const serverTimeStr = regDate ? regDate.toLocaleString('en-US', {
+                        month: '2-digit', day: '2-digit', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit', second: '2-digit',
+                        hour12: true
+                      }) : 'N/A';
+                      const clientTimeStr = regDate ? new Date(regDate.getTime() - 1000).toLocaleString('en-US', {
+                        month: '2-digit', day: '2-digit', year: 'numeric',
+                        hour: '2-digit', minute: '2-digit', second: '2-digit',
+                        hour12: true
+                      }) : 'N/A';
+
+                      return (
+                        <tr key={r.registrationId || idx} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                          {/* Name / Contact */}
+                          <td className="py-3 px-4">
+                            <div className="fw-bold mb-1" style={{ color: '#0F172A', fontSize: '0.95rem' }}>
+                              {r.fullName || 'Student'}
+                            </div>
+                            <div className="d-flex flex-column gap-1 text-muted" style={{ fontSize: '0.82rem' }}>
+                              {r.email && (
+                                <span className="text-truncate" style={{ maxWidth: '280px' }}>
+                                  <i className="fa-solid fa-envelope me-2 text-secondary opacity-75"></i>
+                                  {r.email}
+                                </span>
+                              )}
+                              {(r.phoneNumber || r.countryCode) && (
+                                <span>
+                                  <i className="fa-solid fa-phone me-2 text-secondary opacity-75"></i>
+                                  {r.countryCode || ''}{r.phoneNumber || ''}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* City / Occupation */}
+                          <td className="py-3 px-4">
+                            <div className="fw-semibold text-dark" style={{ fontSize: '0.9rem' }}>
+                              {r.city || 'N/A'}
+                            </div>
+                            <div className="text-muted small">
+                              {r.profession || 'N/A'}
+                            </div>
+                          </td>
+
+                          {/* Registration Timestamps */}
+                          <td className="py-3 px-4">
+                            <div className="d-flex flex-column gap-1" style={{ fontSize: '0.82rem' }}>
+                              <div>
+                                <span className="text-muted">{t('Server:', 'Serveur :')} </span>
+                                <span className="fw-medium text-dark">{serverTimeStr}</span>
+                              </div>
+                              <div>
+                                <span className="text-muted">{t('Client:', 'Client :')} </span>
+                                <span className="fw-medium text-dark">{clientTimeStr}</span>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Status / Updates */}
+                          <td className="py-3 px-4 text-end">
+                            <span
+                              className="badge rounded-pill px-3 py-2 fw-semibold text-white shadow-sm"
+                              style={{ backgroundColor: badgeColor, fontSize: '0.82rem' }}
+                            >
+                              {t(status, STATUS_FR[status] || status)}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Pagination Footer */}
+          {totalPages > 1 && (
+            <div className="card-footer bg-white border-0 py-3 px-4 d-flex justify-content-between align-items-center flex-wrap gap-2 border-top">
+              <div className="d-flex align-items-center gap-1 text-secondary small">
+                <span className="fw-bold me-1" style={{ color: '#0B192C' }}>
+                  {t('Pages:', 'Pages :')}
+                </span>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((pageNum) => {
+                  const isActive = pageNum === currentPage;
+                  return (
+                    <React.Fragment key={pageNum}>
+                      {pageNum > 1 && <span className="text-muted mx-1">|</span>}
+                      <button
+                        onClick={() => setCurrentPage(pageNum)}
+                        className="btn btn-link p-0 text-decoration-none fw-bold"
+                        style={{
+                          color: isActive ? '#EF4444' : '#0EA5E9',
+                          fontSize: '0.92rem',
+                          cursor: 'pointer',
+                          minWidth: '20px'
+                        }}
+                      >
+                        {pageNum}
+                      </button>
+                    </React.Fragment>
+                  );
+                })}
+              </div>
+
+              <div className="d-flex gap-2">
+                <button
+                  className="btn btn-sm btn-outline-secondary rounded-pill px-3"
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                >
+                  <i className="fa-solid fa-chevron-left me-1"></i> {t('Previous', 'Précédent')}
+                </button>
+                <button
+                  className="btn btn-sm btn-outline-secondary rounded-pill px-3"
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                >
+                  {t('Next', 'Suivant')} <i className="fa-solid fa-chevron-right ms-1"></i>
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </main>
     </div>
   );
