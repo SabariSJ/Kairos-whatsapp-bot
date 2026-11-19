@@ -14,6 +14,14 @@ const STATUS_COLORS = {
 
 const STATUS_OPTIONS = ['Pending', 'Contacted', 'Confirmed', 'Paid', 'Cancelled'];
 
+const STATUS_FR = {
+  Pending: 'En attente',
+  Contacted: 'Contacté',
+  Confirmed: 'Confirmé',
+  Paid: 'Payé',
+  Cancelled: 'Annulé'
+};
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://kairos-whatsapp-bot-cy5w.onrender.com/api';
 
 export default function PaymentStaff() {
@@ -206,15 +214,18 @@ export default function PaymentStaff() {
     });
   }, [registrations, search, filterStatus, filterDate, language]);
 
+  const isEn = language !== 'fr';
+  const t = (en, fr) => (isEn ? en : fr);
+
   const grouped = useMemo(() => {
     const groups = {};
     filteredRegistrations.forEach(reg => {
-      const dateStr = reg.createdAtDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
+      const dateStr = reg.createdAtDate.toLocaleDateString(isEn ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
       if (!groups[dateStr]) groups[dateStr] = [];
       groups[dateStr].push(reg);
     });
     return groups;
-  }, [filteredRegistrations]);
+  }, [filteredRegistrations, isEn]);
 
   const latestRegistrationId = registrations.length > 0 ? registrations[0].registrationId : null;
 
@@ -228,14 +239,14 @@ export default function PaymentStaff() {
           <div className="d-none d-sm-block border-start ps-3 ms-2">
             <div className="d-flex align-items-center gap-2">
               <h1 className="h5 mb-0 fw-bold" style={{ color: '#0B192C' }}>
-                Payment Dashboard
+                {t('Payment Dashboard', 'Tableau de Bord des Paiements')}
               </h1>
               <span className="badge rounded-pill bg-primary" style={{ backgroundColor: '#00AEEF' }}>
                 PostgreSQL Live
               </span>
             </div>
             <small className="text-muted" style={{ fontSize: '0.8rem' }}>
-              {currentUser?.displayName || 'Payment Team'} &bull; {currentUser?.email || 'admin@sprout.app'}
+              {currentUser?.displayName || t('Payment Team', 'Équipe Paiement')} &bull; {currentUser?.email || 'admin@sprout.app'}
             </small>
           </div>
         </div>
@@ -246,7 +257,7 @@ export default function PaymentStaff() {
             onClick={handleLogout} 
             className="btn btn-light border rounded-circle text-secondary shadow-sm hover-primary d-flex align-items-center justify-content-center" 
             style={{ width: '42px', height: '42px' }} 
-            title="Logout"
+            title={t('Logout', 'Déconnexion')}
           >
             <i className="fa-solid fa-right-from-bracket"></i>
           </button>
@@ -273,9 +284,9 @@ export default function PaymentStaff() {
             <div className="card border-0 shadow-sm rounded-4 h-100 overflow-hidden" style={{ borderLeft: '5px solid #0B192C' }}>
               <div className="card-body p-4 d-flex justify-content-between align-items-center">
                 <div>
-                  <h6 className="text-uppercase mb-2 text-muted fw-bold small">Total Registrations</h6>
+                  <h6 className="text-uppercase mb-2 text-muted fw-bold small">{t('Total Registrations', 'Total Inscriptions')}</h6>
                   <h2 className="mb-0 fw-bold" style={{ color: '#0B192C' }}>{totalCount}</h2>
-                  <small className="text-muted">PostgreSQL Database</small>
+                  <small className="text-muted">{t('PostgreSQL Database', 'Base PostgreSQL')}</small>
                 </div>
                 <div className="bg-light rounded-circle d-flex justify-content-center align-items-center" style={{ width: '56px', height: '56px' }}>
                   <i className="fa-solid fa-users text-secondary fs-4"></i>
@@ -287,9 +298,9 @@ export default function PaymentStaff() {
             <div className="card border-0 shadow-sm rounded-4 h-100 overflow-hidden" style={{ borderLeft: '5px solid #00AEEF' }}>
               <div className="card-body p-4 d-flex justify-content-between align-items-center">
                 <div>
-                  <h6 className="text-uppercase mb-2 text-muted fw-bold small">Registrations Today</h6>
+                  <h6 className="text-uppercase mb-2 text-muted fw-bold small">{t('Registrations Today', 'Inscrits Aujourd’hui')}</h6>
                   <h2 className="mb-0 fw-bold" style={{ color: '#00AEEF' }}>{todayCount}</h2>
-                  <small className="text-muted">New today</small>
+                  <small className="text-muted">{t('New today', 'Nouveaux aujourd’hui')}</small>
                 </div>
                 <div style={{ width: '56px', height: '56px', backgroundColor: 'rgba(0,174,239,0.1)' }} className="rounded-circle d-flex justify-content-center align-items-center">
                   <i className="fa-solid fa-calendar-day fs-4" style={{ color: '#00AEEF' }}></i>
@@ -301,9 +312,9 @@ export default function PaymentStaff() {
             <div className="card border-0 shadow-sm rounded-4 h-100 overflow-hidden" style={{ borderLeft: '5px solid #F59E0B' }}>
               <div className="card-body p-4 d-flex justify-content-between align-items-center">
                 <div>
-                  <h6 className="text-uppercase mb-2 text-muted fw-bold small">Pending Payments</h6>
+                  <h6 className="text-uppercase mb-2 text-muted fw-bold small">{t('Pending Payments', 'Paiements en Attente')}</h6>
                   <h2 className="mb-0 fw-bold" style={{ color: '#F59E0B' }}>{pendingCount}</h2>
-                  <small className="text-muted">Awaiting confirmation</small>
+                  <small className="text-muted">{t('Awaiting confirmation', 'En attente de confirmation')}</small>
                 </div>
                 <div style={{ width: '56px', height: '56px', backgroundColor: 'rgba(245,158,11,0.1)' }} className="rounded-circle d-flex justify-content-center align-items-center">
                   <i className="fa-regular fa-clock fs-4" style={{ color: '#F59E0B' }}></i>
@@ -315,9 +326,9 @@ export default function PaymentStaff() {
             <div className="card border-0 shadow-sm rounded-4 h-100 overflow-hidden" style={{ borderLeft: '5px solid #10B981' }}>
               <div className="card-body p-4 d-flex justify-content-between align-items-center">
                 <div>
-                  <h6 className="text-uppercase mb-2 text-muted fw-bold small">Paid Students</h6>
+                  <h6 className="text-uppercase mb-2 text-muted fw-bold small">{t('Paid Students', 'Étudiants Payés')}</h6>
                   <h2 className="mb-0 fw-bold" style={{ color: '#10B981' }}>{paidCount}</h2>
-                  <small className="text-muted">Access unlocked</small>
+                  <small className="text-muted">{t('Access unlocked', 'Accès débloqué')}</small>
                 </div>
                 <div style={{ width: '56px', height: '56px', backgroundColor: 'rgba(16,185,129,0.1)' }} className="rounded-circle d-flex justify-content-center align-items-center">
                   <i className="fa-solid fa-check-circle fs-4" style={{ color: '#10B981' }}></i>
@@ -333,30 +344,30 @@ export default function PaymentStaff() {
             <div className="row g-3 align-items-end">
               <div className="col-12 col-lg-5">
                 <label className="form-label text-muted fw-bold small mb-1">
-                  <i className="fa-solid fa-magnifying-glass me-2"></i>Search Registrations
+                  <i className="fa-solid fa-magnifying-glass me-2"></i>{t('Search Registrations', 'Rechercher une Inscription')}
                 </label>
                 <input 
                   type="text" 
                   className="form-control border-0 bg-light w-100" 
-                  placeholder="Search by ID, name, email, phone, city..." 
+                  placeholder={t('Search by ID, name, email, phone, city...', 'Recherche par ID, nom, email, téléphone, ville...')} 
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                 />
               </div>
               <div className="col-12 col-sm-6 col-lg-3">
                 <label className="form-label text-muted fw-bold small mb-1">
-                  <i className="fa-solid fa-filter me-2"></i>Status Filter
+                  <i className="fa-solid fa-filter me-2"></i>{t('Status Filter', 'Filtrer par Statut')}
                 </label>
                 <select className="form-select border-0 bg-light w-100" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
-                  <option value="">All Statuses</option>
+                  <option value="">{t('All Statuses', 'Tous les statuts')}</option>
                   {STATUS_OPTIONS.map(opt => (
-                    <option key={opt} value={opt}>{opt}</option>
+                    <option key={opt} value={opt}>{t(opt, STATUS_FR[opt] || opt)}</option>
                   ))}
                 </select>
               </div>
               <div className="col-12 col-sm-6 col-lg-2">
                 <label className="form-label text-muted fw-bold small mb-1">
-                  <i className="fa-regular fa-calendar me-2"></i>Date Filter
+                  <i className="fa-regular fa-calendar me-2"></i>{t('Date Filter', 'Filtrer par Date')}
                 </label>
                 <input 
                   type="date" 
@@ -370,18 +381,18 @@ export default function PaymentStaff() {
                 <button 
                   className="btn btn-light border transition-all flex-grow-1 flex-lg-grow-0" 
                   onClick={() => { setSearch(''); setFilterStatus(''); setFilterDate(''); setLanguage('all'); }} 
-                  title="Reset Filters"
+                  title={t('Reset Filters', 'Réinitialiser les filtres')}
                 >
-                  <i className="fa-solid fa-rotate-left me-1"></i> Reset
+                  <i className="fa-solid fa-rotate-left me-1"></i> {t('Reset', 'Réinit')}
                 </button>
                 <button 
                   className="btn text-white transition-all flex-grow-1 flex-lg-grow-0" 
                   onClick={fetchRegistrations} 
                   disabled={loading} 
                   style={{ backgroundColor: '#00AEEF' }} 
-                  title="Refresh Data"
+                  title={t('Refresh Data', 'Actualiser les données')}
                 >
-                  <i className="fa-solid fa-arrows-rotate me-1"></i> Refresh
+                  <i className="fa-solid fa-arrows-rotate me-1"></i> {t('Refresh', 'Actualiser')}
                 </button>
               </div>
             </div>
@@ -392,22 +403,22 @@ export default function PaymentStaff() {
         {loading ? (
           <div className="text-center py-5">
             <div className="spinner-border" style={{ color: '#00AEEF' }} role="status"></div>
-            <p className="mt-3 text-muted fw-semibold">Fetching latest PostgreSQL registrations...</p>
+            <p className="mt-3 text-muted fw-semibold">{t('Fetching latest PostgreSQL registrations...', 'Récupération des inscriptions PostgreSQL...')}</p>
           </div>
         ) : Object.keys(grouped).length === 0 ? (
           <div className="text-center py-5 bg-white shadow-sm rounded-4">
             <div className="mb-4">
               <i className="fa-regular fa-folder-open text-muted" style={{ fontSize: '4rem', opacity: 0.5 }}></i>
             </div>
-            <h4 className="text-muted fw-bold mb-2">No Registrations Found</h4>
-            <p className="text-secondary">Try adjusting your search or filter settings.</p>
+            <h4 className="text-muted fw-bold mb-2">{t('No Registrations Found', 'Aucune inscription trouvée')}</h4>
+            <p className="text-secondary">{t('Try adjusting your search or filter settings.', 'Modifiez vos critères de recherche ou vos filtres.')}</p>
           </div>
         ) : (
           Object.entries(grouped).map(([date, items]) => (
             <div key={date} className="mb-5">
               <div className="d-flex align-items-center mb-3">
                 <h5 className="mb-0 fw-bold" style={{ color: '#0B192C' }}>{date}</h5>
-                <span className="badge bg-light text-muted border ms-3 rounded-pill">{items.length} students</span>
+                <span className="badge bg-light text-muted border ms-3 rounded-pill">{items.length} {t('students', 'étudiants')}</span>
                 <hr className="flex-grow-1 ms-3 text-muted opacity-25" />
               </div>
               <div className="row g-4">
@@ -432,16 +443,16 @@ export default function PaymentStaff() {
                                     {reg.name}
                                   </h5>
                                   <span className="badge bg-secondary rounded-pill font-monospace" style={{ fontSize: '0.75rem' }}>
-                                    Reg #{reg.registrationId}
+                                    {t('Reg', 'Inscr')} #{reg.registrationId}
                                   </span>
                                   <span className={`badge rounded-pill ${reg.language === 'fr' ? 'bg-purple text-white' : 'bg-info text-dark'}`} style={reg.language === 'fr' ? { backgroundColor: '#7C3AED' } : {}}>
                                     {reg.language === 'fr' ? '🇫🇷 FR' : '🇬🇧 EN'}
                                   </span>
-                                  {isNewest && <span className="badge rounded-pill bg-danger">NEW</span>}
+                                  {isNewest && <span className="badge rounded-pill bg-danger">{t('NEW', 'NOUVEAU')}</span>}
                                 </div>
                                 <div className="text-muted d-flex flex-column gap-1" style={{ fontSize: '0.88rem' }}>
                                   <span className="text-truncate" title={reg.email}>
-                                    <i className="fa-solid fa-envelope me-2 text-secondary"></i>{reg.email || 'No email provided'}
+                                    <i className="fa-solid fa-envelope me-2 text-secondary"></i>{reg.email || t('No email provided', 'Aucun email fourni')}
                                   </span>
                                   <span className="text-truncate" title={reg.phone}>
                                     <i className="fa-solid fa-phone me-2 text-secondary"></i>{reg.phone}
@@ -455,7 +466,7 @@ export default function PaymentStaff() {
                             
                             <div className="d-flex flex-row flex-sm-column align-items-center align-items-sm-end gap-2 flex-shrink-0 mt-2 mt-sm-0" style={{ minWidth: '150px' }}>
                               <span className="badge rounded-pill px-3 py-2 fw-semibold shadow-sm text-center w-100" style={{ backgroundColor: statusColor, color: '#fff', fontSize: '0.85rem' }}>
-                                <i className="fa-solid fa-circle me-1" style={{ fontSize: '0.6rem' }}></i>{reg.status}
+                                <i className="fa-solid fa-circle me-1" style={{ fontSize: '0.6rem' }}></i>{t(reg.status, STATUS_FR[reg.status] || reg.status)}
                               </span>
                               <div className="d-flex align-items-center gap-1 w-100">
                                 <select 
@@ -466,7 +477,7 @@ export default function PaymentStaff() {
                                   style={{ cursor: 'pointer' }}
                                 >
                                   {STATUS_OPTIONS.map(opt => (
-                                    <option key={opt} value={opt}>{opt}</option>
+                                    <option key={opt} value={opt}>{t(opt, STATUS_FR[opt] || opt)}</option>
                                   ))}
                                 </select>
                                 {isUpdating && <div className="spinner-border spinner-border-sm text-primary" role="status"></div>}
@@ -486,12 +497,12 @@ export default function PaymentStaff() {
                               </span>
                               {reg.paymentId && (
                                 <span className="small text-muted">
-                                  <i className="fa-solid fa-receipt me-1"></i> Payment #{reg.paymentId}
+                                  <i className="fa-solid fa-receipt me-1"></i> {t('Payment', 'Paiement')} #{reg.paymentId}
                                 </span>
                               )}
                               {reg.enrollmentStatus && (
                                 <span className="small text-success fw-semibold">
-                                  <i className="fa-solid fa-graduation-cap me-1"></i> Enrolled ({reg.enrollmentStatus})
+                                  <i className="fa-solid fa-graduation-cap me-1"></i> {t('Enrolled', 'Inscrit')} ({reg.enrollmentStatus === 'Active' || reg.enrollmentStatus === 'active' ? t('Active', 'Actif') : reg.enrollmentStatus})
                                 </span>
                               )}
                             </div>
@@ -516,27 +527,27 @@ export default function PaymentStaff() {
             <div className="modal-dialog modal-dialog-centered">
               <div className="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
                 <div className="modal-header text-white border-0" style={{ backgroundColor: '#00AEEF' }}>
-                  <h5 className="modal-title fw-bold"><i className="fa-solid fa-bell me-2 fs-5"></i>New Registration Received</h5>
+                  <h5 className="modal-title fw-bold"><i className="fa-solid fa-bell me-2 fs-5"></i>{t('New Registration Received', 'Nouvelle Inscription Reçue')}</h5>
                   <button type="button" className="btn-close btn-close-white" onClick={handleAcknowledgeNew}></button>
                 </div>
                 <div className="modal-body p-4">
-                  <p className="text-secondary mb-4">You have new registrations in the PostgreSQL database that require attention:</p>
+                  <p className="text-secondary mb-4">{t('You have new registrations in the PostgreSQL database that require attention:', 'Vous avez de nouvelles inscriptions dans la base PostgreSQL nécessitant votre attention :')}</p>
                   {newRegistrationsAlert.slice(0, 3).map(r => (
                     <div key={r.registrationId} className="p-3 bg-light border rounded-4 mb-3 d-flex justify-content-between align-items-center">
                       <div>
-                        <strong className="d-block mb-1" style={{ color: '#0B192C' }}>{r.name} (Reg #{r.registrationId})</strong>
+                        <strong className="d-block mb-1" style={{ color: '#0B192C' }}>{r.name} ({t('Reg', 'Inscr')} #{r.registrationId})</strong>
                         <span className="small text-muted"><i className="fa-solid fa-location-dot me-1"></i>{r.city} &bull; {r.occupation}</span>
                       </div>
-                      <span className="badge bg-primary rounded-pill">New</span>
+                      <span className="badge bg-primary rounded-pill">{t('New', 'Nouveau')}</span>
                     </div>
                   ))}
                   {newRegistrationsAlert.length > 3 && (
-                    <p className="text-muted small text-center mt-2 fw-semibold">...and {newRegistrationsAlert.length - 3} more.</p>
+                    <p className="text-muted small text-center mt-2 fw-semibold">...{t('and', 'et')} {newRegistrationsAlert.length - 3} {t('more', 'autres')}.</p>
                   )}
                 </div>
                 <div className="modal-footer border-0 bg-light p-3">
-                  <button type="button" className="btn btn-light border rounded-pill px-4 fw-semibold text-secondary" onClick={handleAcknowledgeNew}>Close</button>
-                  <button type="button" className="btn text-white rounded-pill px-4 fw-semibold" style={{ backgroundColor: '#00AEEF' }} onClick={handleAcknowledgeNew}>View Details</button>
+                  <button type="button" className="btn btn-light border rounded-pill px-4 fw-semibold text-secondary" onClick={handleAcknowledgeNew}>{t('Close', 'Fermer')}</button>
+                  <button type="button" className="btn text-white rounded-pill px-4 fw-semibold" style={{ backgroundColor: '#00AEEF' }} onClick={handleAcknowledgeNew}>{t('View Details', 'Voir Détails')}</button>
                 </div>
               </div>
             </div>

@@ -14,6 +14,14 @@ const STATUS_COLORS = {
 
 const STATUS_OPTIONS = ['Pending', 'Contacted', 'Confirmed', 'Paid', 'Cancelled'];
 
+const STATUS_FR = {
+  Pending: 'En attente',
+  Contacted: 'Contacté',
+  Confirmed: 'Confirmé',
+  Paid: 'Payé',
+  Cancelled: 'Annulé'
+};
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://kairos-whatsapp-bot-cy5w.onrender.com/api';
 
 export default function PaymentStaff() {
@@ -208,12 +216,12 @@ export default function PaymentStaff() {
   const grouped = useMemo(() => {
     const groups = {};
     filteredRegistrations.forEach(reg => {
-      const dateStr = reg.createdAtDate.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
+      const dateStr = reg.createdAtDate.toLocaleDateString(isEn ? 'en-US' : 'fr-FR', { day: 'numeric', month: 'short', year: 'numeric' });
       if (!groups[dateStr]) groups[dateStr] = [];
       groups[dateStr].push(reg);
     });
     return groups;
-  }, [filteredRegistrations]);
+  }, [filteredRegistrations, isEn]);
 
   const latestRegistrationId = registrations.length > 0 ? registrations[0].registrationId : null;
   const isEn = language === 'en';
@@ -351,7 +359,7 @@ export default function PaymentStaff() {
                 <select className="form-select border-0 bg-light w-100" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
                   <option value="">{t('All Statuses', 'Tous les statuts')}</option>
                   {STATUS_OPTIONS.map(opt => (
-                    <option key={opt} value={opt}>{opt}</option>
+                    <option key={opt} value={opt}>{t(opt, STATUS_FR[opt] || opt)}</option>
                   ))}
                 </select>
               </div>
@@ -433,16 +441,16 @@ export default function PaymentStaff() {
                                     {reg.name}
                                   </h5>
                                   <span className="badge bg-secondary rounded-pill font-monospace" style={{ fontSize: '0.75rem' }}>
-                                    Inscr #{reg.registrationId}
+                                    {t('Reg', 'Inscr')} #{reg.registrationId}
                                   </span>
                                   <span className={`badge rounded-pill ${reg.language === 'fr' ? 'bg-purple text-white' : 'bg-info text-dark'}`} style={reg.language === 'fr' ? { backgroundColor: '#7C3AED' } : {}}>
                                     {reg.language === 'fr' ? '🇫🇷 FR' : '🇬🇧 EN'}
                                   </span>
-                                  {isNewest && <span className="badge rounded-pill bg-danger">NOUVEAU</span>}
+                                  {isNewest && <span className="badge rounded-pill bg-danger">{t('NEW', 'NOUVEAU')}</span>}
                                 </div>
                                 <div className="text-muted d-flex flex-column gap-1" style={{ fontSize: '0.88rem' }}>
                                   <span className="text-truncate" title={reg.email}>
-                                    <i className="fa-solid fa-envelope me-2 text-secondary"></i>{reg.email || 'Aucun email'}
+                                    <i className="fa-solid fa-envelope me-2 text-secondary"></i>{reg.email || t('No email provided', 'Aucun email')}
                                   </span>
                                   <span className="text-truncate" title={reg.phone}>
                                     <i className="fa-solid fa-phone me-2 text-secondary"></i>{reg.phone}
@@ -456,7 +464,7 @@ export default function PaymentStaff() {
                             
                             <div className="d-flex flex-row flex-sm-column align-items-center align-items-sm-end gap-2 flex-shrink-0 mt-2 mt-sm-0" style={{ minWidth: '150px' }}>
                               <span className="badge rounded-pill px-3 py-2 fw-semibold shadow-sm text-center w-100" style={{ backgroundColor: statusColor, color: '#fff', fontSize: '0.85rem' }}>
-                                <i className="fa-solid fa-circle me-1" style={{ fontSize: '0.6rem' }}></i>{reg.status}
+                                <i className="fa-solid fa-circle me-1" style={{ fontSize: '0.6rem' }}></i>{t(reg.status, STATUS_FR[reg.status] || reg.status)}
                               </span>
                               <div className="d-flex align-items-center gap-1 w-100">
                                 <select 
@@ -467,7 +475,7 @@ export default function PaymentStaff() {
                                   style={{ cursor: 'pointer' }}
                                 >
                                   {STATUS_OPTIONS.map(opt => (
-                                    <option key={opt} value={opt}>{opt}</option>
+                                    <option key={opt} value={opt}>{t(opt, STATUS_FR[opt] || opt)}</option>
                                   ))}
                                 </select>
                                 {isUpdating && <div className="spinner-border spinner-border-sm text-primary" role="status"></div>}
@@ -487,12 +495,12 @@ export default function PaymentStaff() {
                               </span>
                               {reg.paymentId && (
                                 <span className="small text-muted">
-                                  <i className="fa-solid fa-receipt me-1"></i> Paiement #{reg.paymentId}
+                                  <i className="fa-solid fa-receipt me-1"></i> {t('Payment', 'Paiement')} #{reg.paymentId}
                                 </span>
                               )}
                               {reg.enrollmentStatus && (
                                 <span className="small text-success fw-semibold">
-                                  <i className="fa-solid fa-graduation-cap me-1"></i> Inscrit ({reg.enrollmentStatus})
+                                  <i className="fa-solid fa-graduation-cap me-1"></i> {t('Enrolled', 'Inscrit')} ({reg.enrollmentStatus === 'Active' || reg.enrollmentStatus === 'active' ? t('Active', 'Actif') : reg.enrollmentStatus})
                                 </span>
                               )}
                             </div>
