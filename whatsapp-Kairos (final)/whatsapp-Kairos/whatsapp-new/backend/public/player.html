@@ -593,13 +593,15 @@
     .video-nav-bar {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
       gap: 10px;
       background: rgba(20, 27, 45, 0.75);
       border: 1px solid rgba(255, 255, 255, 0.08);
       border-radius: 12px;
       padding: 10px 16px;
       backdrop-filter: blur(12px);
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .btn-nav-module {
@@ -634,7 +636,9 @@
       color: #94a3b8;
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 6px;
+      text-align: center;
     }
 
     .nav-module-info strong {
@@ -652,12 +656,17 @@
       gap: 12px;
       backdrop-filter: blur(12px);
       box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.5);
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow: hidden;
     }
 
     .playlist-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
+      width: 100%;
     }
 
     .playlist-title {
@@ -673,6 +682,8 @@
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
       gap: 10px;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .playlist-item {
@@ -686,6 +697,11 @@
       gap: 10px;
       cursor: pointer;
       transition: all 0.2s ease;
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      overflow: hidden;
     }
 
     .playlist-item:hover {
@@ -704,6 +720,8 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      min-width: 0;
+      flex: 1;
       overflow: hidden;
     }
 
@@ -731,6 +749,8 @@
       display: flex;
       flex-direction: column;
       gap: 2px;
+      min-width: 0;
+      flex: 1;
       overflow: hidden;
     }
 
@@ -741,6 +761,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      min-width: 0;
     }
 
     .playlist-duration {
@@ -1052,9 +1073,9 @@
       .brand-logo { width: 30px; height: 30px; font-size: 16px; border-radius: 8px; }
       .brand-title { font-size: 13.5px; }
       .brand-sub { font-size: 10.5px; }
-      .badge-secure { padding: 4px 8px; font-size: 11px; }
-      .badge-secure-text { display: none; }
-      .badge-secure-short { display: inline; }
+      .badge-secure { display: none !important; }
+      .badge-secure-text { display: none !important; }
+      .badge-secure-short { display: none !important; }
 
       main.portal-main { padding: 10px; gap: 10px; }
       .player-card { border-radius: 12px; }
@@ -1084,23 +1105,26 @@
       .speed-option { font-size: 11px; padding: 4px 6px; }
 
       /* Video Navigation Bar on mobile */
-      .video-nav-bar { padding: 8px 12px; }
+      .video-nav-bar { padding: 8px 12px; width: 100%; box-sizing: border-box; }
       .btn-nav-module { padding: 6px 10px; font-size: 12px; }
       .nav-module-info { font-size: 12.5px; }
 
       /* Playlist Section on mobile */
-      .playlist-section { padding: 12px 14px; gap: 10px; }
+      .playlist-section { padding: 12px; gap: 10px; width: 100%; box-sizing: border-box; }
       .playlist-title { font-size: 14.5px; }
-      .playlist-grid { grid-template-columns: 1fr; gap: 8px; }
-      .playlist-item { padding: 10px 12px; }
-      .playlist-mod-title { font-size: 12.5px; }
-      .playlist-duration { font-size: 11px; }
+      .playlist-grid { grid-template-columns: 1fr; gap: 8px; width: 100%; box-sizing: border-box; }
+      .playlist-item { padding: 10px 10px; width: 100%; box-sizing: border-box; }
+      .playlist-item-left { gap: 8px; min-width: 0; flex: 1; }
+      .playlist-num-badge { width: 26px; height: 26px; font-size: 11px; flex-shrink: 0; }
+      .playlist-mod-title { font-size: 12px; }
+      .playlist-duration { font-size: 10.5px; }
+      .playlist-status-badge { font-size: 10px; padding: 3px 6px; flex-shrink: 0; }
 
       /* Info Card on mobile */
-      .info-card { padding: 12px 14px; }
-      .lesson-title { font-size: 15px; }
+      .info-card { padding: 12px; width: 100%; box-sizing: border-box; }
+      .lesson-title { font-size: 14.5px; word-break: break-word; }
       .student-tag { font-size: 11.5px; }
-      .badge-status { font-size: 11px; padding: 4px 8px; }
+      .badge-status { font-size: 10.5px; padding: 4px 8px; }
 
       /* Completion Celebration Modal on mobile */
       .completion-overlay { padding: 16px 12px; }
@@ -1113,8 +1137,9 @@
     }
 
     @media (min-width: 641px) {
-      .badge-secure-short { display: none; }
-      .badge-secure-text { display: inline; }
+      .badge-secure { display: none !important; }
+      .badge-secure-short { display: none !important; }
+      .badge-secure-text { display: none !important; }
     }
   </style>
 </head>
@@ -1128,11 +1153,6 @@
         <div class="brand-title">Kairos</div>
         <div class="brand-sub">Official Student Portal</div>
       </div>
-    </div>
-    <div class="badge-secure">
-      <span class="pulse"></span>
-      <span class="badge-secure-text">DRM Protected Session</span>
-      <span class="badge-secure-short">DRM Active</span>
     </div>
   </header>
 
@@ -1166,7 +1186,7 @@
 
       <!-- Watermark -->
       <div id="watermark-overlay">
-        <div id="floating-watermark" class="floating-watermark">KAIROS DRM PROTECTED</div>
+        <div id="floating-watermark" class="floating-watermark">KAIROS</div>
       </div>
 
       <!-- Buffering Spinner Overlay -->
@@ -1527,7 +1547,7 @@
       const now = new Date().toLocaleTimeString();
       const phoneTxt = studentPhoneEl.textContent || "";
       const nameTxt = studentNameEl.textContent || "STUDENT";
-      watermarkEl.textContent = `${phoneTxt ? phoneTxt + ' • ' : ''}${nameTxt} • KAIROS DRM • ${now}`;
+      watermarkEl.textContent = `${phoneTxt ? phoneTxt + ' • ' : ''}${nameTxt} • KAIROS • ${now}`;
     }
 
     function startWatermark() {
@@ -1548,9 +1568,14 @@
 
       // Next module links are delivered via WhatsApp - hide next button in browser player
       if (btnNextModule) btnNextModule.style.display = 'none';
+      const showPrev = (currentModuleNumber > 1);
       if (btnPrevModule) {
-        btnPrevModule.disabled = (currentModuleNumber <= 1);
-        btnPrevModule.style.display = (currentModuleNumber > 1) ? 'inline-flex' : 'none';
+        btnPrevModule.disabled = !showPrev;
+        btnPrevModule.style.display = showPrev ? 'inline-flex' : 'none';
+      }
+      const navBar = document.getElementById('video-nav-bar');
+      if (navBar) {
+        navBar.style.justifyContent = showPrev ? 'space-between' : 'center';
       }
 
       // DO NOT show future / next modules in the playlist

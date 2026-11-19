@@ -83,15 +83,10 @@ export default function App() {
         </main>
 
         <footer className="app-footer py-3 text-center border-top bg-white">
-          <div className="container d-flex justify-content-between align-items-center flex-wrap gap-2">
+          <div className="container d-flex justify-content-center align-items-center">
             <small className="app-footer-brand text-muted">
               Sprout &bull; Kairos &bull; Plateforme d'inscription sécurisée
             </small>
-            <div>
-              <a href="/paymentstaff" className="text-decoration-none small text-secondary fw-semibold">
-                <i className="fa-solid fa-lock me-1"></i>Portail Personnel
-              </a>
-            </div>
           </div>
         </footer>
       </div>
