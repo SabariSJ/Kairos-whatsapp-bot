@@ -106,9 +106,57 @@ async function getSummaryReport(filters = {}) {
   `;
   const courseRes = await query(courseSql, baseParams);
 
+  // 6. Enrolment Stats (Active, Inactive, Cancelled)
+  const enrollSql = `
+    SELECT 
+      COUNT(e.enrollment_id)::int AS total,
+      COUNT(CASE WHEN e.enrollment_status = 'Active' THEN 1 END)::int AS "active",
+      COUNT(CASE WHEN e.enrollment_status = 'Inactive' THEN 1 END)::int AS "inactive",
+      COUNT(CASE WHEN e.enrollment_status = 'Cancelled' THEN 1 END)::int AS "cancelled"
+    FROM public.wa_registrations r
+    JOIN public.wa_payments p ON r.registration_id = p.registration_id
+    JOIN public.wa_enrollments e ON p.payment_id = e.payment_id
+    ${whereSql};
+  `;
+  const enrollRes = await query(enrollSql, baseParams);
+  const enrollmentStats = enrollRes.rows[0] || { total: 0, active: 0, inactive: 0, cancelled: 0 };
+
+  // 7. Notification Stats (Sent, Read, Failed)
+  const notifSql = `
+    SELECT 
+      COUNT(n.notification_id)::int AS total,
+      COUNT(CASE WHEN n.status = 'Sent' THEN 1 END)::int AS "sent",
+      COUNT(CASE WHEN n.status = 'Read' THEN 1 END)::int AS "read",
+      COUNT(CASE WHEN n.status = 'Failed' THEN 1 END)::int AS "failed"
+    FROM public.wa_registrations r
+    JOIN public.wa_payments p ON r.registration_id = p.registration_id
+    JOIN public.wa_notifications n ON p.payment_id = n.payment_id
+    ${whereSql};
+  `;
+  const notifRes = await query(notifSql, baseParams);
+  const notificationStats = notifRes.rows[0] || { total: 0, sent: 0, read: 0, failed: 0 };
+
+  // Enrich KPIs with payment & enrollment aggregates
+  kpis.paymentTotal = (statusCounts.Pending || 0) + (statusCounts.Paid || 0) + (statusCounts.Confirmed || 0) + (statusCounts.Contacted || 0) + (statusCounts.Cancelled || 0);
+  kpis.pendingPayments = statusCounts.Pending || 0;
+  kpis.paidPayments = statusCounts.Paid || 0;
+  kpis.confirmedPayments = statusCounts.Confirmed || 0;
+  kpis.cancelledPayments = statusCounts.Cancelled || 0;
+  kpis.contactedPayments = statusCounts.Contacted || 0;
+  kpis.enrollmentTotal = enrollmentStats.total || 0;
+  kpis.activeEnrollments = enrollmentStats.active || 0;
+  kpis.inactiveEnrollments = enrollmentStats.inactive || 0;
+  kpis.cancelledEnrollments = enrollmentStats.cancelled || 0;
+  kpis.notificationTotal = notificationStats.total || 0;
+  kpis.sentNotifications = notificationStats.sent || 0;
+  kpis.readNotifications = notificationStats.read || 0;
+  kpis.failedNotifications = notificationStats.failed || 0;
+
   return {
     kpis,
     statusCounts,
+    enrollmentStats,
+    notificationStats,
     professionBreakdown: professionRes.rows,
     dailyTrend: dailyRes.rows,
     courseBreakdown: courseRes.rows
@@ -157,10 +205,12 @@ async function getExportRecords(filters = {}) {
       COALESCE(p.status, 'Pending') AS "paymentStatus",
       p.updated_by AS "statusUpdatedBy",
       p.updated_at AS "statusUpdatedAt",
+      e.enrollment_status AS "enrollmentStatus",
       COALESCE(c.course_name, (CASE WHEN r.language = 'fr' THEN 'Cours de Réussite Commerciale' ELSE 'Business Success Class' END)) AS "courseName"
     FROM public.wa_registrations r
     LEFT JOIN public.wa_payments p ON r.registration_id = p.registration_id
     LEFT JOIN public.wa_courses c ON p.course_id = c.course_id
+    LEFT JOIN public.wa_enrollments e ON p.payment_id = e.payment_id
     ${whereSql}
     ORDER BY r.registered_at DESC;
   `;

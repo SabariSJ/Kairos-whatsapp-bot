@@ -137,7 +137,7 @@ async function updatePaymentStatus(paymentId, newStatus, staffEmail) {
       payment = updateRes.rows[0];
     }
 
-    // 2. If status is 'Paid', ensure enrollment exists
+    // 2. Synchronize enrollment record if status changed
     if (newStatus === 'Paid') {
       const enrollCheck = await client.query(
         `SELECT * FROM public.wa_enrollments WHERE payment_id = $1`,
@@ -146,19 +146,32 @@ async function updatePaymentStatus(paymentId, newStatus, staffEmail) {
 
       if (enrollCheck.rowCount === 0) {
         await client.query(`
-          INSERT INTO public.wa_enrollments (payment_id, registration_id, course_id, enrollment_status, access_granted_at)
+          INSERT INTO public.wa_enrollments (payment_id, registration_id, course_id, enrollment_status, enrolled_at)
           VALUES ($1, $2, $3, 'Active', NOW());
         `, [payment.payment_id, payment.registration_id, payment.course_id]);
       } else {
         await client.query(`
           UPDATE public.wa_enrollments
-          SET enrollment_status = 'Active', access_granted_at = NOW()
+          SET enrollment_status = 'Active'
           WHERE payment_id = $1;
         `, [payment.payment_id]);
       }
+    } else if (newStatus === 'Cancelled') {
+      await client.query(`
+        UPDATE public.wa_enrollments
+        SET enrollment_status = 'Cancelled'
+        WHERE payment_id = $1;
+      `, [payment.payment_id]);
     }
 
     await client.query('COMMIT');
+
+    // Invalidate chatbot memory cache so updated status takes effect immediately
+    try {
+      const backendStudentService = require('./backendStudentService');
+      backendStudentService.clearCache();
+    } catch (_) {}
+
     return payment;
   } catch (err) {
     await client.query('ROLLBACK');
