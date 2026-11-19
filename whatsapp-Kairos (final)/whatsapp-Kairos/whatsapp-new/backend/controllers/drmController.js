@@ -329,12 +329,22 @@ class DrmController {
     const seconds = Math.max(0, Math.floor(currentTime || req.body.progressSeconds || 0));
     const activeModule = req.body.module || payload.module || (session && session.module) || 1;
 
-    // Update in session memory and Google Sheets CRM
+    // Update in session memory
     drmService.updateSessionProgress(payload.sessionId, seconds);
-    await googleSheetService.updateProgress(payload.phone, {
-      progressSeconds: seconds,
-      currentModule: activeModule
-    });
+
+    // Save progress to student store and clear cache so bot resumes from exact second
+    if (payload.phone) {
+      await backendStudentService.updateProgress(payload.phone, {
+        progressSeconds: seconds,
+        currentModule: activeModule
+      });
+    }
+    if (session && session.phone && session.phone !== payload.phone) {
+      await backendStudentService.updateProgress(session.phone, {
+        progressSeconds: seconds,
+        currentModule: activeModule
+      });
+    }
 
     return res.status(200).json({ success: true, progressSeconds: seconds, module: activeModule });
   }

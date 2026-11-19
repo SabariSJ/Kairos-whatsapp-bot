@@ -250,5 +250,47 @@
     "createdAt": 1795060733264,
     "expiresAt": 1795147133264,
     "completed": false
+  },
+  "89e07174": {
+    "sessionId": "89e07174",
+    "token": "eyJzZXNzaW9uSWQiOiI4OWUwNzE3NCIsInBob25lIjoiOTYyOTUzMTg5MSIsIm5hbWUiOiJTYWJhcmkgU0oiLCJjb3Vyc2UiOiJNYXN0ZXJjbGFzcyBDb3Vyc2UiLCJtb2R1bGUiOjEsInByb2dyZXNzU2Vjb25kcyI6MzAsImxhbmd1YWdlIjoiZW4iLCJpYXQiOjE3OTUwNjM2MzI4MzcsImV4cCI6MTc5NTE1MDAzMjgzN30.VH3ALTHB2g1B6p2u2jJz224VN4DzJtoFVkMlbv7jzok",
+    "phone": "9629531891",
+    "name": "Sabari SJ",
+    "course": "Masterclass Course",
+    "module": 1,
+    "progressSeconds": 120,
+    "language": "en",
+    "deviceSig": "chrome_device_hash_112233",
+    "createdAt": 1795063632837,
+    "expiresAt": 1795150032837,
+    "completed": true
+  },
+  "196a18ab": {
+    "sessionId": "196a18ab",
+    "token": "eyJzZXNzaW9uSWQiOiIxOTZhMThhYiIsInBob25lIjoiOTE5NjI5NTMxODkxIiwibmFtZSI6IlNhYmFyaSBTSiIsImNvdXJzZSI6Ik1hc3RlcmNsYXNzIENvdXJzZSIsIm1vZHVsZSI6MiwicHJvZ3Jlc3NTZWNvbmRzIjowLCJsYW5ndWFnZSI6ImVuIiwiaWF0IjoxNzk1MDYzNjM3ODg5LCJleHAiOjE3OTUxNTAwMzc4ODl9.LnKHoMJtI8VtFhDmwRITrO9gmL8_BtWhmm5ZpDbVnBw",
+    "phone": "919629531891",
+    "name": "Sabari SJ",
+    "course": "Masterclass Course",
+    "module": 2,
+    "progressSeconds": 0,
+    "language": "en",
+    "deviceSig": null,
+    "createdAt": 1795063637889,
+    "expiresAt": 1795150037889,
+    "completed": false
+  },
+  "7c9ac49a": {
+    "sessionId": "7c9ac49a",
+    "token": "eyJzZXNzaW9uSWQiOiI3YzlhYzQ5YSIsInBob25lIjoiOTE5NTAwNDA2MTUwIiwibmFtZSI6IlNKIFByZW0iLCJjb3Vyc2UiOiJCdXNpbmVzcyBTdWNjZXNzIENsYXNzIiwibW9kdWxlIjoxLCJwcm9ncmVzc1NlY29uZHMiOjEyNSwibGFuZ3VhZ2UiOiJlbiIsImlhdCI6MTc5NTA2Mzc4MTcyOSwiZXhwIjoxNzk1MTUwMTgxNzI5fQ.Uis8uy7deQj8xM_-U70RFriMl19u93_f60gqUka9r4Q",
+    "phone": "919500406150",
+    "name": "SJ Prem",
+    "course": "Business Success Class",
+    "module": 1,
+    "progressSeconds": 125,
+    "language": "en",
+    "deviceSig": null,
+    "createdAt": 1795063781729,
+    "expiresAt": 1795150181729,
+    "completed": false
   }
 }

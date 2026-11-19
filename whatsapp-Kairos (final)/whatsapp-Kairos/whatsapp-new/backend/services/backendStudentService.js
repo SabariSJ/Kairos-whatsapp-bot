@@ -55,6 +55,19 @@ class BackendStudentService {
     // Check fast memory cache
     const cached = this.studentMemoryCache.get(cacheKey);
     if (cached && cached.expiresAt > Date.now()) {
+      try {
+        const localList = googleSheetService.readLocalStudents();
+        const localStudent = localList.find(ls => 
+          googleSheetService.phonesMatch(ls.phone, cached.student.phone) || 
+          googleSheetService.phonesMatch(ls.phone, cleanFrom) ||
+          (phone10 && googleSheetService.phonesMatch(ls.phone, phone10))
+        );
+        if (localStudent && localStudent.progressSeconds !== undefined) {
+          cached.student.progressSeconds = Number(localStudent.progressSeconds || 0);
+          cached.student.currentModule = Number(localStudent.currentModule || cached.student.currentModule || 1);
+          cached.student.completedModules = localStudent.completedModules || cached.student.completedModules || [];
+        }
+      } catch (_) {}
       return cached.student;
     }
 
@@ -283,6 +296,14 @@ class BackendStudentService {
       duplicate: false,
       message: 'Registration event ingested successfully'
     };
+  }
+
+  /**
+   * Update student watch progress and immediately clear cache for real-time resume
+   */
+  updateProgress(rawPhone, updates = {}) {
+    this.studentMemoryCache.clear();
+    return googleSheetService.updateProgress(rawPhone, updates);
   }
 }
 

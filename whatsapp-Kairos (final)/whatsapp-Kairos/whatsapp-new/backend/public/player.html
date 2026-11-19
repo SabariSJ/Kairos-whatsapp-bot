@@ -1989,15 +1989,16 @@
 
     video.addEventListener('ended', handleModuleCompletion);
 
-    // Save Progress Sync
-    async function syncProgress() {
-      if (!video || video.paused || video.ended || hasCompletedModule) return;
+    // Save Progress Sync (Immediate on pause, seek, tab close, or periodic 4s)
+    async function syncProgress(force = false) {
+      if (!video || video.ended || hasCompletedModule) return;
+      if (!force && video.paused) return;
       const currentSeconds = Math.floor(video.currentTime);
       if (currentSeconds <= 0) return;
 
       const isFr = isFrench();
       try {
-        saveStatusEl.textContent = isFr ? "⏳ Enregistrement..." : "⏳ Saving progress...";
+        if (saveStatusEl) saveStatusEl.textContent = isFr ? "⏳ Enregistrement..." : "⏳ Saving progress...";
         const res = await fetch('/api/video/progress', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -2011,7 +2012,7 @@
           })
         });
         const data = await res.json();
-        if (data && data.success) {
+        if (data && data.success && saveStatusEl) {
           saveStatusEl.textContent = isFr
             ? `☁️ Synchronisé (${formatTime(currentSeconds)})`
             : `☁️ Synced (${formatTime(currentSeconds)})`;
@@ -2019,21 +2020,36 @@
       } catch (err) {}
     }
 
-    setInterval(syncProgress, 15000);
-    video.addEventListener('pause', syncProgress);
+    // Periodic sync every 4 seconds while watching
+    setInterval(() => syncProgress(false), 4000);
 
-    window.addEventListener('beforeunload', () => {
-      if (video && !video.paused && !hasCompletedModule) {
-        navigator.sendBeacon(
-          '/api/video/progress',
-          new Blob([JSON.stringify({
-            token: activeToken || sessionParam,
-            currentTime: Math.floor(video.currentTime),
-            progressSeconds: Math.floor(video.currentTime),
-            deviceSig: currentDeviceSig,
-            module: currentModuleNumber
-          })], { type: 'application/json' })
-        );
+    // Immediate sync when video is paused or seeked
+    video.addEventListener('pause', () => syncProgress(true));
+    video.addEventListener('seeked', () => syncProgress(true));
+
+    // Instant beacon on tab hide/close
+    function sendUnloadBeacon() {
+      if (!video || hasCompletedModule) return;
+      const cur = Math.floor(video.currentTime);
+      if (cur <= 0) return;
+      const payload = JSON.stringify({
+        token: activeToken || sessionParam,
+        currentTime: cur,
+        progressSeconds: cur,
+        deviceSig: currentDeviceSig,
+        module: currentModuleNumber
+      });
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon('/api/video/progress', new Blob([payload], { type: 'application/json' }));
+      }
+    }
+
+    window.addEventListener('beforeunload', sendUnloadBeacon);
+    window.addEventListener('pagehide', sendUnloadBeacon);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') {
+        syncProgress(true);
+        sendUnloadBeacon();
       }
     });
 

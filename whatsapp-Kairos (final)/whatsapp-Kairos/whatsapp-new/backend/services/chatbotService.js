@@ -619,35 +619,17 @@ async function processStudentAccess(student, from, clean, buttonId, serverBase, 
 
   // Action: [📋 Course Details] / [📋 Détails du cours]
   if (buttonId === "course_details" || clean.includes("course details") || clean.includes("progress") || clean.includes("détails")) {
-    const completedCount = (student.completedModules || []).length;
-    const progressPercent = Math.round((completedCount / 6) * 100);
-    const syllabus = isFr ? COURSE_SYLLABUS_FR : COURSE_SYLLABUS;
-
     const progressCard = isFr
-      ? `📋 *${courseName} - Progression de la formation*\n\n` +
+      ? `📋 *Détails du cours*\n\n` +
         `👤 *Étudiant :* ${student.name}\n` +
+        `📚 *Formation :* ${courseName}\n` +
         `📍 *Leçon actuelle :* Module ${currentMod} sur 6\n` +
-        `⏱️ *Temps enregistré :* ${progressTime}\n` +
-        `📊 *Progression globale :* ${completedCount}/6 modules terminés (${progressPercent}%)\n\n` +
-        `*Modules du programme :*\n` +
-        syllabus.map(m => {
-          const isDone = (student.completedModules || []).includes(m.module);
-          const isCurrent = m.module === currentMod;
-          const icon = isDone ? "✅" : isCurrent ? "▶️" : "🔒";
-          return `${icon} ${m.title} (${m.duration})`;
-        }).join("\n")
-      : `📋 *${courseName} - Curriculum Status*\n\n` +
+        `⏱️ *Temps enregistré :* ${progressTime}`
+      : `📋 *Course Details*\n\n` +
         `👤 *Student:* ${student.name}\n` +
+        `📚 *Topic:* ${courseName}\n` +
         `📍 *Current Lesson:* Module ${currentMod} of 6\n` +
-        `⏱️ *Saved Progress:* ${progressTime}\n` +
-        `📊 *Overall Progress:* ${completedCount}/6 Modules Completed (${progressPercent}%)\n\n` +
-        `*Curriculum Modules:*\n` +
-        syllabus.map(m => {
-          const isDone = (student.completedModules || []).includes(m.module);
-          const isCurrent = m.module === currentMod;
-          const icon = isDone ? "✅" : isCurrent ? "▶️" : "🔒";
-          return `${icon} ${m.title} (${m.duration})`;
-        }).join("\n");
+        `⏱️ *Saved Progress:* ${progressTime}`;
 
     const btnStart = isFr ? "▶️ Commencer" : "▶️ Start Class";
     const btnFresh = isFr ? "🔄 Depuis 00:00" : "🔄 Start from 00:00";
