@@ -59,7 +59,19 @@ class DrmController {
 
     let html = fs.readFileSync(playerPath, "utf8");
     const reset = req.query.reset === "1";
-    const initialProgress = reset ? 0 : session.progressSeconds;
+    let initialProgress = reset ? 0 : (session.progressSeconds || 0);
+
+    // If initialProgress is 0 in session, check if student store has a saved progress
+    if (!reset && initialProgress === 0 && session.phone) {
+      try {
+        const localList = googleSheetService.readLocalStudents();
+        const local = localList.find(ls => googleSheetService.phonesMatch(ls.phone, session.phone));
+        if (local && local.progressSeconds && Number(local.currentModule || 1) === Number(session.module || 1)) {
+          initialProgress = Number(local.progressSeconds);
+          session.progressSeconds = initialProgress;
+        }
+      } catch (e) {}
+    }
 
     const isFrench = googleSheetService.isFrench(session.language);
     const courseName = chatbotService.getCourseName(session.course, isFrench ? "fr" : "en");
@@ -102,6 +114,17 @@ class DrmController {
     }
 
     const session = lockResult.session;
+    let effectiveProgress = session.progressSeconds || 0;
+    if (session.phone && effectiveProgress === 0) {
+      try {
+        const localList = googleSheetService.readLocalStudents();
+        const local = localList.find(ls => googleSheetService.phonesMatch(ls.phone, session.phone));
+        if (local && local.progressSeconds && Number(local.currentModule || 1) === Number(session.module || 1)) {
+          effectiveProgress = Number(local.progressSeconds);
+          session.progressSeconds = effectiveProgress;
+        }
+      } catch (e) {}
+    }
     const isFr = googleSheetService.isFrench(session.language);
     return res.status(200).json({
       success: true,
@@ -114,8 +137,8 @@ class DrmController {
         moduleId: session.module,
         language: isFr ? "fr" : "en",
         languageCode: isFr ? "fr" : "en",
-        progressSeconds: session.progressSeconds,
-        startProgress: session.progressSeconds
+        progressSeconds: effectiveProgress,
+        startProgress: effectiveProgress
       }
     });
   }
@@ -314,20 +337,41 @@ class DrmController {
    * POST /api/video/progress
    */
   async saveProgress(req, res) {
-    const { token, deviceSig, currentTime } = req.body;
+    const body = (typeof req.body === "object" && req.body) ? req.body : {};
+    const token = body.token || (req.headers.authorization && req.headers.authorization.split(" ")[1]);
+    const sessionId = body.sessionId || body.session;
+    const deviceSig = body.deviceSig || req.headers["x-device-signature"] || req.query.sig;
 
-    const payload = drmService.verifyToken(token);
-    if (!payload) {
-      return res.status(401).json({ error: "Invalid token" });
+    let payload = token ? drmService.verifyToken(token) : null;
+    let session = null;
+
+    if (payload) {
+      session = drmService.getSession(payload.sessionId);
+    } else {
+      // Fallback: check if token or sessionId is a raw valid sessionId
+      const sId = sessionId || token;
+      session = sId ? drmService.getSession(sId) : null;
+      if (session) {
+        payload = {
+          sessionId: session.sessionId,
+          phone: session.phone,
+          module: session.module,
+          name: session.name
+        };
+      }
     }
 
-    const session = drmService.getSession(payload.sessionId);
-    if (!session || (session.deviceSig && session.deviceSig !== deviceSig)) {
+    if (!session || !payload) {
+      return res.status(401).json({ error: "Invalid or expired session token" });
+    }
+
+    if (session.deviceSig && deviceSig && session.deviceSig !== deviceSig) {
       return res.status(403).json({ error: "Unauthorized device" });
     }
 
-    const seconds = Math.max(0, Math.floor(currentTime || req.body.progressSeconds || 0));
-    const activeModule = req.body.module || payload.module || (session && session.module) || 1;
+    const currentTimeVal = body.currentTime ?? body.progressSeconds;
+    const seconds = Math.max(0, Math.floor(Number(currentTimeVal || 0)));
+    const activeModule = Number(body.module || payload.module || (session && session.module) || 1);
 
     // Update in session memory
     drmService.updateSessionProgress(payload.sessionId, seconds);
@@ -339,7 +383,7 @@ class DrmController {
         currentModule: activeModule
       });
     }
-    if (session && session.phone && session.phone !== payload.phone) {
+    if (session.phone && session.phone !== payload.phone) {
       await backendStudentService.updateProgress(session.phone, {
         progressSeconds: seconds,
         currentModule: activeModule

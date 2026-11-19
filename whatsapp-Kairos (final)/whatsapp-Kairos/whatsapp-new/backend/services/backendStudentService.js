@@ -67,6 +67,17 @@ class BackendStudentService {
           cached.student.currentModule = Number(localStudent.currentModule || cached.student.currentModule || 1);
           cached.student.completedModules = localStudent.completedModules || cached.student.completedModules || [];
         }
+
+        // Cross-check DRM active session for real-time uncommitted watch progress
+        const drmService = require("./drmService");
+        for (const sess of drmService.sessions.values()) {
+          if (sess && (googleSheetService.phonesMatch(sess.phone, cached.student.phone) || googleSheetService.phonesMatch(sess.phone, cleanFrom) || (phone10 && googleSheetService.phonesMatch(sess.phone, phone10)))) {
+            if (sess.progressSeconds && sess.progressSeconds > (cached.student.progressSeconds || 0)) {
+              cached.student.progressSeconds = Number(sess.progressSeconds);
+              cached.student.currentModule = Number(sess.module || cached.student.currentModule || 1);
+            }
+          }
+        }
       } catch (_) {}
       return cached.student;
     }
@@ -121,14 +132,33 @@ class BackendStudentService {
         let localCompleted = [];
         try {
           const localList = googleSheetService.readLocalStudents();
+          const fullPhoneWithCc = (s.country_code ? String(s.country_code).replace(/\D/g, '') : '') + String(s.phone_number || '').replace(/\D/g, '');
           const localStudent = localList.find(ls => 
             googleSheetService.phonesMatch(ls.phone, s.phone_number) || 
-            googleSheetService.phonesMatch(ls.phone, cleanFrom)
+            googleSheetService.phonesMatch(ls.phone, cleanFrom) ||
+            (phone10 && googleSheetService.phonesMatch(ls.phone, phone10)) ||
+            (fullPhoneWithCc && googleSheetService.phonesMatch(ls.phone, fullPhoneWithCc))
           );
           if (localStudent) {
             localModule = localStudent.currentModule || 1;
             localProgress = localStudent.progressSeconds || 0;
             localCompleted = localStudent.completedModules || [];
+          }
+
+          // Check active DRM session memory for latest uncommitted progress
+          const drmService = require("./drmService");
+          for (const sess of drmService.sessions.values()) {
+            if (sess && (
+              googleSheetService.phonesMatch(sess.phone, s.phone_number) ||
+              googleSheetService.phonesMatch(sess.phone, cleanFrom) ||
+              (phone10 && googleSheetService.phonesMatch(sess.phone, phone10)) ||
+              (fullPhoneWithCc && googleSheetService.phonesMatch(sess.phone, fullPhoneWithCc))
+            )) {
+              if (sess.progressSeconds && sess.progressSeconds > localProgress) {
+                localProgress = sess.progressSeconds;
+                localModule = sess.module || localModule;
+              }
+            }
           }
         } catch (_) {}
 
@@ -192,14 +222,33 @@ class BackendStudentService {
         let localCompleted = [];
         try {
           const localList = googleSheetService.readLocalStudents();
+          const fullPhoneWithCc = (s.country_code ? String(s.country_code).replace(/\D/g, '') : '') + String(s.phone_number || '').replace(/\D/g, '');
           const localStudent = localList.find(ls => 
             googleSheetService.phonesMatch(ls.phone, s.phone_number) || 
-            googleSheetService.phonesMatch(ls.phone, cleanFrom)
+            googleSheetService.phonesMatch(ls.phone, cleanFrom) ||
+            (phone10 && googleSheetService.phonesMatch(ls.phone, phone10)) ||
+            (fullPhoneWithCc && googleSheetService.phonesMatch(ls.phone, fullPhoneWithCc))
           );
           if (localStudent) {
             localModule = localStudent.currentModule || 1;
             localProgress = localStudent.progressSeconds || 0;
             localCompleted = localStudent.completedModules || [];
+          }
+
+          // Check active DRM session memory for latest uncommitted progress
+          const drmService = require("./drmService");
+          for (const sess of drmService.sessions.values()) {
+            if (sess && (
+              googleSheetService.phonesMatch(sess.phone, s.phone_number) ||
+              googleSheetService.phonesMatch(sess.phone, cleanFrom) ||
+              (phone10 && googleSheetService.phonesMatch(sess.phone, phone10)) ||
+              (fullPhoneWithCc && googleSheetService.phonesMatch(sess.phone, fullPhoneWithCc))
+            )) {
+              if (sess.progressSeconds && sess.progressSeconds > localProgress) {
+                localProgress = sess.progressSeconds;
+                localModule = sess.module || localModule;
+              }
+            }
           }
         } catch (_) {}
 

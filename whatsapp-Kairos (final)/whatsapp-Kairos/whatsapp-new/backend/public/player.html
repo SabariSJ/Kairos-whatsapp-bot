@@ -1456,7 +1456,9 @@
 
     // State
     let initialResumeSeconds = parseInt(INJECTED_PROGRESS, 10) || 0;
+    let targetResumeSeconds = initialResumeSeconds;
     let hasAppliedInitialSeek = false;
+    let resumeBannerTimeout = null;
     let studentData = null;
     let activeToken = null;
     let watermarkInterval = null;
@@ -1465,6 +1467,17 @@
     let hasCompletedModule = false;
     let currentSpeed = 1.0;
     let completedModulesSet = new Set();
+
+    // Storage Key Helpers for Robust Device-Level Resume
+    function getProgressStorageKey(modNum) {
+      const m = modNum || currentModuleNumber;
+      const phoneDigits = (studentPhoneEl.textContent || INJECTED_PHONE || '').replace(/\D/g, '');
+      return `kairos_progress_m${m}_${phoneDigits || 'guest'}`;
+    }
+
+    function getSessionStorageKey() {
+      return `kairos_progress_session_${sessionParam || 'guest'}`;
+    }
 
     // Helper: format seconds to MM:SS
     function formatTime(sec) {
@@ -1621,10 +1634,20 @@
     // Switch video module
     async function switchModule(newModuleNumber) {
       if (newModuleNumber < 1 || newModuleNumber > 6) return;
+      // Sync progress of current module before leaving
+      syncProgress(true);
+
       currentModuleNumber = newModuleNumber;
       hasCompletedModule = false;
       hasAppliedInitialSeek = false;
-      initialResumeSeconds = 0;
+
+      // Check saved progress for this new module
+      let modProgress = 0;
+      try {
+        modProgress = parseInt(localStorage.getItem(getProgressStorageKey(newModuleNumber)), 10) || 0;
+      } catch (e) {}
+      initialResumeSeconds = modProgress;
+      targetResumeSeconds = modProgress;
 
       if (completionOverlay) completionOverlay.style.display = 'none';
       if (playerContainer) playerContainer.classList.remove('has-overlay');
@@ -1663,6 +1686,16 @@
         return;
       }
 
+      // Check device local storage for saved progress fallback
+      try {
+        const localKey = getProgressStorageKey(currentModuleNumber);
+        const localSec = parseInt(localStorage.getItem(localKey) || localStorage.getItem(getSessionStorageKey()), 10) || 0;
+        if (localSec > initialResumeSeconds) {
+          initialResumeSeconds = localSec;
+        }
+      } catch (e) {}
+      targetResumeSeconds = initialResumeSeconds;
+
       showBuffering(true);
 
       try {
@@ -1693,8 +1726,21 @@
         if (studentData.phone) studentPhoneEl.textContent = studentData.phone;
 
         currentModuleNumber = studentData.module || studentData.moduleId || currentModuleNumber;
-        const remoteProgress = Number(studentData.progressSeconds ?? studentData.startProgress ?? initialResumeSeconds) || 0;
-        if (remoteProgress > 0) initialResumeSeconds = remoteProgress;
+        const remoteProgress = Number(studentData.progressSeconds ?? studentData.startProgress ?? 0) || 0;
+        if (remoteProgress > initialResumeSeconds) {
+          initialResumeSeconds = remoteProgress;
+        }
+
+        // Re-check localStorage with authoritative phone number
+        try {
+          const localKey = getProgressStorageKey(currentModuleNumber);
+          const localSec = parseInt(localStorage.getItem(localKey), 10) || 0;
+          if (localSec > initialResumeSeconds) {
+            initialResumeSeconds = localSec;
+          }
+        } catch (e) {}
+
+        targetResumeSeconds = initialResumeSeconds;
 
         if (studentData.completedModules && Array.isArray(studentData.completedModules)) {
           studentData.completedModules.forEach(m => completedModulesSet.add(Number(m)));
@@ -1715,25 +1761,53 @@
       }
     }
 
-    // Auto-Resume logic
-    function applyResumeSeek() {
-      if (!hasAppliedInitialSeek && initialResumeSeconds > 0) {
-        hasAppliedInitialSeek = true;
-        if (video.duration && initialResumeSeconds < video.duration - 2) {
-          video.currentTime = initialResumeSeconds;
-        } else {
-          video.currentTime = initialResumeSeconds;
-        }
-
-        const isFr = isFrench();
-        resumeText.textContent = isFr
-          ? `Reprise à ${formatTime(initialResumeSeconds)} là où vous vous étiez arrêté`
-          : `Resumed at ${formatTime(initialResumeSeconds)} from where you stopped`;
-        resumeBanner.style.display = 'flex';
-        setTimeout(() => { resumeBanner.style.display = 'none'; }, 4500);
+    // Auto-Resume Toast Notification
+    function showResumeBanner(seconds) {
+      if (!resumeBanner || seconds <= 0) return;
+      const isFr = isFrench();
+      if (resumeText) {
+        resumeText.innerHTML = isFr
+          ? `Reprise à <strong>${formatTime(seconds)}</strong> là où vous vous étiez arrêté`
+          : `Resumed at <strong>${formatTime(seconds)}</strong> from where you stopped`;
       }
-      showBuffering(false);
-      updatePlayPauseUI();
+      resumeBanner.style.display = 'flex';
+      if (resumeBannerTimeout) clearTimeout(resumeBannerTimeout);
+      resumeBannerTimeout = setTimeout(() => {
+        resumeBanner.style.display = 'none';
+      }, 5000);
+    }
+
+    // Bulletproof Multi-Stage Resume Seek
+    function attemptResumeSeek(triggerSource) {
+      if (hasAppliedInitialSeek) return;
+      if (!targetResumeSeconds || targetResumeSeconds <= 1) {
+        hasAppliedInitialSeek = true;
+        return;
+      }
+
+      if (video.duration && targetResumeSeconds >= video.duration - 2) {
+        hasAppliedInitialSeek = true;
+        return;
+      }
+
+      if (video.readyState >= 1) {
+        try {
+          if (Math.abs(video.currentTime - targetResumeSeconds) > 1.5) {
+            video.currentTime = targetResumeSeconds;
+          }
+          if (triggerSource === 'playing' || triggerSource === 'user-play' || triggerSource === 'timeupdate-guard' || Math.abs(video.currentTime - targetResumeSeconds) <= 1.5) {
+            hasAppliedInitialSeek = true;
+            showResumeBanner(targetResumeSeconds);
+          }
+        } catch (err) {
+          console.warn('[ResumeSeek] Error during seek:', err.message);
+        }
+      }
+    }
+
+    // Legacy alias
+    function applyResumeSeek() {
+      attemptResumeSeek('canplay');
     }
 
     // Buffering & Error Helpers
@@ -1761,9 +1835,15 @@
 
     function togglePlayPause() {
       if (video.paused || video.ended) {
-        video.play().catch(() => {});
+        if (!hasAppliedInitialSeek && targetResumeSeconds > 1 && video.currentTime < 2) {
+          try { video.currentTime = targetResumeSeconds; } catch (e) {}
+        }
+        video.play().then(() => {
+          attemptResumeSeek('user-play');
+        }).catch(() => {});
       } else {
         video.pause();
+        syncProgress(true);
       }
       updatePlayPauseUI();
     }
@@ -1878,8 +1958,10 @@
 
     seekContainer.addEventListener('click', (e) => {
       if (!video.duration) return;
+      hasAppliedInitialSeek = true;
       const pct = getSeekPercent(e);
       video.currentTime = pct * video.duration;
+      syncProgress(true);
     });
 
     seekContainer.addEventListener('mousemove', (e) => {
@@ -1898,17 +1980,33 @@
     // Video Lifecycle Events
     video.addEventListener('waiting', () => showBuffering(true));
     video.addEventListener('loadstart', () => showBuffering(true));
+    video.addEventListener('loadedmetadata', () => {
+      attemptResumeSeek('loadedmetadata');
+    });
     video.addEventListener('canplay', () => {
       showBuffering(false);
       showError(false);
-      applyResumeSeek();
+      attemptResumeSeek('canplay');
+    });
+    video.addEventListener('canplaythrough', () => {
+      attemptResumeSeek('canplaythrough');
     });
     video.addEventListener('playing', () => {
       showBuffering(false);
       showError(false);
       updatePlayPauseUI();
+      if (!hasAppliedInitialSeek && targetResumeSeconds > 1) {
+        if (video.currentTime < 2 && targetResumeSeconds >= 2) {
+          try { video.currentTime = targetResumeSeconds; } catch (e) {}
+        }
+        hasAppliedInitialSeek = true;
+        showResumeBanner(targetResumeSeconds);
+      }
     });
-    video.addEventListener('pause', updatePlayPauseUI);
+    video.addEventListener('pause', () => {
+      updatePlayPauseUI();
+      syncProgress(true);
+    });
     video.addEventListener('error', () => {
       showBuffering(false);
       showError(true);
@@ -1918,6 +2016,16 @@
     video.addEventListener('timeupdate', () => {
       const cur = video.currentTime || 0;
       const dur = video.duration || 1;
+
+      // Mobile initial playback seek guard
+      if (!hasAppliedInitialSeek && targetResumeSeconds > 2 && cur < 2 && dur > 10) {
+        try {
+          video.currentTime = targetResumeSeconds;
+          hasAppliedInitialSeek = true;
+          showResumeBanner(targetResumeSeconds);
+        } catch (e) {}
+      }
+
       const pct = Math.min(100, Math.max(0, (cur / dur) * 100));
 
       seekProgress.style.width = `${pct}%`;
@@ -1925,6 +2033,15 @@
 
       timeCurrent.textContent = formatTime(cur);
       timeDuration.textContent = formatTime(dur);
+
+      // Immediately save progress to local device storage every second
+      if (cur > 1 && !hasCompletedModule) {
+        try {
+          const sSec = String(Math.floor(cur));
+          localStorage.setItem(getProgressStorageKey(), sSec);
+          localStorage.setItem(getSessionStorageKey(), sSec);
+        } catch (e) {}
+      }
 
       // Update buffer bar
       if (video.buffered.length > 0) {
@@ -1951,7 +2068,16 @@
     btnReplayComp.addEventListener('click', () => {
       completionOverlay.style.display = 'none';
       if (controlsBar) controlsBar.style.display = 'flex';
+      hasCompletedModule = false;
+      hasAppliedInitialSeek = true;
+      targetResumeSeconds = 0;
+      initialResumeSeconds = 0;
+      try {
+        localStorage.setItem(getProgressStorageKey(), '0');
+        localStorage.setItem(getSessionStorageKey(), '0');
+      } catch (e) {}
       video.currentTime = 0;
+      syncProgress(true);
       video.play().catch(() => {});
     });
 
@@ -2014,27 +2140,39 @@
 
     video.addEventListener('ended', handleModuleCompletion);
 
-    // Save Progress Sync (Immediate on pause, seek, tab close, or periodic 4s)
+    // Save Progress Sync (Immediate on pause, seek, tab close, or periodic 3s)
     async function syncProgress(force = false) {
       if (!video || video.ended || hasCompletedModule) return;
       if (!force && video.paused) return;
       const currentSeconds = Math.floor(video.currentTime);
       if (currentSeconds <= 0) return;
 
+      // Save locally first
+      try {
+        localStorage.setItem(getProgressStorageKey(), String(currentSeconds));
+        localStorage.setItem(getSessionStorageKey(), String(currentSeconds));
+      } catch (e) {}
+
       const isFr = isFrench();
       try {
-        if (saveStatusEl) saveStatusEl.textContent = isFr ? "⏳ Enregistrement..." : "⏳ Saving progress...";
+        if (saveStatusEl && force) {
+          saveStatusEl.textContent = isFr ? "⏳ Enregistrement..." : "⏳ Saving progress...";
+        }
+        const payload = JSON.stringify({
+          token: activeToken || sessionParam,
+          sessionId: sessionParam,
+          currentTime: currentSeconds,
+          progressSeconds: currentSeconds,
+          deviceSig: currentDeviceSig,
+          duration: Math.floor(video.duration || 0),
+          module: currentModuleNumber
+        });
+
         const res = await fetch('/api/video/progress', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            token: activeToken || sessionParam,
-            currentTime: currentSeconds,
-            progressSeconds: currentSeconds,
-            deviceSig: currentDeviceSig,
-            duration: Math.floor(video.duration || 0),
-            module: currentModuleNumber
-          })
+          body: payload,
+          keepalive: force
         });
         const data = await res.json();
         if (data && data.success && saveStatusEl) {
@@ -2045,27 +2183,51 @@
       } catch (err) {}
     }
 
-    // Periodic sync every 4 seconds while watching
-    setInterval(() => syncProgress(false), 4000);
+    // Periodic sync every 3 seconds while watching
+    setInterval(() => syncProgress(false), 3000);
 
     // Immediate sync when video is paused or seeked
     video.addEventListener('pause', () => syncProgress(true));
-    video.addEventListener('seeked', () => syncProgress(true));
+    video.addEventListener('seeked', () => {
+      hasAppliedInitialSeek = true;
+      syncProgress(true);
+    });
 
     // Instant beacon on tab hide/close
     function sendUnloadBeacon() {
       if (!video || hasCompletedModule) return;
       const cur = Math.floor(video.currentTime);
       if (cur <= 0) return;
+
+      try {
+        localStorage.setItem(getProgressStorageKey(), String(cur));
+        localStorage.setItem(getSessionStorageKey(), String(cur));
+      } catch (e) {}
+
       const payload = JSON.stringify({
         token: activeToken || sessionParam,
+        sessionId: sessionParam,
         currentTime: cur,
         progressSeconds: cur,
         deviceSig: currentDeviceSig,
         module: currentModuleNumber
       });
+
+      // 1. fetch with keepalive (most modern & reliable)
+      try {
+        fetch('/api/video/progress', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: payload,
+          keepalive: true
+        }).catch(() => {});
+      } catch (e) {}
+
+      // 2. navigator.sendBeacon fallback
       if (navigator.sendBeacon) {
-        navigator.sendBeacon('/api/video/progress', new Blob([payload], { type: 'application/json' }));
+        try {
+          navigator.sendBeacon('/api/video/progress', new Blob([payload], { type: 'application/json' }));
+        } catch (e) {}
       }
     }
 
