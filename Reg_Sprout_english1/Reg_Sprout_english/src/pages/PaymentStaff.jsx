@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { collection, getDocs, doc, updateDoc, serverTimestamp, query } from 'firebase/firestore';
-import { db } from '../firebase/firebaseConfig';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import LanguageFilter from '../components/LanguageFilter';
 import logo from '../assets/logo.png';
 
 const STATUS_COLORS = {
@@ -15,52 +14,7 @@ const STATUS_COLORS = {
 
 const STATUS_OPTIONS = ['Pending', 'Contacted', 'Confirmed', 'Paid', 'Cancelled'];
 
-const DEFAULT_REGISTRATIONS = [
-  {
-    id: "reg_001",
-    name: "Senthil Kumar",
-    email: "senthil@sprout.edu",
-    phone: "+919500070756",
-    city: "Chennai",
-    occupation: "Indépendant",
-    status: "Paid",
-    createdAtDate: new Date(Date.now() - 3600000 * 2),
-    language: "fr"
-  },
-  {
-    id: "reg_002",
-    name: "Amina Diallo",
-    email: "amina.diallo@sprout.edu",
-    phone: "+221771234567",
-    city: "Dakar",
-    occupation: "Commerçant",
-    status: "Pending",
-    createdAtDate: new Date(Date.now() - 3600000 * 5),
-    language: "en"
-  },
-  {
-    id: "reg_003",
-    name: "Kwame Mensah",
-    email: "kwame.m@sprout.edu",
-    phone: "+233241234567",
-    city: "Accra",
-    occupation: "Étudiant",
-    status: "Contacted",
-    createdAtDate: new Date(Date.now() - 3600000 * 24),
-    language: "en"
-  },
-  {
-    id: "reg_004",
-    name: "Fatima Zahra",
-    email: "fatima.z@sprout.edu",
-    phone: "+212612345678",
-    city: "Casablanca",
-    occupation: "Salarié",
-    status: "Confirmed",
-    createdAtDate: new Date(Date.now() - 3600000 * 48),
-    language: "fr"
-  }
-];
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://kairos-whatsapp-bot-cy5w.onrender.com/api';
 
 export default function PaymentStaff() {
   const { currentUser, logout } = useAuth();
@@ -68,69 +22,91 @@ export default function PaymentStaff() {
   
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [successMsg, setSuccessMsg] = useState(null);
+  
+  // Filters
+  const [language, setLanguage] = useState('all');
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('');
   const [filterDate, setFilterDate] = useState('');
   
+  // Updating state tracker
+  const [updatingId, setUpdatingId] = useState(null);
+  
+  // Modal for new registrations alert
   const [showNewModal, setShowNewModal] = useState(false);
   const [newRegistrationsAlert, setNewRegistrationsAlert] = useState([]);
 
-  const fetchRegistrations = async () => {
+  const fetchRegistrations = useCallback(async () => {
     setLoading(true);
-    let fetchedData = [];
-
-    // 1. Try Firestore query
+    setError(null);
     try {
-      const q = query(collection(db, 'registrations'));
-      const snapshot = await getDocs(q);
-      if (snapshot && !snapshot.empty) {
-        fetchedData = snapshot.docs.map(doc => {
-          const item = doc.data();
-          return {
-            id: doc.id,
-            ...item,
-            status: item.status || 'Pending',
-            createdAtDate: item.createdAt?.toDate ? item.createdAt.toDate() : new Date(item.clientSystemTime || Date.now())
-          };
-        });
-      }
-    } catch (fsError) {
-      console.warn("Firestore registrations query unavailable:", fsError.message);
-    }
+      const params = new URLSearchParams();
+      if (language && language !== 'all') params.append('language', language);
+      if (filterStatus) params.append('status', filterStatus);
+      if (filterDate) params.append('date', filterDate);
+      if (search) params.append('search', search);
 
-    // 2. Fallback to LocalStorage or seed data
-    if (!fetchedData || fetchedData.length === 0) {
-      try {
-        const localData = localStorage.getItem('sprout_registrations_store');
-        if (localData) {
-          const parsed = JSON.parse(localData);
-          fetchedData = parsed.map(item => ({
+      const res = await fetch(`${API_BASE_URL}/staff/payments?${params.toString()}`);
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: Failed to fetch payment records.`);
+      }
+      const data = await res.json();
+      const rawPayments = data.payments || [];
+
+      // Map raw PostgreSQL records to UI model
+      const mapped = rawPayments.map(p => ({
+        id: p.paymentId && String(p.paymentId) !== '0' ? String(p.paymentId) : String(p.registrationId),
+        paymentId: p.paymentId && String(p.paymentId) !== '0' ? String(p.paymentId) : null,
+        registrationId: String(p.registrationId),
+        name: p.fullName || 'Student',
+        email: p.email || '',
+        phone: `${p.countryCode || ''} ${p.phoneNumber || ''}`.trim(),
+        rawPhone: p.phoneNumber || '',
+        city: p.city || 'N/A',
+        occupation: p.profession || 'N/A',
+        language: p.language || 'en',
+        courseName: p.courseName || 'Business Success Class',
+        status: p.status || 'Pending',
+        statusUpdatedBy: p.updatedBy || '',
+        statusUpdatedAt: p.updatedAt ? new Date(p.updatedAt) : null,
+        createdAtDate: new Date(p.registeredAt || Date.now()),
+        enrollmentId: p.enrollmentId || null,
+        enrollmentStatus: p.enrollmentStatus || null
+      }));
+
+      // Sort by newest registration ID descending
+      mapped.sort((a, b) => Number(b.registrationId) - Number(a.registrationId));
+
+      setRegistrations(mapped);
+      localStorage.setItem('sprout_cached_payments', JSON.stringify(mapped));
+      checkNewRegistrations(mapped);
+    } catch (err) {
+      console.warn('API error, reading from local cache:', err.message);
+      const cached = localStorage.getItem('sprout_cached_payments');
+      if (cached) {
+        try {
+          const parsed = JSON.parse(cached).map(item => ({
             ...item,
             createdAtDate: new Date(item.createdAtDate)
           }));
-        } else {
-          fetchedData = DEFAULT_REGISTRATIONS;
-          localStorage.setItem('sprout_registrations_store', JSON.stringify(DEFAULT_REGISTRATIONS));
-        }
-      } catch (err) {
-        fetchedData = DEFAULT_REGISTRATIONS;
+          setRegistrations(parsed);
+        } catch (_) {}
+      } else {
+        setError('Unable to reach server. Please check internet connection.');
       }
+    } finally {
+      setLoading(false);
     }
-
-    fetchedData.sort((a, b) => b.createdAtDate - a.createdAtDate);
-    setRegistrations(fetchedData);
-    checkNewRegistrations(fetchedData);
-    setLoading(false);
-  };
+  }, [language, filterStatus, filterDate, search]);
 
   useEffect(() => {
     fetchRegistrations();
-    // eslint-disable-next-line
-  }, []);
+  }, [fetchRegistrations]);
 
   const checkNewRegistrations = (data) => {
     if (data.length === 0) return;
-    
     const lastSeen = localStorage.getItem('paymentStaffLastSeen');
     if (lastSeen) {
       const lastSeenTime = parseInt(lastSeen, 10);
@@ -150,49 +126,47 @@ export default function PaymentStaff() {
     setNewRegistrationsAlert([]);
   };
 
-  const handleStatusChange = async (id, newStatus) => {
+  const handleStatusChange = async (targetId, newStatus, studentName) => {
     const updatedBy = currentUser?.email || 'admin@sprout.app';
-    const now = new Date();
+    setUpdatingId(targetId);
+    setError(null);
+    setSuccessMsg(null);
 
-    // Immediate state & LocalStorage sync
-    setRegistrations(prev => {
-      const updated = prev.map(reg => 
-        reg.id === id 
-          ? { ...reg, status: newStatus, statusUpdatedAt: now, statusUpdatedBy: updatedBy } 
+    // Optimistic UI update
+    setRegistrations(prev =>
+      prev.map(reg =>
+        reg.id === targetId || reg.registrationId === targetId
+          ? { ...reg, status: newStatus, statusUpdatedBy: updatedBy, statusUpdatedAt: new Date() }
           : reg
-      );
-      try {
-        localStorage.setItem('sprout_registrations_store', JSON.stringify(updated));
-      } catch (e) {}
-      return updated;
-    });
+      )
+    );
 
-    // Firestore update if available
     try {
-      const ref = doc(db, 'registrations', id);
-      await updateDoc(ref, {
-        status: newStatus,
-        statusUpdatedAt: serverTimestamp(),
-        statusUpdatedBy: updatedBy
+      const res = await fetch(`${API_BASE_URL}/staff/payments/${targetId}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          status: newStatus,
+          staffEmail: updatedBy
+        })
       });
-    } catch (fsErr) {
-      console.warn("Firestore update skipped (local store active):", fsErr.message);
-    }
 
-    // Auto-dispatch WhatsApp confirmation if marked Paid
-    if (newStatus === 'Paid') {
-      const targetStudent = registrations.find(r => r.id === id);
-      if (targetStudent?.phone) {
-        fetch('https://kairos-whatsapp-bot-cy5w.onrender.com/api/webhook/payment-confirmed', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            phone: targetStudent.phone,
-            amount: 50,
-            transactionId: `TXN_${Date.now()}`
-          })
-        }).catch(err => console.warn("WhatsApp payment webhook sync:", err.message));
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: Failed to update status on server.`);
       }
+
+      const resData = await res.json();
+      if (resData.success) {
+        setSuccessMsg(`Status for ${studentName || 'Student'} updated to '${newStatus}'.`);
+        setTimeout(() => setSuccessMsg(null), 4000);
+      }
+    } catch (err) {
+      console.error('Failed to update status on PostgreSQL backend:', err);
+      setError(`Failed to update status on database: ${err.message}`);
+    } finally {
+      setUpdatingId(null);
     }
   };
 
@@ -212,6 +186,7 @@ export default function PaymentStaff() {
   const filteredRegistrations = useMemo(() => {
     return registrations.filter(reg => {
       if (filterStatus && reg.status !== filterStatus) return false;
+      if (language !== 'all' && reg.language !== language) return false;
       if (filterDate) {
         const dStr = reg.createdAtDate.toISOString().split('T')[0];
         if (dStr !== filterDate) return false;
@@ -219,6 +194,8 @@ export default function PaymentStaff() {
       if (search) {
         const s = search.toLowerCase();
         return (
+          reg.registrationId.includes(s) ||
+          (reg.paymentId && reg.paymentId.includes(s)) ||
           (reg.name && reg.name.toLowerCase().includes(s)) ||
           (reg.email && reg.email.toLowerCase().includes(s)) ||
           (reg.phone && reg.phone.toLowerCase().includes(s)) ||
@@ -227,7 +204,7 @@ export default function PaymentStaff() {
       }
       return true;
     });
-  }, [registrations, search, filterStatus, filterDate]);
+  }, [registrations, search, filterStatus, filterDate, language]);
 
   const grouped = useMemo(() => {
     const groups = {};
@@ -239,7 +216,7 @@ export default function PaymentStaff() {
     return groups;
   }, [filteredRegistrations]);
 
-  const latestRegistrationId = registrations.length > 0 ? registrations[0].id : null;
+  const latestRegistrationId = registrations.length > 0 ? registrations[0].registrationId : null;
 
   return (
     <div className="d-flex flex-column min-vh-100" style={{ backgroundColor: '#F8FAFC' }}>
@@ -249,29 +226,56 @@ export default function PaymentStaff() {
         <div className="d-flex align-items-center gap-3">
           <img src={logo} alt="Sprout Logo" style={{ height: '45px', objectFit: 'contain' }} />
           <div className="d-none d-sm-block border-start ps-3 ms-2">
-            <h1 className="h5 mb-0" style={{ color: '#0B192C', fontWeight: '700', letterSpacing: '-0.5px' }}>
-              Payment Dashboard
-            </h1>
+            <div className="d-flex align-items-center gap-2">
+              <h1 className="h5 mb-0 fw-bold" style={{ color: '#0B192C' }}>
+                Payment Dashboard
+              </h1>
+              <span className="badge rounded-pill bg-primary" style={{ backgroundColor: '#00AEEF' }}>
+                PostgreSQL Live
+              </span>
+            </div>
             <small className="text-muted" style={{ fontSize: '0.8rem' }}>
-              {currentUser?.displayName} &bull; {currentUser?.email}
+              {currentUser?.displayName || 'Payment Team'} &bull; {currentUser?.email || 'admin@sprout.app'}
             </small>
           </div>
         </div>
-        <button onClick={handleLogout} className="btn btn-light border rounded-circle text-secondary shadow-sm hover-primary d-flex align-items-center justify-content-center" style={{ width: '45px', height: '45px' }} title="Logout">
-          <i className="fa-solid fa-right-from-bracket"></i>
-        </button>
+
+        <div className="d-flex align-items-center gap-3">
+          <LanguageFilter value={language} onChange={setLanguage} />
+          <button 
+            onClick={handleLogout} 
+            className="btn btn-light border rounded-circle text-secondary shadow-sm hover-primary d-flex align-items-center justify-content-center" 
+            style={{ width: '42px', height: '42px' }} 
+            title="Logout"
+          >
+            <i className="fa-solid fa-right-from-bracket"></i>
+          </button>
+        </div>
       </header>
 
-      <main className="flex-grow-1 p-4 container-fluid" style={{ maxWidth: '1400px', margin: '0 auto' }}>
+      <main className="flex-grow-1 p-4 container-fluid" style={{ maxWidth: '1440px', margin: '0 auto' }}>
         
+        {/* Alerts */}
+        {error && (
+          <div className="alert alert-danger border-0 rounded-4 shadow-sm mb-4" role="alert">
+            <i className="fa-solid fa-triangle-exclamation me-2"></i>{error}
+          </div>
+        )}
+        {successMsg && (
+          <div className="alert alert-success border-0 rounded-4 shadow-sm mb-4" role="alert">
+            <i className="fa-solid fa-circle-check me-2"></i>{successMsg}
+          </div>
+        )}
+
         {/* Summary Cards */}
-        <div className="row g-4 mb-5">
+        <div className="row g-4 mb-4">
           <div className="col-12 col-sm-6 col-lg-3">
             <div className="card border-0 shadow-sm rounded-4 h-100 overflow-hidden" style={{ borderLeft: '5px solid #0B192C' }}>
               <div className="card-body p-4 d-flex justify-content-between align-items-center">
                 <div>
-                  <h6 className="text-uppercase mb-2" style={{ color: '#64748B', fontWeight: '600', fontSize: '0.8rem', letterSpacing: '1px' }}>Total Registrations</h6>
+                  <h6 className="text-uppercase mb-2 text-muted fw-bold small">Total Registrations</h6>
                   <h2 className="mb-0 fw-bold" style={{ color: '#0B192C' }}>{totalCount}</h2>
+                  <small className="text-muted">PostgreSQL Database</small>
                 </div>
                 <div className="bg-light rounded-circle d-flex justify-content-center align-items-center" style={{ width: '56px', height: '56px' }}>
                   <i className="fa-solid fa-users text-secondary fs-4"></i>
@@ -283,8 +287,9 @@ export default function PaymentStaff() {
             <div className="card border-0 shadow-sm rounded-4 h-100 overflow-hidden" style={{ borderLeft: '5px solid #00AEEF' }}>
               <div className="card-body p-4 d-flex justify-content-between align-items-center">
                 <div>
-                  <h6 className="text-uppercase mb-2" style={{ color: '#64748B', fontWeight: '600', fontSize: '0.8rem', letterSpacing: '1px' }}>Registrations Today</h6>
+                  <h6 className="text-uppercase mb-2 text-muted fw-bold small">Registrations Today</h6>
                   <h2 className="mb-0 fw-bold" style={{ color: '#00AEEF' }}>{todayCount}</h2>
+                  <small className="text-muted">New today</small>
                 </div>
                 <div style={{ width: '56px', height: '56px', backgroundColor: 'rgba(0,174,239,0.1)' }} className="rounded-circle d-flex justify-content-center align-items-center">
                   <i className="fa-solid fa-calendar-day fs-4" style={{ color: '#00AEEF' }}></i>
@@ -296,8 +301,9 @@ export default function PaymentStaff() {
             <div className="card border-0 shadow-sm rounded-4 h-100 overflow-hidden" style={{ borderLeft: '5px solid #F59E0B' }}>
               <div className="card-body p-4 d-flex justify-content-between align-items-center">
                 <div>
-                  <h6 className="text-uppercase mb-2" style={{ color: '#64748B', fontWeight: '600', fontSize: '0.8rem', letterSpacing: '1px' }}>Pending</h6>
+                  <h6 className="text-uppercase mb-2 text-muted fw-bold small">Pending Payments</h6>
                   <h2 className="mb-0 fw-bold" style={{ color: '#F59E0B' }}>{pendingCount}</h2>
+                  <small className="text-muted">Awaiting confirmation</small>
                 </div>
                 <div style={{ width: '56px', height: '56px', backgroundColor: 'rgba(245,158,11,0.1)' }} className="rounded-circle d-flex justify-content-center align-items-center">
                   <i className="fa-regular fa-clock fs-4" style={{ color: '#F59E0B' }}></i>
@@ -309,8 +315,9 @@ export default function PaymentStaff() {
             <div className="card border-0 shadow-sm rounded-4 h-100 overflow-hidden" style={{ borderLeft: '5px solid #10B981' }}>
               <div className="card-body p-4 d-flex justify-content-between align-items-center">
                 <div>
-                  <h6 className="text-uppercase mb-2" style={{ color: '#64748B', fontWeight: '600', fontSize: '0.8rem', letterSpacing: '1px' }}>Paid</h6>
+                  <h6 className="text-uppercase mb-2 text-muted fw-bold small">Paid Students</h6>
                   <h2 className="mb-0 fw-bold" style={{ color: '#10B981' }}>{paidCount}</h2>
+                  <small className="text-muted">Access unlocked</small>
                 </div>
                 <div style={{ width: '56px', height: '56px', backgroundColor: 'rgba(16,185,129,0.1)' }} className="rounded-circle d-flex justify-content-center align-items-center">
                   <i className="fa-solid fa-check-circle fs-4" style={{ color: '#10B981' }}></i>
@@ -320,28 +327,27 @@ export default function PaymentStaff() {
           </div>
         </div>
 
-        {/* Filters */}
-        <div className="card border-0 shadow-sm rounded-4 mb-5">
-          <div className="card-body p-4">
+        {/* Filters Toolbar */}
+        <div className="card border-0 shadow-sm rounded-4 mb-4">
+          <div className="card-body p-3 p-md-4">
             <div className="row g-3 align-items-end">
               <div className="col-12 col-lg-5">
-                <label className="form-label text-muted fw-bold mb-2" style={{ fontSize: '0.85rem' }}>
+                <label className="form-label text-muted fw-bold small mb-1">
                   <i className="fa-solid fa-magnifying-glass me-2"></i>Search Registrations
                 </label>
                 <input 
                   type="text" 
-                  className="form-control form-control-lg border-0 bg-light w-100" 
-                  placeholder="Search by name, email, phone, city..." 
+                  className="form-control border-0 bg-light w-100" 
+                  placeholder="Search by ID, name, email, phone, city..." 
                   value={search}
                   onChange={e => setSearch(e.target.value)}
-                  style={{ fontSize: '1rem' }}
                 />
               </div>
               <div className="col-12 col-sm-6 col-lg-3">
-                <label className="form-label text-muted fw-bold mb-2" style={{ fontSize: '0.85rem' }}>
+                <label className="form-label text-muted fw-bold small mb-1">
                   <i className="fa-solid fa-filter me-2"></i>Status Filter
                 </label>
-                <select className="form-select form-select-lg border-0 bg-light w-100" value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ fontSize: '1rem' }}>
+                <select className="form-select border-0 bg-light w-100" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
                   <option value="">All Statuses</option>
                   {STATUS_OPTIONS.map(opt => (
                     <option key={opt} value={opt}>{opt}</option>
@@ -349,35 +355,44 @@ export default function PaymentStaff() {
                 </select>
               </div>
               <div className="col-12 col-sm-6 col-lg-2">
-                <label className="form-label text-muted fw-bold mb-2" style={{ fontSize: '0.85rem' }}>
+                <label className="form-label text-muted fw-bold small mb-1">
                   <i className="fa-regular fa-calendar me-2"></i>Date Filter
                 </label>
                 <input 
                   type="date" 
-                  className="form-control form-control-lg border-0 bg-light w-100" 
+                  className="form-control border-0 bg-light w-100" 
                   value={filterDate} 
                   max={new Date().toISOString().split('T')[0]}
                   onChange={e => setFilterDate(e.target.value)} 
-                  style={{ fontSize: '1rem' }} 
                 />
               </div>
               <div className="col-12 col-lg-2 d-flex gap-2 justify-content-lg-end">
-                <button className="btn btn-light border btn-lg transition-all flex-grow-1 flex-lg-grow-0" onClick={() => { setSearch(''); setFilterStatus(''); setFilterDate(''); }} title="Reset Filters" style={{ height: '48px', padding: '0 20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <i className="fa-solid fa-rotate-left"></i>
+                <button 
+                  className="btn btn-light border transition-all flex-grow-1 flex-lg-grow-0" 
+                  onClick={() => { setSearch(''); setFilterStatus(''); setFilterDate(''); setLanguage('all'); }} 
+                  title="Reset Filters"
+                >
+                  <i className="fa-solid fa-rotate-left me-1"></i> Reset
                 </button>
-                <button className="btn btn-lg text-white transition-all flex-grow-1 flex-lg-grow-0" onClick={fetchRegistrations} disabled={loading} style={{ backgroundColor: '#00AEEF', height: '48px', padding: '0 20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Refresh Data">
-                  <i className="fa-solid fa-arrows-rotate"></i>
+                <button 
+                  className="btn text-white transition-all flex-grow-1 flex-lg-grow-0" 
+                  onClick={fetchRegistrations} 
+                  disabled={loading} 
+                  style={{ backgroundColor: '#00AEEF' }} 
+                  title="Refresh Data"
+                >
+                  <i className="fa-solid fa-arrows-rotate me-1"></i> Refresh
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* List */}
+        {/* List of Registrations */}
         {loading ? (
           <div className="text-center py-5">
             <div className="spinner-border" style={{ color: '#00AEEF' }} role="status"></div>
-            <p className="mt-3 text-muted fw-semibold">Syncing latest data...</p>
+            <p className="mt-3 text-muted fw-semibold">Fetching latest PostgreSQL registrations...</p>
           </div>
         ) : Object.keys(grouped).length === 0 ? (
           <div className="text-center py-5 bg-white shadow-sm rounded-4">
@@ -390,68 +405,93 @@ export default function PaymentStaff() {
         ) : (
           Object.entries(grouped).map(([date, items]) => (
             <div key={date} className="mb-5">
-              <div className="d-flex align-items-center mb-4">
+              <div className="d-flex align-items-center mb-3">
                 <h5 className="mb-0 fw-bold" style={{ color: '#0B192C' }}>{date}</h5>
+                <span className="badge bg-light text-muted border ms-3 rounded-pill">{items.length} students</span>
                 <hr className="flex-grow-1 ms-3 text-muted opacity-25" />
               </div>
               <div className="row g-4">
                 {items.map(reg => {
-                  const isNewest = reg.id === latestRegistrationId && !search && !filterStatus && !filterDate;
+                  const isNewest = reg.registrationId === latestRegistrationId && !search && !filterStatus && !filterDate;
                   const statusColor = STATUS_COLORS[reg.status] || '#64748B';
-                  
+                  const isUpdating = updatingId === reg.id || updatingId === reg.registrationId;
+
                   return (
-                    <div key={reg.id} className="col-12 col-xl-6">
+                    <div key={reg.registrationId} className="col-12 col-xl-6">
                       <div className={`card border-0 rounded-4 shadow-sm h-100 transition-all ${isNewest ? 'border-primary border border-2' : ''}`} style={{ backgroundColor: isNewest ? '#F0F9FF' : '#fff' }}>
                         <div className="card-body p-4">
                           
-                          <div className="d-flex flex-wrap flex-sm-nowrap justify-content-between align-items-start mb-4 gap-3">
+                          <div className="d-flex flex-wrap flex-sm-nowrap justify-content-between align-items-start mb-3 gap-3">
                             <div className="d-flex align-items-start gap-3 flex-grow-1" style={{ minWidth: 0 }}>
                               <div className="rounded-circle d-flex justify-content-center align-items-center text-white fw-bold shadow-sm flex-shrink-0" style={{ width: '48px', height: '48px', backgroundColor: '#0B192C', fontSize: '1.2rem' }}>
                                 {reg.name.charAt(0).toUpperCase()}
                               </div>
                               <div className="flex-grow-1" style={{ minWidth: 0 }}>
-                                <h5 className="mb-1 fw-bold text-truncate" style={{ color: '#0F172A' }}>
-                                  {reg.name}
-                                  {isNewest && <span className="badge ms-2 rounded-pill align-top bg-danger animate-pulse">NEW</span>}
-                                </h5>
-                                <div className="text-muted d-flex flex-column gap-1" style={{ fontSize: '0.9rem' }}>
+                                <div className="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                                  <h5 className="mb-0 fw-bold text-truncate" style={{ color: '#0F172A' }}>
+                                    {reg.name}
+                                  </h5>
+                                  <span className="badge bg-secondary rounded-pill font-monospace" style={{ fontSize: '0.75rem' }}>
+                                    Reg #{reg.registrationId}
+                                  </span>
+                                  <span className={`badge rounded-pill ${reg.language === 'fr' ? 'bg-purple text-white' : 'bg-info text-dark'}`} style={reg.language === 'fr' ? { backgroundColor: '#7C3AED' } : {}}>
+                                    {reg.language === 'fr' ? '🇫🇷 FR' : '🇬🇧 EN'}
+                                  </span>
+                                  {isNewest && <span className="badge rounded-pill bg-danger">NEW</span>}
+                                </div>
+                                <div className="text-muted d-flex flex-column gap-1" style={{ fontSize: '0.88rem' }}>
                                   <span className="text-truncate" title={reg.email}>
-                                    <i className="fa-solid fa-envelope me-2 text-secondary"></i>{reg.email}
+                                    <i className="fa-solid fa-envelope me-2 text-secondary"></i>{reg.email || 'No email provided'}
                                   </span>
                                   <span className="text-truncate" title={reg.phone}>
                                     <i className="fa-solid fa-phone me-2 text-secondary"></i>{reg.phone}
+                                  </span>
+                                  <span className="text-truncate small text-muted">
+                                    <i className="fa-solid fa-book-open me-2 text-secondary"></i>{reg.courseName}
                                   </span>
                                 </div>
                               </div>
                             </div>
                             
-                            <div className="d-flex flex-row flex-sm-column align-items-center align-items-sm-end gap-2 flex-shrink-0 mt-2 mt-sm-0" style={{ minWidth: '140px' }}>
+                            <div className="d-flex flex-row flex-sm-column align-items-center align-items-sm-end gap-2 flex-shrink-0 mt-2 mt-sm-0" style={{ minWidth: '150px' }}>
                               <span className="badge rounded-pill px-3 py-2 fw-semibold shadow-sm text-center w-100" style={{ backgroundColor: statusColor, color: '#fff', fontSize: '0.85rem' }}>
-                                <i className="fa-solid fa-circle me-2" style={{ fontSize: '0.6rem' }}></i>{reg.status}
+                                <i className="fa-solid fa-circle me-1" style={{ fontSize: '0.6rem' }}></i>{reg.status}
                               </span>
-                              <select 
-                                className="form-select form-select-sm border-0 bg-light fw-semibold text-secondary w-100" 
-                                value={reg.status}
-                                onChange={(e) => handleStatusChange(reg.id, e.target.value)}
-                                style={{ cursor: 'pointer' }}
-                              >
-                                {STATUS_OPTIONS.map(opt => (
-                                  <option key={opt} value={opt}>{opt}</option>
-                                ))}
-                              </select>
+                              <div className="d-flex align-items-center gap-1 w-100">
+                                <select 
+                                  className="form-select form-select-sm border bg-light fw-semibold text-secondary w-100" 
+                                  value={reg.status}
+                                  disabled={isUpdating}
+                                  onChange={(e) => handleStatusChange(reg.id || reg.registrationId, e.target.value, reg.name)}
+                                  style={{ cursor: 'pointer' }}
+                                >
+                                  {STATUS_OPTIONS.map(opt => (
+                                    <option key={opt} value={opt}>{opt}</option>
+                                  ))}
+                                </select>
+                                {isUpdating && <div className="spinner-border spinner-border-sm text-primary" role="status"></div>}
+                              </div>
                             </div>
                           </div>
                           
                           <div className="bg-light rounded-4 p-3 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center border gap-3">
-                            <div className="d-flex flex-column gap-2 text-muted w-100" style={{ fontSize: '0.85rem' }}>
+                            <div className="d-flex flex-column gap-1 text-muted w-100" style={{ fontSize: '0.85rem' }}>
                               <span><i className="fa-solid fa-location-dot me-2 text-secondary"></i><strong>{reg.city}</strong></span>
                               <span><i className="fa-solid fa-briefcase me-2 text-secondary"></i>{reg.occupation}</span>
                             </div>
-                            <div className="d-flex flex-column gap-2 text-muted text-start text-sm-end w-100 border-top border-sm-0 pt-2 pt-sm-0 mt-2 mt-sm-0" style={{ fontSize: '0.85rem' }}>
-                              <span><i className="fa-regular fa-clock me-2 text-secondary"></i>{reg.createdAtDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-                              {reg.statusUpdatedBy && (
-                                <span className="text-truncate w-100" title={reg.statusUpdatedBy}>
-                                  <i className="fa-solid fa-user-pen me-2 text-secondary"></i>{reg.statusUpdatedBy.split('@')[0]}
+                            <div className="d-flex flex-column gap-1 text-muted text-start text-sm-end w-100 border-top border-sm-0 pt-2 pt-sm-0 mt-2 mt-sm-0" style={{ fontSize: '0.85rem' }}>
+                              <span>
+                                <i className="fa-regular fa-clock me-2 text-secondary"></i>
+                                {reg.createdAtDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                              {reg.paymentId && (
+                                <span className="small text-muted">
+                                  <i className="fa-solid fa-receipt me-1"></i> Payment #{reg.paymentId}
+                                </span>
+                              )}
+                              {reg.enrollmentStatus && (
+                                <span className="small text-success fw-semibold">
+                                  <i className="fa-solid fa-graduation-cap me-1"></i> Enrolled ({reg.enrollmentStatus})
                                 </span>
                               )}
                             </div>
@@ -480,11 +520,11 @@ export default function PaymentStaff() {
                   <button type="button" className="btn-close btn-close-white" onClick={handleAcknowledgeNew}></button>
                 </div>
                 <div className="modal-body p-4">
-                  <p className="text-secondary mb-4">You have new registrations that require your attention.</p>
+                  <p className="text-secondary mb-4">You have new registrations in the PostgreSQL database that require attention:</p>
                   {newRegistrationsAlert.slice(0, 3).map(r => (
-                    <div key={r.id} className="p-3 bg-light border rounded-4 mb-3 d-flex justify-content-between align-items-center">
+                    <div key={r.registrationId} className="p-3 bg-light border rounded-4 mb-3 d-flex justify-content-between align-items-center">
                       <div>
-                        <strong className="d-block mb-1" style={{ color: '#0B192C' }}>{r.name}</strong>
+                        <strong className="d-block mb-1" style={{ color: '#0B192C' }}>{r.name} (Reg #{r.registrationId})</strong>
                         <span className="small text-muted"><i className="fa-solid fa-location-dot me-1"></i>{r.city} &bull; {r.occupation}</span>
                       </div>
                       <span className="badge bg-primary rounded-pill">New</span>

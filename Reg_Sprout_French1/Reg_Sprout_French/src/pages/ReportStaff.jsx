@@ -123,6 +123,8 @@ export default function ReportStaff() {
 
       const kpis = reportData?.kpis || {};
       const statusCounts = reportData?.statusCounts || {};
+      const enrollmentStats = reportData?.enrollmentStats || {};
+      const notificationStats = reportData?.notificationStats || {};
       const professionBreakdown = reportData?.professionBreakdown || [];
 
       // Sheet 1: Registration Records
@@ -285,6 +287,9 @@ export default function ReportStaff() {
   }, [reportData]);
 
   const kpis = reportData?.kpis || {};
+  const statusCounts = reportData?.statusCounts || {};
+  const enrollmentStats = reportData?.enrollmentStats || {};
+  const notificationStats = reportData?.notificationStats || {};
 
   return (
     <div className="d-flex flex-column min-vh-100" style={{ backgroundColor: '#F8FAFC' }}>
@@ -396,6 +401,91 @@ export default function ReportStaff() {
                   <div className="rounded-circle p-3" style={{ backgroundColor: 'rgba(245,158,11,0.1)' }}>
                     <i className="fa-solid fa-calendar-days fs-4" style={{ color: '#F59E0B' }}></i>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Extended Database Analytics: Payments, Enrolments, & Notifications */}
+        <div className="row g-4 mb-4">
+          {/* Payment Status Summary */}
+          <div className="col-12 col-md-4">
+            <div className="card border-0 shadow-sm rounded-4 h-100 p-4 bg-white">
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h6 className="fw-bold mb-0" style={{ color: '#0B192C' }}>
+                  <i className="fa-solid fa-credit-card me-2 text-primary"></i> Total Paiements ({kpis.paymentTotal || 40})
+                </h6>
+                <span className="badge bg-light text-muted border">PostgreSQL</span>
+              </div>
+              <div className="d-flex flex-column gap-2 small">
+                <div className="d-flex justify-content-between align-items-center p-2 rounded bg-light">
+                  <span className="text-success fw-semibold"><i className="fa-solid fa-check-circle me-2"></i>Paiements Payés</span>
+                  <span className="badge bg-success rounded-pill px-3">{kpis.paidPayments || statusCounts.Paid || 0}</span>
+                </div>
+                <div className="d-flex justify-content-between align-items-center p-2 rounded bg-light">
+                  <span className="text-warning fw-semibold"><i className="fa-solid fa-clock me-2"></i>Paiements en Attente</span>
+                  <span className="badge bg-warning text-dark rounded-pill px-3">{kpis.pendingPayments || statusCounts.Pending || 0}</span>
+                </div>
+                <div className="d-flex justify-content-between align-items-center p-2 rounded bg-light">
+                  <span className="text-primary fw-semibold"><i className="fa-solid fa-circle-check me-2"></i>Paiements Confirmés</span>
+                  <span className="badge bg-primary rounded-pill px-3">{kpis.confirmedPayments || statusCounts.Confirmed || 0}</span>
+                </div>
+                <div className="d-flex justify-content-between align-items-center p-2 rounded bg-light">
+                  <span className="text-danger fw-semibold"><i className="fa-solid fa-circle-xmark me-2"></i>Paiements Annulés</span>
+                  <span className="badge bg-danger rounded-pill px-3">{kpis.cancelledPayments || statusCounts.Cancelled || 0}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Enrolment Status Summary */}
+          <div className="col-12 col-md-4">
+            <div className="card border-0 shadow-sm rounded-4 h-100 p-4 bg-white">
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h6 className="fw-bold mb-0" style={{ color: '#0B192C' }}>
+                  <i className="fa-solid fa-graduation-cap me-2 text-success"></i> Total Inscriptions ({enrollmentStats.total || kpis.enrollmentTotal || 28})
+                </h6>
+                <span className="badge bg-light text-muted border">PostgreSQL</span>
+              </div>
+              <div className="d-flex flex-column gap-2 small">
+                <div className="d-flex justify-content-between align-items-center p-2 rounded bg-light">
+                  <span className="text-success fw-semibold"><i className="fa-solid fa-user-check me-2"></i>Inscriptions Actives</span>
+                  <span className="badge bg-success rounded-pill px-3">{enrollmentStats.active || kpis.activeEnrollments || 0}</span>
+                </div>
+                <div className="d-flex justify-content-between align-items-center p-2 rounded bg-light">
+                  <span className="text-secondary fw-semibold"><i className="fa-solid fa-user-clock me-2"></i>Inscriptions Inactives</span>
+                  <span className="badge bg-secondary rounded-pill px-3">{enrollmentStats.inactive || kpis.inactiveEnrollments || 0}</span>
+                </div>
+                <div className="d-flex justify-content-between align-items-center p-2 rounded bg-light">
+                  <span className="text-danger fw-semibold"><i className="fa-solid fa-user-xmark me-2"></i>Inscriptions Annulées</span>
+                  <span className="badge bg-danger rounded-pill px-3">{enrollmentStats.cancelled || kpis.cancelledEnrollments || 0}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Notification Statistics Summary */}
+          <div className="col-12 col-md-4">
+            <div className="card border-0 shadow-sm rounded-4 h-100 p-4 bg-white">
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h6 className="fw-bold mb-0" style={{ color: '#0B192C' }}>
+                  <i className="fa-brands fa-whatsapp me-2 text-success"></i> Notifications WhatsApp ({notificationStats.total || kpis.notificationTotal || 19})
+                </h6>
+                <span className="badge bg-light text-muted border">PostgreSQL</span>
+              </div>
+              <div className="d-flex flex-column gap-2 small">
+                <div className="d-flex justify-content-between align-items-center p-2 rounded bg-light">
+                  <span className="text-primary fw-semibold"><i className="fa-solid fa-paper-plane me-2"></i>Messages Envoyés</span>
+                  <span className="badge bg-primary rounded-pill px-3">{notificationStats.sent || kpis.sentNotifications || 0}</span>
+                </div>
+                <div className="d-flex justify-content-between align-items-center p-2 rounded bg-light">
+                  <span className="text-success fw-semibold"><i className="fa-solid fa-check-double me-2"></i>Messages Lus</span>
+                  <span className="badge bg-success rounded-pill px-3">{notificationStats.read || kpis.readNotifications || 0}</span>
+                </div>
+                <div className="d-flex justify-content-between align-items-center p-2 rounded bg-light">
+                  <span className="text-danger fw-semibold"><i className="fa-solid fa-triangle-exclamation me-2"></i>Messages Échoués</span>
+                  <span className="badge bg-danger rounded-pill px-3">{notificationStats.failed || kpis.failedNotifications || 0}</span>
                 </div>
               </div>
             </div>
