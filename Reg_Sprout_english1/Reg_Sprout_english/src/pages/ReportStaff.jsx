@@ -190,21 +190,24 @@ export default function ReportStaff() {
   const chartData = useMemo(() => {
     if (!reportData) return null;
 
+    const isEn = language !== 'fr';
+    const t = (en, fr) => (isEn ? en : fr);
+
     const { kpis = {}, statusCounts = {}, professionBreakdown = [], dailyTrend = [] } = reportData;
 
     // Daily Line Chart
     let lineLabels = dailyTrend.map((d) => d.date);
     let lineCounts = dailyTrend.map((d) => d.count);
     if (lineLabels.length === 1) {
-      lineLabels = ['Previous', lineLabels[0]];
+      lineLabels = [t('Previous', 'Précédent'), lineLabels[0]];
       lineCounts = [0, lineCounts[0]];
     }
 
     const dailyLine = {
-      labels: lineLabels.length ? lineLabels : ['No Data'],
+      labels: lineLabels.length ? lineLabels : [t('No Data', 'Aucune donnée')],
       datasets: [
         {
-          label: 'Registrations',
+          label: t('Registrations', 'Inscriptions'),
           data: lineCounts.length ? lineCounts : [0],
           borderColor: '#00AEEF',
           backgroundColor: 'rgba(0, 174, 239, 0.15)',
@@ -221,17 +224,20 @@ export default function ReportStaff() {
 
     // Comparison Bar
     const comparisonBar = {
-      labels: ['Today vs Yesterday', 'This Week vs Last Week'],
+      labels: [
+        t('Today vs Yesterday', 'Aujourd’hui vs Hier'),
+        t('This Week vs Last Week', 'Cette semaine vs Semaine dernière'),
+      ],
       datasets: [
         {
-          label: 'Current Period',
+          label: t('Current Period', 'Période actuelle'),
           data: [kpis.today || 0, kpis.thisWeek || 0],
           backgroundColor: '#0B192C',
           borderRadius: 6,
           maxBarThickness: 50,
         },
         {
-          label: 'Previous Period',
+          label: t('Previous Period', 'Période précédente'),
           data: [kpis.yesterday || 0, kpis.lastWeek || 0],
           backgroundColor: '#E2E8F0',
           borderRadius: 6,
@@ -241,14 +247,22 @@ export default function ReportStaff() {
     };
 
     // Status Doughnut
-    const statusLabels = Object.keys(statusCounts);
+    const STATUS_MAP = {
+      Pending: t('Pending', 'En attente'),
+      Contacted: t('Contacted', 'Contacté'),
+      Confirmed: t('Confirmed', 'Confirmé'),
+      Paid: t('Paid', 'Payé'),
+      Cancelled: t('Cancelled', 'Annulé'),
+    };
+    const rawStatusKeys = Object.keys(statusCounts);
+    const statusLabels = rawStatusKeys.map((k) => STATUS_MAP[k] || k);
     const statusData = Object.values(statusCounts);
     const statusPie = {
       labels: statusLabels,
       datasets: [
         {
           data: statusData,
-          backgroundColor: statusLabels.map((s) => STATUS_COLORS[s] || '#94A3B8'),
+          backgroundColor: rawStatusKeys.map((s) => STATUS_COLORS[s] || '#94A3B8'),
           borderWidth: 0,
           hoverOffset: 6,
           borderRadius: 8,
@@ -258,7 +272,7 @@ export default function ReportStaff() {
     };
 
     // Profession Doughnut
-    const profLabels = professionBreakdown.map((p) => p.profession || 'Other');
+    const profLabels = professionBreakdown.map((p) => p.profession || t('Other', 'Autre'));
     const profData = professionBreakdown.map((p) => p.count);
     const professionPie = {
       labels: profLabels,
@@ -284,12 +298,15 @@ export default function ReportStaff() {
     };
 
     return { dailyLine, comparisonBar, statusPie, professionPie };
-  }, [reportData]);
+  }, [reportData, language]);
 
   const kpis = reportData?.kpis || {};
   const statusCounts = reportData?.statusCounts || {};
   const enrollmentStats = reportData?.enrollmentStats || {};
   const notificationStats = reportData?.notificationStats || {};
+
+  const isEn = language !== 'fr';
+  const t = (en, fr) => (isEn ? en : fr);
 
   return (
     <div className="d-flex flex-column min-vh-100" style={{ backgroundColor: '#F8FAFC' }}>
@@ -300,14 +317,14 @@ export default function ReportStaff() {
           <div className="border-start ps-3 ms-2">
             <div className="d-flex align-items-center gap-2">
               <h1 className="h5 mb-0 fw-bold" style={{ color: '#0B192C' }}>
-                Report Dashboard
+                {t('Report Dashboard', 'Tableau de bord des Rapports')}
               </h1>
               <span className="badge rounded-pill bg-success" style={{ backgroundColor: '#10B981' }}>
                 Analytics
               </span>
             </div>
             <small className="text-muted" style={{ fontSize: '0.8rem' }}>
-              {currentUser?.displayName || 'Report Team'} &bull; {currentUser?.email || 'report@sprout.com'}
+              {currentUser?.displayName || t('Report Team', 'Équipe Rapport')} &bull; {currentUser?.email || 'report@sprout.com'}
             </small>
           </div>
         </div>
@@ -318,7 +335,7 @@ export default function ReportStaff() {
             onClick={handleLogout}
             className="btn btn-light border rounded-circle text-secondary shadow-sm hover-primary d-flex align-items-center justify-content-center"
             style={{ width: '42px', height: '42px' }}
-            title="Logout"
+            title={t('Logout', 'Déconnexion')}
           >
             <i className="fa-solid fa-right-from-bracket"></i>
           </button>
@@ -340,7 +357,7 @@ export default function ReportStaff() {
               <div className="card-body p-4">
                 <div className="d-flex justify-content-between align-items-start">
                   <div>
-                    <h6 className="text-uppercase text-muted fw-bold small mb-2">Total Registrations</h6>
+                    <h6 className="text-uppercase text-muted fw-bold small mb-2">{t('Total Registrations', 'Total Inscriptions')}</h6>
                     <h2 className="mb-1 fw-bold" style={{ color: '#0B192C' }}>{kpis.total || 0}</h2>
                     <div className="d-flex gap-2 mt-2">
                       <span className="badge bg-info text-dark rounded-pill">EN: {kpis.englishCount || 0}</span>
@@ -360,9 +377,9 @@ export default function ReportStaff() {
               <div className="card-body p-4">
                 <div className="d-flex justify-content-between align-items-start">
                   <div>
-                    <h6 className="text-uppercase text-muted fw-bold small mb-2">Registered Today</h6>
+                    <h6 className="text-uppercase text-muted fw-bold small mb-2">{t('Registered Today', 'Inscrits Aujourd’hui')}</h6>
                     <h2 className="mb-1 fw-bold text-primary" style={{ color: '#00AEEF' }}>{kpis.today || 0}</h2>
-                    <small className="text-muted">Yesterday: {kpis.yesterday || 0}</small>
+                    <small className="text-muted">{t('Yesterday', 'Hier')}: {kpis.yesterday || 0}</small>
                   </div>
                   <div className="rounded-circle p-3" style={{ backgroundColor: 'rgba(0,174,239,0.1)' }}>
                     <i className="fa-solid fa-chart-line fs-4" style={{ color: '#00AEEF' }}></i>
@@ -377,9 +394,9 @@ export default function ReportStaff() {
               <div className="card-body p-4">
                 <div className="d-flex justify-content-between align-items-start">
                   <div>
-                    <h6 className="text-uppercase text-muted fw-bold small mb-2">This Week</h6>
+                    <h6 className="text-uppercase text-muted fw-bold small mb-2">{t('This Week', 'Cette Semaine')}</h6>
                     <h2 className="mb-1 fw-bold text-success">{kpis.thisWeek || 0}</h2>
-                    <small className="text-muted">Last Week: {kpis.lastWeek || 0}</small>
+                    <small className="text-muted">{t('Last week', 'Semaine dernière')}: {kpis.lastWeek || 0}</small>
                   </div>
                   <div className="rounded-circle p-3" style={{ backgroundColor: 'rgba(16,185,129,0.1)' }}>
                     <i className="fa-solid fa-calendar-week fs-4" style={{ color: '#10B981' }}></i>
@@ -394,9 +411,9 @@ export default function ReportStaff() {
               <div className="card-body p-4">
                 <div className="d-flex justify-content-between align-items-start">
                   <div>
-                    <h6 className="text-uppercase text-muted fw-bold small mb-2">This Month</h6>
+                    <h6 className="text-uppercase text-muted fw-bold small mb-2">{t('This Month', 'Ce Mois')}</h6>
                     <h2 className="mb-1 fw-bold text-warning">{kpis.thisMonth || 0}</h2>
-                    <small className="text-muted">Month to date</small>
+                    <small className="text-muted">{t('Since start of month', 'Depuis le début du mois')}</small>
                   </div>
                   <div className="rounded-circle p-3" style={{ backgroundColor: 'rgba(245,158,11,0.1)' }}>
                     <i className="fa-solid fa-calendar-days fs-4" style={{ color: '#F59E0B' }}></i>
@@ -414,25 +431,25 @@ export default function ReportStaff() {
             <div className="card border-0 shadow-sm rounded-4 h-100 p-4 bg-white">
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <h6 className="fw-bold mb-0" style={{ color: '#0B192C' }}>
-                  <i className="fa-solid fa-credit-card me-2 text-primary"></i> Payment Totals ({kpis.paymentTotal || 40})
+                  <i className="fa-solid fa-credit-card me-2 text-primary"></i> {t('Total Payments', 'Total Paiements')} ({kpis.paymentTotal || 40})
                 </h6>
                 <span className="badge bg-light text-muted border">PostgreSQL</span>
               </div>
               <div className="d-flex flex-column gap-2 small">
                 <div className="d-flex justify-content-between align-items-center p-2 rounded bg-light">
-                  <span className="text-success fw-semibold"><i className="fa-solid fa-check-circle me-2"></i>Paid Payments</span>
+                  <span className="text-success fw-semibold"><i className="fa-solid fa-check-circle me-2"></i>{t('Paid Payments', 'Paiements Payés')}</span>
                   <span className="badge bg-success rounded-pill px-3">{kpis.paidPayments || statusCounts.Paid || 0}</span>
                 </div>
                 <div className="d-flex justify-content-between align-items-center p-2 rounded bg-light">
-                  <span className="text-warning fw-semibold"><i className="fa-solid fa-clock me-2"></i>Pending Payments</span>
+                  <span className="text-warning fw-semibold"><i className="fa-solid fa-clock me-2"></i>{t('Pending Payments', 'Paiements en Attente')}</span>
                   <span className="badge bg-warning text-dark rounded-pill px-3">{kpis.pendingPayments || statusCounts.Pending || 0}</span>
                 </div>
                 <div className="d-flex justify-content-between align-items-center p-2 rounded bg-light">
-                  <span className="text-primary fw-semibold"><i className="fa-solid fa-circle-check me-2"></i>Confirmed Payments</span>
+                  <span className="text-primary fw-semibold"><i className="fa-solid fa-circle-check me-2"></i>{t('Confirmed Payments', 'Paiements Confirmés')}</span>
                   <span className="badge bg-primary rounded-pill px-3">{kpis.confirmedPayments || statusCounts.Confirmed || 0}</span>
                 </div>
                 <div className="d-flex justify-content-between align-items-center p-2 rounded bg-light">
-                  <span className="text-danger fw-semibold"><i className="fa-solid fa-circle-xmark me-2"></i>Cancelled Payments</span>
+                  <span className="text-danger fw-semibold"><i className="fa-solid fa-circle-xmark me-2"></i>{t('Cancelled Payments', 'Paiements Annulés')}</span>
                   <span className="badge bg-danger rounded-pill px-3">{kpis.cancelledPayments || statusCounts.Cancelled || 0}</span>
                 </div>
               </div>
@@ -444,21 +461,21 @@ export default function ReportStaff() {
             <div className="card border-0 shadow-sm rounded-4 h-100 p-4 bg-white">
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <h6 className="fw-bold mb-0" style={{ color: '#0B192C' }}>
-                  <i className="fa-solid fa-graduation-cap me-2 text-success"></i> Enrolment Totals ({enrollmentStats.total || kpis.enrollmentTotal || 28})
+                  <i className="fa-solid fa-graduation-cap me-2 text-success"></i> {t('Total Enrollments', 'Total Inscriptions')} ({enrollmentStats.total || kpis.enrollmentTotal || 28})
                 </h6>
                 <span className="badge bg-light text-muted border">PostgreSQL</span>
               </div>
               <div className="d-flex flex-column gap-2 small">
                 <div className="d-flex justify-content-between align-items-center p-2 rounded bg-light">
-                  <span className="text-success fw-semibold"><i className="fa-solid fa-user-check me-2"></i>Active Enrolments</span>
+                  <span className="text-success fw-semibold"><i className="fa-solid fa-user-check me-2"></i>{t('Active Enrollments', 'Inscriptions Actives')}</span>
                   <span className="badge bg-success rounded-pill px-3">{enrollmentStats.active || kpis.activeEnrollments || 0}</span>
                 </div>
                 <div className="d-flex justify-content-between align-items-center p-2 rounded bg-light">
-                  <span className="text-secondary fw-semibold"><i className="fa-solid fa-user-clock me-2"></i>Inactive Enrolments</span>
+                  <span className="text-secondary fw-semibold"><i className="fa-solid fa-user-clock me-2"></i>{t('Inactive Enrollments', 'Inscriptions Inactives')}</span>
                   <span className="badge bg-secondary rounded-pill px-3">{enrollmentStats.inactive || kpis.inactiveEnrollments || 0}</span>
                 </div>
                 <div className="d-flex justify-content-between align-items-center p-2 rounded bg-light">
-                  <span className="text-danger fw-semibold"><i className="fa-solid fa-user-xmark me-2"></i>Cancelled Enrolments</span>
+                  <span className="text-danger fw-semibold"><i className="fa-solid fa-user-xmark me-2"></i>{t('Cancelled Enrollments', 'Inscriptions Annulées')}</span>
                   <span className="badge bg-danger rounded-pill px-3">{enrollmentStats.cancelled || kpis.cancelledEnrollments || 0}</span>
                 </div>
               </div>
@@ -470,21 +487,21 @@ export default function ReportStaff() {
             <div className="card border-0 shadow-sm rounded-4 h-100 p-4 bg-white">
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <h6 className="fw-bold mb-0" style={{ color: '#0B192C' }}>
-                  <i className="fa-brands fa-whatsapp me-2 text-success"></i> Notifications ({notificationStats.total || kpis.notificationTotal || 19})
+                  <i className="fa-brands fa-whatsapp me-2 text-success"></i> {t('WhatsApp Notifications', 'Notifications WhatsApp')} ({notificationStats.total || kpis.notificationTotal || 19})
                 </h6>
                 <span className="badge bg-light text-muted border">PostgreSQL</span>
               </div>
               <div className="d-flex flex-column gap-2 small">
                 <div className="d-flex justify-content-between align-items-center p-2 rounded bg-light">
-                  <span className="text-primary fw-semibold"><i className="fa-solid fa-paper-plane me-2"></i>Sent Messages</span>
+                  <span className="text-primary fw-semibold"><i className="fa-solid fa-paper-plane me-2"></i>{t('Messages Sent', 'Messages Envoyés')}</span>
                   <span className="badge bg-primary rounded-pill px-3">{notificationStats.sent || kpis.sentNotifications || 0}</span>
                 </div>
                 <div className="d-flex justify-content-between align-items-center p-2 rounded bg-light">
-                  <span className="text-success fw-semibold"><i className="fa-solid fa-check-double me-2"></i>Read Messages</span>
+                  <span className="text-success fw-semibold"><i className="fa-solid fa-check-double me-2"></i>{t('Messages Read', 'Messages Lus')}</span>
                   <span className="badge bg-success rounded-pill px-3">{notificationStats.read || kpis.readNotifications || 0}</span>
                 </div>
                 <div className="d-flex justify-content-between align-items-center p-2 rounded bg-light">
-                  <span className="text-danger fw-semibold"><i className="fa-solid fa-triangle-exclamation me-2"></i>Failed Messages</span>
+                  <span className="text-danger fw-semibold"><i className="fa-solid fa-triangle-exclamation me-2"></i>{t('Messages Failed', 'Messages Échoués')}</span>
                   <span className="badge bg-danger rounded-pill px-3">{notificationStats.failed || kpis.failedNotifications || 0}</span>
                 </div>
               </div>
@@ -498,7 +515,7 @@ export default function ReportStaff() {
             <div className="row g-3 align-items-end">
               <div className="col-12 col-sm-6 col-md-3">
                 <label className="form-label text-muted fw-bold small mb-1">
-                  <i className="fa-regular fa-calendar-plus me-1"></i> Start Date
+                  <i className="fa-regular fa-calendar-plus me-1"></i> {t('Start Date', 'Date Début')}
                 </label>
                 <input
                   type="date"
@@ -509,7 +526,7 @@ export default function ReportStaff() {
               </div>
               <div className="col-12 col-sm-6 col-md-3">
                 <label className="form-label text-muted fw-bold small mb-1">
-                  <i className="fa-regular fa-calendar-minus me-1"></i> End Date
+                  <i className="fa-regular fa-calendar-minus me-1"></i> {t('End Date', 'Date Fin')}
                 </label>
                 <input
                   type="date"
@@ -526,9 +543,9 @@ export default function ReportStaff() {
                     setEndDate('');
                     setLanguage('all');
                   }}
-                  title="Reset Filter"
+                  title={t('Reset Filter', 'Réinitialiser')}
                 >
-                  <i className="fa-solid fa-rotate-left me-1"></i> Reset
+                  <i className="fa-solid fa-rotate-left me-1"></i> {t('Reset', 'Réinitialiser')}
                 </button>
                 <button
                   className="btn text-white px-3"
@@ -536,7 +553,7 @@ export default function ReportStaff() {
                   onClick={fetchReport}
                   disabled={loading}
                 >
-                  <i className="fa-solid fa-filter me-1"></i> Apply
+                  <i className="fa-solid fa-filter me-1"></i> {t('Apply', 'Appliquer')}
                 </button>
                 <button
                   className="btn btn-success px-3 shadow-sm"
@@ -560,11 +577,11 @@ export default function ReportStaff() {
         {loading ? (
           <div className="text-center py-5">
             <div className="spinner-border text-primary" role="status"></div>
-            <p className="mt-3 text-muted fw-semibold">Compiling analytics charts...</p>
+            <p className="mt-3 text-muted fw-semibold">{t('Compiling analytics charts...', "Génération des graphiques d'analyse...")}</p>
           </div>
         ) : !chartData ? (
           <div className="card border-0 shadow-sm rounded-4 p-5 text-center">
-            <p className="text-muted">No data available for the selected filters.</p>
+            <p className="text-muted">{t('No data available for the selected filters.', 'Aucune donnée disponible pour les filtres sélectionnés.')}</p>
           </div>
         ) : (
           <div className="row g-4">
@@ -572,7 +589,7 @@ export default function ReportStaff() {
             <div className="col-12 col-lg-8">
               <div className="card border-0 shadow-sm rounded-4 h-100 p-4 bg-white">
                 <h5 className="fw-bold mb-3" style={{ color: '#0B192C' }}>
-                  <i className="fa-solid fa-chart-line me-2 text-primary"></i> Daily Registration Trend
+                  <i className="fa-solid fa-chart-line me-2 text-primary"></i> {t('Daily Registration Trend', 'Tendance Quotidienne des Inscriptions')}
                 </h5>
                 <div style={{ height: '320px' }}>
                   <Line
@@ -595,7 +612,7 @@ export default function ReportStaff() {
             <div className="col-12 col-lg-4">
               <div className="card border-0 shadow-sm rounded-4 h-100 p-4 bg-white">
                 <h5 className="fw-bold mb-3" style={{ color: '#0B192C' }}>
-                  <i className="fa-solid fa-chart-column me-2 text-primary"></i> Period Comparison
+                  <i className="fa-solid fa-chart-column me-2 text-primary"></i> {t('Period Comparison', 'Comparaison de Périodes')}
                 </h5>
                 <div style={{ height: '320px' }}>
                   <Bar
@@ -618,7 +635,7 @@ export default function ReportStaff() {
             <div className="col-12 col-md-6">
               <div className="card border-0 shadow-sm rounded-4 p-4 bg-white">
                 <h5 className="fw-bold mb-3" style={{ color: '#0B192C' }}>
-                  <i className="fa-solid fa-circle-notch me-2 text-success"></i> Payment Status Breakdown
+                  <i className="fa-solid fa-circle-notch me-2 text-success"></i> {t('Payment Status Breakdown', 'Répartition des Paiements')}
                 </h5>
                 <div style={{ height: '280px' }}>
                   <Doughnut
@@ -638,7 +655,7 @@ export default function ReportStaff() {
             <div className="col-12 col-md-6">
               <div className="card border-0 shadow-sm rounded-4 p-4 bg-white">
                 <h5 className="fw-bold mb-3" style={{ color: '#0B192C' }}>
-                  <i className="fa-solid fa-briefcase me-2 text-warning"></i> Profession Distribution
+                  <i className="fa-solid fa-briefcase me-2 text-warning"></i> {t('Profession Distribution', 'Répartition des Professions')}
                 </h5>
                 <div style={{ height: '280px' }}>
                   <Doughnut

@@ -216,6 +216,8 @@ export default function PaymentStaff() {
   }, [filteredRegistrations]);
 
   const latestRegistrationId = registrations.length > 0 ? registrations[0].registrationId : null;
+  const isEn = language === 'en';
+  const t = (en, fr) => (isEn ? en : fr);
 
   return (
     <div className="d-flex flex-column min-vh-100" style={{ backgroundColor: '#F8FAFC' }}>
@@ -227,14 +229,14 @@ export default function PaymentStaff() {
           <div className="d-none d-sm-block border-start ps-3 ms-2">
             <div className="d-flex align-items-center gap-2">
               <h1 className="h5 mb-0 fw-bold" style={{ color: '#0B192C' }}>
-                Tableau de Bord des Paiements
+                {t('Payment Dashboard', 'Tableau de Bord des Paiements')}
               </h1>
               <span className="badge rounded-pill bg-primary" style={{ backgroundColor: '#00AEEF' }}>
                 PostgreSQL Live
               </span>
             </div>
             <small className="text-muted" style={{ fontSize: '0.8rem' }}>
-              {currentUser?.displayName || 'Équipe Paiement'} &bull; {currentUser?.email || 'admin@sprout.app'}
+              {currentUser?.displayName || t('Payment Team', 'Équipe Paiement')} &bull; {currentUser?.email || 'admin@sprout.app'}
             </small>
           </div>
         </div>
@@ -245,7 +247,7 @@ export default function PaymentStaff() {
             onClick={handleLogout} 
             className="btn btn-light border rounded-circle text-secondary shadow-sm hover-primary d-flex align-items-center justify-content-center" 
             style={{ width: '42px', height: '42px' }} 
-            title="Déconnexion"
+            title={t('Logout', 'Déconnexion')}
           >
             <i className="fa-solid fa-right-from-bracket"></i>
           </button>
@@ -272,9 +274,9 @@ export default function PaymentStaff() {
             <div className="card border-0 shadow-sm rounded-4 h-100 overflow-hidden" style={{ borderLeft: '5px solid #0B192C' }}>
               <div className="card-body p-4 d-flex justify-content-between align-items-center">
                 <div>
-                  <h6 className="text-uppercase mb-2 text-muted fw-bold small">Total Inscriptions</h6>
+                  <h6 className="text-uppercase mb-2 text-muted fw-bold small">{t('Total Registrations', 'Total Inscriptions')}</h6>
                   <h2 className="mb-0 fw-bold" style={{ color: '#0B192C' }}>{totalCount}</h2>
-                  <small className="text-muted">Base PostgreSQL</small>
+                  <small className="text-muted">{t('PostgreSQL Database', 'Base PostgreSQL')}</small>
                 </div>
                 <div className="bg-light rounded-circle d-flex justify-content-center align-items-center" style={{ width: '56px', height: '56px' }}>
                   <i className="fa-solid fa-users text-secondary fs-4"></i>
@@ -286,9 +288,9 @@ export default function PaymentStaff() {
             <div className="card border-0 shadow-sm rounded-4 h-100 overflow-hidden" style={{ borderLeft: '5px solid #00AEEF' }}>
               <div className="card-body p-4 d-flex justify-content-between align-items-center">
                 <div>
-                  <h6 className="text-uppercase mb-2 text-muted fw-bold small">Inscrits Aujourd’hui</h6>
+                  <h6 className="text-uppercase mb-2 text-muted fw-bold small">{t('Registered Today', 'Inscrits Aujourd’hui')}</h6>
                   <h2 className="mb-0 fw-bold" style={{ color: '#00AEEF' }}>{todayCount}</h2>
-                  <small className="text-muted">Aujourd’hui</small>
+                  <small className="text-muted">{t('Today', 'Aujourd’hui')}</small>
                 </div>
                 <div style={{ width: '56px', height: '56px', backgroundColor: 'rgba(0,174,239,0.1)' }} className="rounded-circle d-flex justify-content-center align-items-center">
                   <i className="fa-solid fa-calendar-day fs-4" style={{ color: '#00AEEF' }}></i>
@@ -300,9 +302,9 @@ export default function PaymentStaff() {
             <div className="card border-0 shadow-sm rounded-4 h-100 overflow-hidden" style={{ borderLeft: '5px solid #F59E0B' }}>
               <div className="card-body p-4 d-flex justify-content-between align-items-center">
                 <div>
-                  <h6 className="text-uppercase mb-2 text-muted fw-bold small">Paiements en Attente</h6>
+                  <h6 className="text-uppercase mb-2 text-muted fw-bold small">{t('Pending Payments', 'Paiements en Attente')}</h6>
                   <h2 className="mb-0 fw-bold" style={{ color: '#F59E0B' }}>{pendingCount}</h2>
-                  <small className="text-muted">En cours</small>
+                  <small className="text-muted">{t('Pending', 'En cours')}</small>
                 </div>
                 <div style={{ width: '56px', height: '56px', backgroundColor: 'rgba(245,158,11,0.1)' }} className="rounded-circle d-flex justify-content-center align-items-center">
                   <i className="fa-regular fa-clock fs-4" style={{ color: '#F59E0B' }}></i>
@@ -314,9 +316,9 @@ export default function PaymentStaff() {
             <div className="card border-0 shadow-sm rounded-4 h-100 overflow-hidden" style={{ borderLeft: '5px solid #10B981' }}>
               <div className="card-body p-4 d-flex justify-content-between align-items-center">
                 <div>
-                  <h6 className="text-uppercase mb-2 text-muted fw-bold small">Étudiants Payés</h6>
+                  <h6 className="text-uppercase mb-2 text-muted fw-bold small">{t('Paid Students', 'Étudiants Payés')}</h6>
                   <h2 className="mb-0 fw-bold" style={{ color: '#10B981' }}>{paidCount}</h2>
-                  <small className="text-muted">Accès débloqué</small>
+                  <small className="text-muted">{t('Access Unlocked', 'Accès débloqué')}</small>
                 </div>
                 <div style={{ width: '56px', height: '56px', backgroundColor: 'rgba(16,185,129,0.1)' }} className="rounded-circle d-flex justify-content-center align-items-center">
                   <i className="fa-solid fa-check-circle fs-4" style={{ color: '#10B981' }}></i>
@@ -332,22 +334,22 @@ export default function PaymentStaff() {
             <div className="row g-3 align-items-end">
               <div className="col-12 col-lg-5">
                 <label className="form-label text-muted fw-bold small mb-1">
-                  <i className="fa-solid fa-magnifying-glass me-2"></i>Rechercher une Inscription
+                  <i className="fa-solid fa-magnifying-glass me-2"></i>{t('Search Registration', 'Rechercher une Inscription')}
                 </label>
                 <input 
                   type="text" 
                   className="form-control border-0 bg-light w-100" 
-                  placeholder="Recherche par ID, nom, email, téléphone, ville..." 
+                  placeholder={t('Search by ID, name, email, phone, city...', 'Recherche par ID, nom, email, téléphone, ville...')} 
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                 />
               </div>
               <div className="col-12 col-sm-6 col-lg-3">
                 <label className="form-label text-muted fw-bold small mb-1">
-                  <i className="fa-solid fa-filter me-2"></i>Statut
+                  <i className="fa-solid fa-filter me-2"></i>{t('Status', 'Statut')}
                 </label>
                 <select className="form-select border-0 bg-light w-100" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
-                  <option value="">Tous les statuts</option>
+                  <option value="">{t('All Statuses', 'Tous les statuts')}</option>
                   {STATUS_OPTIONS.map(opt => (
                     <option key={opt} value={opt}>{opt}</option>
                   ))}
@@ -355,7 +357,7 @@ export default function PaymentStaff() {
               </div>
               <div className="col-12 col-sm-6 col-lg-2">
                 <label className="form-label text-muted fw-bold small mb-1">
-                  <i className="fa-regular fa-calendar me-2"></i>Date
+                  <i className="fa-regular fa-calendar me-2"></i>{t('Date', 'Date')}
                 </label>
                 <input 
                   type="date" 
@@ -369,18 +371,18 @@ export default function PaymentStaff() {
                 <button 
                   className="btn btn-light border transition-all flex-grow-1 flex-lg-grow-0" 
                   onClick={() => { setSearch(''); setFilterStatus(''); setFilterDate(''); setLanguage('all'); }} 
-                  title="Réinitialiser"
+                  title={t('Reset', 'Réinitialiser')}
                 >
-                  <i className="fa-solid fa-rotate-left me-1"></i> Réinit
+                  <i className="fa-solid fa-rotate-left me-1"></i> {t('Reset', 'Réinit')}
                 </button>
                 <button 
                   className="btn text-white transition-all flex-grow-1 flex-lg-grow-0" 
                   onClick={fetchRegistrations} 
                   disabled={loading} 
                   style={{ backgroundColor: '#00AEEF' }} 
-                  title="Rafraîchir"
+                  title={t('Refresh', 'Rafraîchir')}
                 >
-                  <i className="fa-solid fa-arrows-rotate me-1"></i> Actualiser
+                  <i className="fa-solid fa-arrows-rotate me-1"></i> {t('Refresh', 'Actualiser')}
                 </button>
               </div>
             </div>
@@ -391,22 +393,22 @@ export default function PaymentStaff() {
         {loading ? (
           <div className="text-center py-5">
             <div className="spinner-border" style={{ color: '#00AEEF' }} role="status"></div>
-            <p className="mt-3 text-muted fw-semibold">Récupération des inscriptions PostgreSQL...</p>
+            <p className="mt-3 text-muted fw-semibold">{t('Fetching PostgreSQL registrations...', 'Récupération des inscriptions PostgreSQL...')}</p>
           </div>
         ) : Object.keys(grouped).length === 0 ? (
           <div className="text-center py-5 bg-white shadow-sm rounded-4">
             <div className="mb-4">
               <i className="fa-regular fa-folder-open text-muted" style={{ fontSize: '4rem', opacity: 0.5 }}></i>
             </div>
-            <h4 className="text-muted fw-bold mb-2">Aucune inscription trouvée</h4>
-            <p className="text-secondary">Modifiez vos critères de recherche ou filtres.</p>
+            <h4 className="text-muted fw-bold mb-2">{t('No registrations found', 'Aucune inscription trouvée')}</h4>
+            <p className="text-secondary">{t('Modify your search criteria or filters.', 'Modifiez vos critères de recherche ou filtres.')}</p>
           </div>
         ) : (
           Object.entries(grouped).map(([date, items]) => (
             <div key={date} className="mb-5">
               <div className="d-flex align-items-center mb-3">
                 <h5 className="mb-0 fw-bold" style={{ color: '#0B192C' }}>{date}</h5>
-                <span className="badge bg-light text-muted border ms-3 rounded-pill">{items.length} étudiants</span>
+                <span className="badge bg-light text-muted border ms-3 rounded-pill">{items.length} {t('students', 'étudiants')}</span>
                 <hr className="flex-grow-1 ms-3 text-muted opacity-25" />
               </div>
               <div className="row g-4">
