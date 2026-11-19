@@ -5,6 +5,7 @@ const drmService = require("../services/drmService");
 const googleSheetService = require("../services/googleSheetService");
 const whatsappService = require("../services/whatsappService");
 const chatbotService = require("../services/chatbotService");
+const backendStudentService = require("../services/backendStudentService");
 
 // Initialize AWS S3 Client for Private Bucket Video Delivery
 const s3Client = new S3Client({
@@ -357,7 +358,34 @@ class DrmController {
 
     const completedModule = Number(req.body.moduleId) || payload.module || 1;
     const phone = payload.phone;
-    const student = await googleSheetService.getStudent(phone);
+
+    // Look up authoritative student from PostgreSQL / cache
+    let student = null;
+    try {
+      student = await backendStudentService.getStudent(phone);
+    } catch (e) {
+      console.warn("[drmController] backendStudentService error:", e.message);
+    }
+    if (!student) {
+      try {
+        student = await googleSheetService.getStudent(phone);
+      } catch (e) {}
+    }
+
+    // Determine target international E.164 phone for WhatsApp notification
+    let targetPhone = phone;
+    if (student && student.countryCode && student.phone) {
+      const cc = String(student.countryCode).replace(/\D/g, '');
+      const num = String(student.phone).replace(/\D/g, '');
+      targetPhone = cc ? `${cc}${num}` : num;
+    } else {
+      let rawDigits = String(targetPhone || '').replace(/\D/g, '');
+      if (rawDigits.length === 10 && ['6', '7', '8', '9'].includes(rawDigits[0])) {
+        targetPhone = '91' + rawDigits;
+      } else {
+        targetPhone = rawDigits;
+      }
+    }
 
     // Mark session completed
     drmService.completeSession(payload.sessionId);
@@ -370,11 +398,13 @@ class DrmController {
     const isGraduated = completedModule >= 6;
 
     if (student) {
-      await googleSheetService.updateProgress(phone, {
-        currentModule: isGraduated ? 6 : nextModule,
-        progressSeconds: 0,
-        completedModules: updatedCompleted
-      });
+      try {
+        await googleSheetService.updateProgress(phone, {
+          currentModule: isGraduated ? 6 : nextModule,
+          progressSeconds: 0,
+          completedModules: updatedCompleted
+        });
+      } catch (_) {}
     }
 
     const isFrench = googleSheetService.isFrench((student && student.language) || session.language || payload.language);
@@ -382,25 +412,25 @@ class DrmController {
     let nextClassroomUrl = null;
 
     if (isGraduated) {
-      console.log(`[Graduation Event] Student ${payload.name} (+${phone}) completed all 6 modules! Sending congratulations in ${isFrench ? 'French' : 'English'}.`);
+      console.log(`[Graduation Event] Student ${payload.name} (+${targetPhone}) completed all 6 modules! Sending congratulations in ${isFrench ? 'French' : 'English'}.`);
       if (isFrench) {
         const frenchCourseName = chatbotService.getCourseName(session.course, "fr");
         whatsappService.sendTextMessage(
-          phone,
+          targetPhone,
           `🎓 *FÉLICITATIONS, ${(payload.name || "Étudiant").toUpperCase()} !* 🏆\n\nVous avez officiellement terminé *LES 6 MODULES* du cours *${frenchCourseName}* !\n\nVotre certificat de réussite a été enregistré. Notre coordinateur académique vous contactera très prochainement pour vos attestations officielles.\n\nMerci d'avoir choisi Kairos Academy !`
         ).catch(err => console.error("[WhatsApp Send Error]", err.message));
       } else {
         const engCourseName = chatbotService.getCourseName(session.course, "en");
         whatsappService.sendTextMessage(
-          phone,
+          targetPhone,
           `🎓 *CONGRATULATIONS, ${(payload.name || "Student").toUpperCase()}!* 🏆\n\nYou have officially completed *ALL 6 MODULES* of the *${engCourseName}*!\n\nYour certificate of completion has been registered. Our academic coordinator will contact you shortly regarding your graduation credentials.\n\nThank you for choosing Kairos Academy!`
         ).catch(err => console.error("[WhatsApp Send Error]", err.message));
       }
     } else {
-      console.log(`[Auto-Advance Event] Student ${payload.name} (+${phone}) completed Module ${completedModule}. Unlocking Module ${nextModule} (Lang: ${isFrench ? 'fr' : 'en'})!`);
+      console.log(`[Auto-Advance Event] Student ${payload.name} (+${targetPhone}) completed Module ${completedModule}. Unlocking Module ${nextModule} (Lang: ${isFrench ? 'fr' : 'en'})!`);
       const courseName = chatbotService.getCourseName(session.course, isFrench ? "fr" : "en");
       const nextSession = drmService.createSession({
-        phone: phone,
+        phone: targetPhone,
         name: payload.name,
         course: courseName,
         module: nextModule,
@@ -421,13 +451,15 @@ class DrmController {
       const advanceBtn = isFrench ? `▶️ Commencer Module ${nextModule}` : `▶️ Start Module ${nextModule}`;
 
       whatsappService.sendCtaUrlButton(
-        phone,
+        targetPhone,
         advanceTitle,
         advanceMessage,
         advanceBtn,
         nextClassroomUrl,
         isFrench ? "Flux Sécurisé DRM Kairos" : "Kairos DRM Protected Stream"
-      ).catch(err => console.error("[WhatsApp Send Error]", err.message));
+      ).then(res => {
+        console.log(`[WhatsApp Complete Notification] Sent to ${targetPhone}:`, res ? 'SUCCESS' : 'FALLBACK/SENT');
+      }).catch(err => console.error("[WhatsApp Send Error]", err.message));
     }
 
     return res.status(200).json({

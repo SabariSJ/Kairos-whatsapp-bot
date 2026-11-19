@@ -539,7 +539,7 @@ async function processStudentAccess(student, from, clean, buttonId, serverBase, 
 
     // Generate secure DRM session bound to student
     const sessionData = drmService.createSession({
-      phone: phone10,
+      phone: from || phone10,
       name: studentName,
       course: courseName,
       module: currentMod,
@@ -589,7 +589,7 @@ async function processStudentAccess(student, from, clean, buttonId, serverBase, 
     });
 
     const sessionData = drmService.createSession({
-      phone: phone10,
+      phone: from || phone10,
       name: student.name,
       course: courseName,
       module: currentMod,

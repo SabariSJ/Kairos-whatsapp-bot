@@ -222,5 +222,33 @@
     "createdAt": 1795019983121,
     "expiresAt": 1795106383121,
     "completed": false
+  },
+  "17d61f2f": {
+    "sessionId": "17d61f2f",
+    "token": "eyJzZXNzaW9uSWQiOiIxN2Q2MWYyZiIsInBob25lIjoiOTYyOTUzMTg5MSIsIm5hbWUiOiJTYWJhcmkgU0oiLCJjb3Vyc2UiOiJNYXN0ZXJjbGFzcyBDb3Vyc2UiLCJtb2R1bGUiOjEsInByb2dyZXNzU2Vjb25kcyI6MzAsImxhbmd1YWdlIjoiZW4iLCJpYXQiOjE3OTUwNjA3Mjg1OTMsImV4cCI6MTc5NTE0NzEyODU5M30.FB4WYjaNdLL38cC601KrYYqyvxSSSEjki5PMjIgFSCg",
+    "phone": "9629531891",
+    "name": "Sabari SJ",
+    "course": "Masterclass Course",
+    "module": 1,
+    "progressSeconds": 120,
+    "language": "en",
+    "deviceSig": "chrome_device_hash_112233",
+    "createdAt": 1795060728593,
+    "expiresAt": 1795147128593,
+    "completed": true
+  },
+  "40b980ba": {
+    "sessionId": "40b980ba",
+    "token": "eyJzZXNzaW9uSWQiOiI0MGI5ODBiYSIsInBob25lIjoiOTE5NjI5NTMxODkxIiwibmFtZSI6IlNhYmFyaSBTSiIsImNvdXJzZSI6Ik1hc3RlcmNsYXNzIENvdXJzZSIsIm1vZHVsZSI6MiwicHJvZ3Jlc3NTZWNvbmRzIjowLCJsYW5ndWFnZSI6ImVuIiwiaWF0IjoxNzk1MDYwNzMzMjY0LCJleHAiOjE3OTUxNDcxMzMyNjR9.9Hq9znwq2F6buWhD8z65vLiUvIQG5Mqh3gCZgIcMEXw",
+    "phone": "919629531891",
+    "name": "Sabari SJ",
+    "course": "Masterclass Course",
+    "module": 2,
+    "progressSeconds": 0,
+    "language": "en",
+    "deviceSig": null,
+    "createdAt": 1795060733264,
+    "expiresAt": 1795147133264,
+    "completed": false
   }
 }

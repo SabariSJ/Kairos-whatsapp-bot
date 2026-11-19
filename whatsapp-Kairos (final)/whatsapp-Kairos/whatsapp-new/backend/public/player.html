@@ -145,12 +145,6 @@
       transition: min-height 0.3s ease, aspect-ratio 0.3s ease;
     }
 
-    .player-card.has-overlay {
-      aspect-ratio: auto !important;
-      min-height: 320px !important;
-      height: auto !important;
-    }
-
     video {
       width: 100%;
       height: 100%;
@@ -942,41 +936,37 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(10, 12, 19, 0.94);
+      width: 100%;
+      height: 100%;
+      background: rgba(10, 15, 29, 0.96);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       display: none;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      z-index: 40;
+      z-index: 50;
       text-align: center;
-      padding: 20px 16px;
+      padding: 24px 20px;
       box-sizing: border-box;
       overflow-y: auto;
-      max-height: 100%;
+      border-radius: 16px;
       animation: fadeIn 0.35s ease-out;
-    }
-
-    .player-card.has-overlay .completion-overlay {
-      position: relative;
-      min-height: 320px;
-      height: auto;
-      width: 100%;
     }
 
     .completion-content {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 10px;
-      max-width: 420px;
+      justify-content: center;
+      gap: 12px;
+      max-width: 380px;
       width: 100%;
       margin: auto;
     }
 
     .completion-celebration {
-      font-size: 38px;
+      font-size: 44px;
       line-height: 1;
       animation: bounce 1.5s infinite;
       margin-bottom: 2px;
@@ -988,18 +978,20 @@
     }
 
     .completion-content h2 {
-      font-size: 20px;
+      font-size: 21px;
       font-weight: 800;
       color: #34d399;
       letter-spacing: -0.3px;
       line-height: 1.25;
+      margin: 0;
     }
 
     .completion-content p {
-      font-size: 13px;
-      color: #94a3b8;
-      line-height: 1.45;
-      max-width: 340px;
+      font-size: 13.5px;
+      color: #cbd5e1;
+      line-height: 1.5;
+      max-width: 330px;
+      margin: 0;
     }
 
     .completion-buttons {
@@ -1008,7 +1000,7 @@
       gap: 10px;
       width: 100%;
       max-width: 320px;
-      margin-top: 6px;
+      margin-top: 8px;
     }
 
     .btn-completion {
@@ -1056,17 +1048,68 @@
 
     /* Mobile Responsive */
     @media (max-width: 640px) {
-      header.top-header { padding: 10px 14px; }
-      .brand-logo { width: 32px; height: 32px; font-size: 17px; }
-      .brand-title { font-size: 14px; }
+      header.top-header { padding: 8px 12px; }
+      .brand-logo { width: 30px; height: 30px; font-size: 16px; border-radius: 8px; }
+      .brand-title { font-size: 13.5px; }
+      .brand-sub { font-size: 10.5px; }
+      .badge-secure { padding: 4px 8px; font-size: 11px; }
       .badge-secure-text { display: none; }
       .badge-secure-short { display: inline; }
 
-      main.portal-main { padding: 12px; gap: 12px; }
-      .volume-slider { width: 45px; }
-      .ctrl-btn-jump { padding: 4px 6px; font-size: 11px; }
-      .time-display { font-size: 11px; }
-      .playlist-grid { grid-template-columns: 1fr; }
+      main.portal-main { padding: 10px; gap: 10px; }
+      .player-card { border-radius: 12px; }
+
+      /* Mobile Video Controls */
+      .custom-controls-bar { padding: 6px 10px 8px 10px; gap: 6px; }
+      .controls-row { gap: 4px; }
+      .controls-group-left { gap: 3px; }
+      .controls-group-right { gap: 3px; }
+      .ctrl-btn { padding: 4px 5px; font-size: 13px; }
+      .ctrl-btn-jump { padding: 3px 5px; font-size: 10px; gap: 1px; }
+
+      /* Hide volume slider on mobile to give full room to time display & speed */
+      .volume-slider { display: none !important; }
+
+      /* Keep time display strictly on 1 line without wrapping */
+      .time-display {
+        font-size: 11px !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+        margin-left: 2px !important;
+        letter-spacing: -0.3px;
+      }
+
+      .speed-wrapper .ctrl-btn { font-size: 11.5px; padding: 3px 5px; }
+      .speed-menu { min-width: 80px; }
+      .speed-option { font-size: 11px; padding: 4px 6px; }
+
+      /* Video Navigation Bar on mobile */
+      .video-nav-bar { padding: 8px 12px; }
+      .btn-nav-module { padding: 6px 10px; font-size: 12px; }
+      .nav-module-info { font-size: 12.5px; }
+
+      /* Playlist Section on mobile */
+      .playlist-section { padding: 12px 14px; gap: 10px; }
+      .playlist-title { font-size: 14.5px; }
+      .playlist-grid { grid-template-columns: 1fr; gap: 8px; }
+      .playlist-item { padding: 10px 12px; }
+      .playlist-mod-title { font-size: 12.5px; }
+      .playlist-duration { font-size: 11px; }
+
+      /* Info Card on mobile */
+      .info-card { padding: 12px 14px; }
+      .lesson-title { font-size: 15px; }
+      .student-tag { font-size: 11.5px; }
+      .badge-status { font-size: 11px; padding: 4px 8px; }
+
+      /* Completion Celebration Modal on mobile */
+      .completion-overlay { padding: 16px 12px; }
+      .completion-content { max-width: 300px; gap: 10px; }
+      .completion-celebration { font-size: 36px; }
+      .completion-content h2 { font-size: 18px; }
+      .completion-content p { font-size: 12px; max-width: 280px; }
+      .completion-buttons { gap: 8px; max-width: 280px; margin-top: 6px; }
+      .btn-completion { min-height: 40px; padding: 8px 14px; font-size: 13px; }
     }
 
     @media (min-width: 641px) {
@@ -1150,17 +1193,14 @@
         <div class="completion-content">
           <div class="completion-celebration">🎉</div>
           <h2 id="completion-title">Module Completed!</h2>
-          <p id="completion-subtitle">The next video lesson has been unlocked!</p>
+          <p id="completion-subtitle">Great job! Your access link for the next module has been sent to your WhatsApp.</p>
           <div class="completion-buttons">
-            <button id="btn-next-module-comp" class="btn-completion btn-primary-comp">
-              ▶️ Play Next Module
-            </button>
+            <a id="btn-wa-portal" href="https://wa.me/919629531891?text=Hi" class="btn-completion btn-wa-comp">
+              💬 Open WhatsApp for Next Module
+            </a>
             <button id="btn-replay-comp" class="btn-completion btn-nav-module" style="background: rgba(255,255,255,0.1); color: #fff;">
               🔁 Replay This Video
             </button>
-            <a id="btn-wa-portal" href="https://wa.me/919629531891?text=Hi" class="btn-completion btn-wa-comp">
-              💬 Open WhatsApp
-            </a>
           </div>
         </div>
       </div>
@@ -1354,7 +1394,7 @@
     const resumeBanner = document.getElementById('resume-banner');
     const resumeText = document.getElementById('resume-text');
     const completionOverlay = document.getElementById('completion-overlay');
-    const btnNextModuleComp = document.getElementById('btn-next-module-comp');
+    const btnWaPortal = document.getElementById('btn-wa-portal');
     const btnReplayComp = document.getElementById('btn-replay-comp');
     const studentNameEl = document.getElementById('student-name');
     const studentPhoneEl = document.getElementById('student-phone');
@@ -1506,12 +1546,20 @@
         ? `Module <strong>${currentModuleNumber}</strong> sur 6`
         : `Module <strong>${currentModuleNumber}</strong> of 6`;
 
-      btnPrevModule.disabled = (currentModuleNumber <= 1);
-      btnNextModule.disabled = (currentModuleNumber >= 6);
+      // Next module links are delivered via WhatsApp - hide next button in browser player
+      if (btnNextModule) btnNextModule.style.display = 'none';
+      if (btnPrevModule) {
+        btnPrevModule.disabled = (currentModuleNumber <= 1);
+        btnPrevModule.style.display = (currentModuleNumber > 1) ? 'inline-flex' : 'none';
+      }
 
-      playlist.forEach(item => {
+      // DO NOT show future / next modules in the playlist
+      // Show only modules up to currentModuleNumber (completed and currently active)
+      const visibleModules = playlist.filter(item => item.module <= currentModuleNumber);
+
+      visibleModules.forEach(item => {
         const isCurrent = (item.module === currentModuleNumber);
-        const isWatched = completedModulesSet.has(item.module);
+        const isWatched = (item.module < currentModuleNumber) || completedModulesSet.has(item.module);
 
         const card = document.createElement('div');
         card.className = `playlist-item ${isCurrent ? 'active-item' : ''}`;
@@ -1521,8 +1569,6 @@
           statusBadge = `<span class="playlist-status-badge status-playing">${isFr ? '▶️ En cours' : '▶️ Playing'}</span>`;
         } else if (isWatched) {
           statusBadge = `<span class="playlist-status-badge status-watched">${isFr ? '✅ Terminé' : '✅ Watched'}</span>`;
-        } else {
-          statusBadge = `<span class="playlist-status-badge status-unwatched">${isFr ? '⏳ À venir' : '⏳ Ready'}</span>`;
         }
 
         card.innerHTML = `
@@ -1536,11 +1582,12 @@
           ${statusBadge}
         `;
 
-        card.addEventListener('click', () => {
-          if (item.module !== currentModuleNumber) {
+        // Only allow switching to previously watched modules
+        if (isWatched && !isCurrent) {
+          card.addEventListener('click', () => {
             switchModule(item.module);
-          }
-        });
+          });
+        }
 
         playlistGrid.appendChild(card);
       });
@@ -1878,9 +1925,9 @@
     // Replay current video
     btnReplayComp.addEventListener('click', () => {
       completionOverlay.style.display = 'none';
-      playerContainer.classList.remove('has-overlay');
+      if (controlsBar) controlsBar.style.display = 'flex';
       video.currentTime = 0;
-      video.play();
+      video.play().catch(() => {});
     });
 
     // Module Completion
@@ -1916,25 +1963,27 @@
       const isFr = isFrench();
       const titleEl = document.getElementById('completion-title');
       const subEl = document.getElementById('completion-subtitle');
+      const waBtn = document.getElementById('btn-wa-portal');
+
+      // Hide custom controls and center play button so they don't leak or overlap
+      if (controlsBar) controlsBar.style.display = 'none';
+      if (centerPlayOverlay) centerPlayOverlay.style.display = 'none';
 
       if (currentModuleNumber >= 6) {
         titleEl.textContent = isFr ? "🎓 Formation Terminée ! 🏆" : "🎓 Course Completed! 🏆";
         subEl.textContent = isFr
-          ? "Félicitations ! Vous avez terminé tous les modules. Votre attestation officielle est en cours de délivrance !"
-          : "Congratulations! You have finished all 6 modules. Your completion certificate has been registered!";
-        btnNextModuleComp.style.display = 'none';
+          ? "Félicitations ! Vous avez terminé tous les 6 modules. Votre attestation officielle est en cours de délivrance sur WhatsApp !"
+          : "Congratulations! You have finished all 6 modules. Your completion certificate has been registered on WhatsApp!";
+        if (waBtn) waBtn.textContent = isFr ? "💬 Ouvrir WhatsApp" : "💬 Open WhatsApp";
       } else {
         const nextMod = currentModuleNumber + 1;
         titleEl.textContent = isFr ? `🎉 Module ${currentModuleNumber} Terminé !` : `🎉 Module ${currentModuleNumber} Completed!`;
         subEl.textContent = isFr
-          ? `Bravo ! Le Module ${nextMod} est maintenant débloqué.`
-          : `Great job! Module ${nextMod} is now unlocked and ready.`;
-        btnNextModuleComp.textContent = isFr ? `▶️ Lancer le Module ${nextMod}` : `▶️ Play Module ${nextMod}`;
-        btnNextModuleComp.style.display = 'inline-flex';
-        btnNextModuleComp.onclick = () => switchModule(nextMod);
+          ? `Bravo ! Le lien d'accès sécurisé pour le Module ${nextMod} a été envoyé directement sur votre WhatsApp.`
+          : `Great job! Your access link for Module ${nextMod} has been sent directly to your WhatsApp.`;
+        if (waBtn) waBtn.textContent = isFr ? `💬 Ouvrir WhatsApp pour le Module ${nextMod}` : `💬 Open WhatsApp for Module ${nextMod}`;
       }
 
-      playerContainer.classList.add('has-overlay');
       completionOverlay.style.display = 'flex';
     }
 

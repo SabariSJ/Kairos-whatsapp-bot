@@ -14,10 +14,14 @@ class WhatsAppService {
   }
 
   /**
-   * Clean recipient phone number (strip non-digits)
+   * Clean recipient phone number (strip non-digits and ensure international format)
    */
   cleanPhone(to) {
-    return String(to || "").replace(/\D/g, "");
+    let clean = String(to || "").replace(/\D/g, "");
+    if (clean.length === 10 && ['6', '7', '8', '9'].includes(clean[0])) {
+      clean = '91' + clean;
+    }
+    return clean;
   }
 
   /**
