@@ -12,10 +12,22 @@ const drmController = require("./controllers/drmController");
 const drmService = require("./services/drmService");
 const googleSheetService = require("./services/googleSheetService");
 const backendStudentService = require("./services/backendStudentService");
+const registrationService = require("./services/registrationService");
 
 const app = express();
 // PORT: 5001 (local staging) / 10000 (Render default)
 const PORT = process.env.BOT_PORT || (process.env.PORT === "5000" ? 5001 : (process.env.PORT || 5001));
+
+// CORS middleware for web registration forms & portals
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, x-service-key");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
 // Body parsing middleware
 app.use(express.json());
@@ -108,7 +120,41 @@ app.get("/", (req, res) => {
   });
 });
 
-// 6. Student CRM & External Registration Webhook Endpoints
+// 6. Student Registration API Endpoint for Web Form: POST /api/registrations
+app.post("/api/registrations", async (req, res) => {
+  try {
+    const student = await registrationService.createRegistration(req.body);
+
+    // Also notify on WhatsApp if possible
+    try {
+      const cleanPhone = googleSheetService.normalizePhone(student.phoneNumber);
+      const whatsappService = require("./services/whatsappService");
+      const isFr = student.language === "fr";
+      const welcomeMsg = isFr
+        ? `👋 *Bienvenue sur Kairos Academy, ${student.fullName} !*\n\nNous avons bien reçu votre inscription pour *${student.courseName}*.\n\nVeuillez finaliser votre paiement pour débloquer votre salle de classe. Répondez avec *Bonjour* pour afficher les options de paiement.`
+        : `👋 *Welcome to Kairos Academy, ${student.fullName}!*\n\nWe have received your registration for *${student.courseName}*.\n\nPlease complete your course payment to unlock Module 1. Reply with *Hi* for payment instructions.`;
+      whatsappService.sendTextMessage(cleanPhone, welcomeMsg).catch(() => {});
+    } catch (_) {}
+
+    return res.status(201).json({
+      success: true,
+      message: student.language === "fr" ? "Inscription effectuée avec succès." : "Registration completed successfully.",
+      registration: student
+    });
+  } catch (err) {
+    if (err.statusCode) {
+      return res.status(err.statusCode).json({
+        success: false,
+        errorType: err.errorType || "ERROR",
+        error: err.message
+      });
+    }
+    console.error("[Registration Error]:", err.message);
+    return res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+});
+
+// 7. Student CRM & External Registration Webhook Endpoints
 // Instant Lead Ingestion from Web Form: POST /api/webhook/student-registered
 app.post("/api/webhook/student-registered", async (req, res) => {
   try {

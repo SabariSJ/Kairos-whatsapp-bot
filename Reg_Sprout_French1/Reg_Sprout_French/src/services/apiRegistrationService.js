@@ -7,7 +7,7 @@
  * Compatible avec React 19 et Vite
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://kairos-whatsapp-bot-cy5w.onrender.com/api';
 
 /**
  * Enregistre un étudiant via l'API backend commune.
