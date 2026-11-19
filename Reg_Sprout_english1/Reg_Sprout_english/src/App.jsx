@@ -60,6 +60,22 @@ export default function App() {
                 </ProtectedRoute>
               } 
             />
+            <Route 
+              path="/reports" 
+              element={
+                <ProtectedRoute allowedRoles={['report_staff']}>
+                  <ReportStaff />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/registration/reports" 
+              element={
+                <ProtectedRoute allowedRoles={['report_staff']}>
+                  <ReportStaff />
+                </ProtectedRoute>
+              } 
+            />
 
             {/* Fallback unknown route redirects to /registration */}
             <Route path="*" element={<Navigate to="/registration" replace />} />

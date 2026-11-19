@@ -13,6 +13,8 @@ const drmService = require("./services/drmService");
 const googleSheetService = require("./services/googleSheetService");
 const backendStudentService = require("./services/backendStudentService");
 const registrationService = require("./services/registrationService");
+const reportService = require("./services/reportService");
+const paymentService = require("./services/paymentService");
 
 const app = express();
 // PORT: 5001 (local staging) / 10000 (Render default)
@@ -153,6 +155,146 @@ app.post("/api/registrations", async (req, res) => {
     return res.status(500).json({ success: false, error: "Internal Server Error" });
   }
 });
+
+// =========================================================================
+// STAFF PORTAL & REPORT DASHBOARD APIS (PostgreSQL AWS RDS backed)
+// =========================================================================
+
+// Staff Authentication Endpoint: POST /api/auth/login
+app.post("/api/auth/login", (req, res) => {
+  const { email, password } = req.body || {};
+  if (!email || !password) {
+    return res.status(400).json({ success: false, error: "Email and password are required." });
+  }
+
+  const emailTrim = String(email).trim().toLowerCase();
+  const passTrim = String(password).trim();
+
+  let user = null;
+  if (
+    (emailTrim === "report@sprout.com" && (passTrim === "sprout123" || passTrim === "sprout")) ||
+    (emailTrim === "data@sprout.app" && (passTrim === "sprout123" || passTrim === "sprout"))
+  ) {
+    user = {
+      id: "staff-report-001",
+      email: emailTrim,
+      displayName: "Report Team",
+      role: "report_staff"
+    };
+  } else if (
+    (emailTrim === "payment@sprout.com" && (passTrim === "sprout123" || passTrim === "sprout")) ||
+    (emailTrim === "admin@sprout.app" && (passTrim === "sprout123" || passTrim === "sprout"))
+  ) {
+    user = {
+      id: "staff-payment-001",
+      email: emailTrim,
+      displayName: "Payment Team",
+      role: "payment_staff"
+    };
+  }
+
+  if (!user) {
+    return res.status(401).json({ success: false, error: "Invalid email or password." });
+  }
+
+  const token = `kairos_${user.role}_${Buffer.from(user.email).toString("base64")}_${Date.now()}`;
+  return res.status(200).json({
+    success: true,
+    message: "Login successful",
+    user,
+    token
+  });
+});
+
+app.get("/api/auth/me", (req, res) => {
+  res.json({
+    success: true,
+    user: {
+      id: "staff-001",
+      email: "report@sprout.com",
+      displayName: "Report Team",
+      role: "report_staff"
+    }
+  });
+});
+
+// Report Dashboard Summary: GET /api/staff/reports/summary & /api/reports/summary
+const handleReportSummary = async (req, res) => {
+  try {
+    const { language = "all", startDate, endDate } = req.query;
+    const report = await reportService.getSummaryReport({ language, startDate, endDate });
+    return res.status(200).json({
+      success: true,
+      filters: { language, startDate: startDate || null, endDate: endDate || null },
+      report
+    });
+  } catch (err) {
+    console.error("[Report Summary Error]:", err.message);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+};
+app.get("/api/staff/reports/summary", handleReportSummary);
+app.get("/api/reports/summary", handleReportSummary);
+
+// Report Dashboard Export Records: GET /api/staff/reports/records & /api/reports/records
+const handleReportRecords = async (req, res) => {
+  try {
+    const { language = "all", startDate, endDate } = req.query;
+    const records = await reportService.getExportRecords({ language, startDate, endDate });
+    return res.status(200).json({
+      success: true,
+      count: records.length,
+      filters: { language, startDate: startDate || null, endDate: endDate || null },
+      records
+    });
+  } catch (err) {
+    console.error("[Report Records Error]:", err.message);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+};
+app.get("/api/staff/reports/records", handleReportRecords);
+app.get("/api/reports/records", handleReportRecords);
+
+// Payment Staff Listing: GET /api/staff/payments & /api/payments
+const handleGetPayments = async (req, res) => {
+  try {
+    const { language = "all", status, search, date } = req.query;
+    const payments = await paymentService.getPayments({ language, status, search, date });
+    return res.status(200).json({
+      success: true,
+      count: payments.length,
+      payments
+    });
+  } catch (err) {
+    console.error("[Payment Listing Error]:", err.message);
+    return res.status(500).json({ success: false, error: err.message });
+  }
+};
+app.get("/api/staff/payments", handleGetPayments);
+app.get("/api/payments", handleGetPayments);
+
+// Payment Status Update: PATCH /api/staff/payments/:paymentId/status & /api/payments/:paymentId/status
+const handleUpdatePaymentStatus = async (req, res) => {
+  try {
+    const { paymentId } = req.params;
+    const { status, staffEmail } = req.body || {};
+    if (!status) {
+      return res.status(400).json({ success: false, error: "Payment status is required." });
+    }
+
+    const updated = await paymentService.updatePaymentStatus(paymentId, status, staffEmail);
+    return res.status(200).json({
+      success: true,
+      message: "Payment status updated successfully",
+      payment: updated
+    });
+  } catch (err) {
+    console.error("[Payment Status Update Error]:", err.message);
+    return res.status(err.statusCode || 500).json({ success: false, error: err.message });
+  }
+};
+app.patch("/api/staff/payments/:paymentId/status", handleUpdatePaymentStatus);
+app.patch("/api/payments/:paymentId/status", handleUpdatePaymentStatus);
 
 // 7. Student CRM & External Registration Webhook Endpoints
 // Instant Lead Ingestion from Web Form: POST /api/webhook/student-registered
