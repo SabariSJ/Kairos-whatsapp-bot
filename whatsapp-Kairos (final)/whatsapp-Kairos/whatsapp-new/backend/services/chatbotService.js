@@ -506,158 +506,10 @@ async function processStudentAccess(student, from, clean, buttonId, serverBase, 
 
   // =========================================================================
   // SCENARIO B: REGISTERED BUT UNPAID STUDENT (paymentStatus !== 'yes')
+  // Show only the "Classroom Access Locked" message alone - no next steps/buttons
   // =========================================================================
   if (!isPaid) {
     console.log(`[ChatbotEngine] Scenario B: Unpaid student (${student.name}, +${phone10}, Lang: ${userLang})`);
-
-    // Handle "Do Payment" button click
-    if (buttonId === "do_payment" || clean.includes("payment") || clean.includes("pay") || clean.includes("payer")) {
-      if (isFr) {
-        return [
-          {
-            type: "text",
-            text: `💳 *Options de paiement pour ${student.name}*\n\n📚 *Cours inscrit :* ${courseName}\n💵 *Tarif :* 29 $ USD (ou équivalent local)\n\n*Modes de paiement :*\n1. Mobile Money / Wave / Orange Money : +91 96295 31891\n2. Paiement par carte en ligne : https://reg-feandsme-sprout.web.app/pay\n\n_Après avoir effectué le paiement, cliquez sur 'Vérifier paiement' ci-dessous pour débloquer votre salle de classe !_`
-          },
-          {
-            type: "button",
-            header: "Vérification du paiement",
-            body: "Avez-vous complété votre paiement ?",
-            buttons: [
-              { id: "check_payment", title: "✅ Vérifier paiement" },
-              { id: "contact_support", title: "📞 Assistance" },
-              { id: "course_details", title: "📋 Détails du cours" }
-            ],
-            footer: "Kairos"
-          }
-        ];
-      }
-
-      return [
-        {
-          type: "text",
-          text: `💳 *Course Payment Options for ${student.name}*\n\n📚 *Enrolled Course:* ${courseName}\n💵 *Fee:* $29 USD (or local currency equivalent)\n\n*Payment Methods:*\n1. Mobile Money / PhonePe / GPay: +91 96295 31891\n2. Online Card Payment: https://english-form.web.app/pay\n\n_After completing payment, click 'Check Payment' below to instantly unlock your classroom!_`
-        },
-        {
-          type: "button",
-          header: "Payment Verification",
-          body: "Have you completed your payment?",
-          buttons: [
-            { id: "check_payment", title: "✅ Check Payment" },
-            { id: "contact_support", title: "📞 Contact Support" },
-            { id: "course_details", title: "📋 Course Details" }
-          ],
-          footer: "Kairos"
-        }
-      ];
-    }
-
-    // Handle "Check Payment" button click
-    if (buttonId === "check_payment" || clean.includes("check payment") || clean.includes("i have paid") || clean.includes("vérifier paiement") || clean.includes("j'ai payé")) {
-      backendStudentService.clearCache(phone10);
-      let rechecked = await backendStudentService.getStudent(from, phone10);
-      if (rechecked && rechecked.paymentStatus === "yes") {
-        return buildPaidStudentMenu(rechecked, from, serverBase, userLang);
-      }
-
-      if (isFr) {
-        return [
-          {
-            type: "text",
-            text: `⏳ *Vérification du paiement en cours*\n\nNous vérifions actuellement votre paiement pour le *+${phone10}* auprès de notre équipe de paiement.\n\nSi vous avez effectué le transfert, veuillez patienter un instant ou contacter notre équipe d'assistance.`
-          },
-          {
-            type: "button",
-            header: "Paiement & Support",
-            body: "Choisissez une option :",
-            buttons: [
-              { id: "do_payment", title: "💳 Payer" },
-              { id: "contact_support", title: "📞 Assistance" },
-              { id: "course_details", title: "📋 Détails" }
-            ],
-            footer: "Kairos"
-          }
-        ];
-      }
-
-      return [
-        {
-          type: "text",
-          text: `⏳ *Payment Verification Pending*\n\nWe are currently verifying your payment status for *+${phone10}* with our payment staff.\n\nIf you have completed the transfer, please allow a few moments for verification or share your receipt with our support team.`
-        },
-        {
-          type: "button",
-          header: "Support & Payment",
-          body: "Choose an option below:",
-          buttons: [
-            { id: "do_payment", title: "💳 Do Payment" },
-            { id: "contact_support", title: "📞 Contact Support" },
-            { id: "course_details", title: "📋 Course Details" }
-          ],
-          footer: "Kairos"
-        }
-      ];
-    }
-
-    // Handle "Course Details" button click
-    if (buttonId === "course_details" || clean.includes("course details") || clean.includes("curriculum") || clean.includes("détails")) {
-      const syllabus = isFr ? COURSE_SYLLABUS_FR : COURSE_SYLLABUS;
-      if (isFr) {
-        return [
-          {
-            type: "text",
-            text: `📋 *Détails du cours : ${courseName}*\n\n👤 *Étudiant :* ${student.name}\n🔒 *Statut :* En attente de paiement\n\n*Programme des cours (6 Modules) :*\n${syllabus.map(m => `• *${m.title}* (${m.duration})`).join("\n")}\n\nDébloquez l'accès aux 6 modules vidéo DRM, au lecteur interactif et à votre certificat dès réception du paiement.`
-          },
-          {
-            type: "button",
-            header: "Prêt(e) à commencer ?",
-            body: "Veuillez effectuer le paiement pour accéder aux cours :",
-            buttons: [
-              { id: "do_payment", title: "💳 Payer" },
-              { id: "contact_support", title: "📞 Assistance" }
-            ],
-            footer: "Kairos"
-          }
-        ];
-      }
-
-      return [
-        {
-          type: "text",
-          text: `📋 *Course Details: ${courseName}*\n\n👤 *Student:* ${student.name}\n🔒 *Status:* Awaiting Payment\n\n*Curriculum Outline (6 Modules):*\n${syllabus.map(m => `• *${m.title}* (${m.duration})`).join("\n")}\n\nUnlock all 6 DRM video modules, interactive player access, quizzes, and your certificate upon payment completion.`
-        },
-        {
-          type: "button",
-          header: "Ready to Continue?",
-          body: "Please complete your payment to start learning:",
-          buttons: [
-            { id: "do_payment", title: "💳 Do Payment" },
-            { id: "contact_support", title: "📞 Contact Support" }
-          ],
-          footer: "Kairos"
-        }
-      ];
-    }
-
-    // Handle "Contact Support"
-    if (buttonId === "contact_support" || clean.includes("support") || clean.includes("assistance") || clean.includes("help")) {
-      if (isFr) {
-        return [
-          {
-            type: "text",
-            text: `📞 *Assistance Kairos Academy*\n\nBonjour *${student.name}* !\nNotre équipe est disponible 24/7 pour vous aider avec votre paiement ou inscription :\n\n• WhatsApp : +91 96295 31891\n• Email : support@kairos-academy.org\n\nRépondez avec *Bonjour* pour revenir au menu.`
-          }
-        ];
-      }
-
-      return [
-        {
-          type: "text",
-          text: `📞 *Student Support Helpline*\n\nHello *${student.name}*!\nOur team is ready to assist you with payment confirmation or enrollment:\n\n• WhatsApp Support: +91 96295 31891\n• Email: admissions@kairos-academy.org\n\nReply with *Hi* to return to the course menu.`
-        }
-      ];
-    }
-
-    // Default response for Scenario B: Classroom Access Locked + Prompt for Payment
     return buildUnpaidStudentMenu(student, from, serverBase, userLang);
   }
 
@@ -844,7 +696,7 @@ async function processStudentAccess(student, from, clean, buttonId, serverBase, 
 }
 
 /**
- * Build the Scenario B Unpaid Student Message
+ * Build the Scenario B Unpaid Student Message (Single locked notification, no next steps)
  */
 function buildUnpaidStudentMenu(student, from, serverBase, lang = "en") {
   const isFr = lang === "fr";
@@ -855,17 +707,6 @@ function buildUnpaidStudentMenu(student, from, serverBase, lang = "en") {
       {
         type: "text",
         text: `🔒 *Accès au cours verrouillé*\n\nBonjour *${student.name}* ! Vous êtes inscrit(e) à *${courseName}*.\n\n⚠️ *Veuillez effectuer le paiement pour continuer vos cours.*\n\nDès que votre paiement sera validé par notre équipe de paiement, vos cours vidéo seront instantanément accessibles.`
-      },
-      {
-        type: "button",
-        header: "Accès au cours",
-        body: "Choisissez une action ci-dessous pour continuer :",
-        buttons: [
-          { id: "do_payment", title: "💳 Payer" },
-          { id: "contact_support", title: "📞 Assistance" },
-          { id: "course_details", title: "📋 Détails" }
-        ],
-        footer: "Kairos"
       }
     ];
   }
@@ -874,17 +715,6 @@ function buildUnpaidStudentMenu(student, from, serverBase, lang = "en") {
     {
       type: "text",
       text: `🔒 *Classroom Access Locked*\n\nHello *${student.name}*! You are registered for *${courseName}*.\n\n⚠️ *Please do payment to continue courses.*\n\nOnce your payment is verified by our payment staff, your video lessons will be instantly accessible.`
-    },
-    {
-      type: "button",
-      header: "Course Access",
-      body: "Choose an action below to proceed:",
-      buttons: [
-        { id: "do_payment", title: "💳 Do Payment" },
-        { id: "contact_support", title: "📞 Contact Support" },
-        { id: "course_details", title: "📋 Course Details" }
-      ],
-      footer: "Kairos"
     }
   ];
 }
