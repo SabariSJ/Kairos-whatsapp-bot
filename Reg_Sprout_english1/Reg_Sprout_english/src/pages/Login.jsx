@@ -163,7 +163,7 @@ export default function Login() {
           </div>
           <button
             type="submit"
-            className="btn btn-primary w-100 rounded-pill d-flex justify-content-center align-items-center transition-all shadow hover-primary mb-3"
+            className="btn btn-primary w-100 rounded-pill d-flex justify-content-center align-items-center transition-all shadow hover-primary"
             disabled={isSubmitting}
             style={{ backgroundColor: '#00AEEF', borderColor: '#00AEEF', height: '56px' }}
             title="Sign In"
@@ -174,20 +174,6 @@ export default function Login() {
               <span className="fw-bold">Sign In <i className="fa-solid fa-arrow-right-to-bracket ms-2"></i></span>
             )}
           </button>
-
-          <div className="text-center pt-2 border-top">
-            <small className="text-muted d-block mb-2">Quick Sign-in for Testing:</small>
-            <button
-              type="button"
-              className="btn btn-outline-secondary btn-sm rounded-pill px-3 py-1"
-              onClick={() => {
-                setEmail('admin@sprout.app');
-                setPassword('sprout');
-              }}
-            >
-              <i className="fa-solid fa-key me-1"></i> Use Payment Staff (`admin@sprout.app`)
-            </button>
-          </div>
         </form>
       </div>
     </div>
