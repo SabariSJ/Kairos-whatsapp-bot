@@ -426,10 +426,6 @@ async function processMessage(from, userMessage = "", buttonId = null, messageId
 
       return [
         {
-          type: "text",
-          text: "Welcome to Kairos – Your favorite teacher."
-        },
-        {
           type: "image",
           url: getPosterUrl("programme_poster_english.jpg"),
           caption: "Welcome to Kairos - Your favorite teacher."

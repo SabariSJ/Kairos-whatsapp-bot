@@ -86,12 +86,12 @@ async function testBilingualFlow() {
 
   // Click "English" button
   replies = await chatbotService.processMessage(phoneEn, "English", "lang_en");
-  console.assert(replies.length === 3, `Expected 3 items in English welcome, got ${replies.length}`);
-  console.assert(replies[0].text === "Welcome to Kairos – Your favorite teacher.", `English welcome mismatch: ${replies[0].text}`);
-  console.assert(replies[1].url.includes("programme_poster_english.jpg"), `English poster mismatch: ${replies[1].url}`);
-  console.assert(replies[2].body.includes("Take the introductory course for free"), `English consent question mismatch: ${replies[2].body}`);
-  console.assert(replies[2].buttons[0].title === "I accept", `English consent button mismatch: ${replies[2].buttons[0].title}`);
-  console.log("✅ English Welcome sequence verified (Text + English poster + [I accept])");
+  console.assert(replies.length === 2, `Expected 2 items in English welcome, got ${replies.length}`);
+  console.assert(replies[0].url.includes("programme_poster_english.jpg"), `English poster mismatch: ${replies[0].url}`);
+  console.assert(replies[0].caption === "Welcome to Kairos - Your favorite teacher.", `English caption mismatch: ${replies[0].caption}`);
+  console.assert(replies[1].body.includes("Take the introductory course for free"), `English consent question mismatch: ${replies[1].body}`);
+  console.assert(replies[1].buttons[0].title === "I accept", `English consent button mismatch: ${replies[1].buttons[0].title}`);
+  console.log("✅ English Welcome sequence verified (English poster with caption + [I accept])");
 
   // User taps "I accept"
   replies = await chatbotService.processMessage(phoneEn, "I accept", "agree");
