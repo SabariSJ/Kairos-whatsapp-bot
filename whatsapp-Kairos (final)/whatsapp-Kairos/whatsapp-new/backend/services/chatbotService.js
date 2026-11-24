@@ -545,21 +545,17 @@ async function processStudentAccess(student, from, clean, buttonId, serverBase, 
 
     const classroomUrl = `${serverBase}/classroom/${sessionData.sessionId}`;
 
-    const unitsList = isFr
-      ? `📚 Unités du Module 1 :\n• Unité 1 : Étude de Marché et Validation d'Idée\n• Unité 2 : Gestion Financière et Flux de Trésorerie\n• Unité 3 : Stratégie de Vente et Acquisition Client\n• Unité 4 : Marketing Digital et Croissance WhatsApp\n• Unité 5 : Gestion des Opérations et des Stocks\n• Unité 6 : Stratégies de Croissance et Expansion`
-      : `📚 Module 1 Units:\n• Unit 1: Market Research & Idea Validation\n• Unit 2: Financial Literacy & Cash Flow\n• Unit 3: Customer Acquisition & Sales Strategy\n• Unit 4: Digital Marketing & WhatsApp Growth\n• Unit 5: Operations & Inventory Management\n• Unit 6: Scaling & Business Growth`;
-
     const resumeLine = progressSec > 0
-      ? (isFr ? `▶️ Reprise du Module ${currentMod} à : ${progressTime}` : `▶️ Resuming Module ${currentMod} from: ${progressTime}`)
-      : (isFr ? `▶️ Démarrage du Module ${currentMod} à : 00:00` : `▶️ Starting Module ${currentMod} from: 00:00`);
+      ? (isFr ? `▶️ Reprise de l'Unité ${currentMod} à : ${progressTime}` : `▶️ Resuming Unit ${currentMod} from: ${progressTime}`)
+      : (isFr ? `▶️ Démarrage de l'Unité ${currentMod} à : 00:00` : `▶️ Starting Unit ${currentMod} from: 00:00`);
 
     const headerTitle = getCourseHeaderTitle(currentMod, student.course, userLang);
 
     const bodyText = isFr
-      ? `Bonjour ${studentName} !\n\nVotre salle de classe pour le ${courseName} - Module ${currentMod} est prête.\n\n${unitsList}\n\n${resumeLine}\n\nAppuyez sur le bouton ci-dessous pour démarrer votre cours :`
-      : `Hello ${studentName}!\n\nYour ${courseName} - Module ${currentMod} classroom is ready.\n\n${unitsList}\n\n${resumeLine}\n\nTap the button below to start your class:`;
+      ? `Bonjour ${studentName} !\n\nVotre salle de classe pour le ${courseName} - Module ${currentMod} est prête.\n\n${resumeLine}\n\nAppuyez sur le bouton ci-dessous pour démarrer votre cours :`
+      : `Hello ${studentName}!\n\nYour ${courseName} - Module ${currentMod} classroom is ready.\n\n${resumeLine}\n\nTap the button below to start your class:`;
 
-    const buttonLabel = isFr ? `▶️ Ouvrir Module ${currentMod}` : `▶️ Open Module ${currentMod}`;
+    const buttonLabel = isFr ? `▶️ Ouvrir Unité ${currentMod}` : `▶️ Open Unit ${currentMod}`;
 
     return [
       {
@@ -600,10 +596,10 @@ async function processStudentAccess(student, from, clean, buttonId, serverBase, 
     const classroomUrl = `${serverBase}/classroom/${sessionData.sessionId}?reset=1`;
     const headerTitle = getCourseHeaderTitle(currentMod, student.course, userLang);
     const bodyText = isFr
-      ? `Bonjour ${student.name} !\n\nVotre salle de classe pour le ${courseName} - Module ${currentMod} est prête.\n\n${unitsList}\n\n▶️ Démarrage du Module ${currentMod} à : 00:00\n\nAppuyez sur le bouton ci-dessous pour démarrer votre cours :`
-      : `Hello ${student.name}!\n\nYour ${courseName} - Module ${currentMod} classroom is ready.\n\n${unitsList}\n\n▶️ Starting Module ${currentMod} from: 00:00\n\nTap the button below to start your class:`;
+      ? `Bonjour ${student.name} !\n\nVotre salle de classe pour le ${courseName} - Module ${currentMod} est prête.\n\n▶️ Démarrage de l'Unité ${currentMod} à : 00:00\n\nAppuyez sur le bouton ci-dessous pour démarrer votre cours :`
+      : `Hello ${student.name}!\n\nYour ${courseName} - Module ${currentMod} classroom is ready.\n\n▶️ Starting Unit ${currentMod} from: 00:00\n\nTap the button below to start your class:`;
 
-    const buttonLabel = isFr ? `▶️ Ouvrir Module ${currentMod}` : `▶️ Open Module ${currentMod}`;
+    const buttonLabel = isFr ? `▶️ Ouvrir Unité ${currentMod}` : `▶️ Open Unit ${currentMod}`;
 
     return [
       {

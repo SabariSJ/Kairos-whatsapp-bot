@@ -238,7 +238,7 @@ async function main() {
       const ctaMsg = replies.find(r => r.type === "cta_url");
       assert(ctaMsg !== undefined, "Must generate CTA URL button message");
       assert(ctaMsg.url.includes("/classroom/"), "URL must point to /classroom/:sessionId");
-      assert(ctaMsg.buttonText.includes("Open Module"), "Button text must match 'Open Module'");
+      assert(ctaMsg.buttonText.includes("Open Unit"), "Button text must match 'Open Unit'");
       assert(ctaMsg.body.includes("classroom is ready"), "Body must confirm classroom is ready");
     } finally {
       googleSheetService.getStudent = originalGetStudent;
