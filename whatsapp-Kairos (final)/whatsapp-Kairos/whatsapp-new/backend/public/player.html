@@ -800,6 +800,120 @@
       color: #94a3b8;
     }
 
+    /* Task Sheet Download Section */
+    .task-sheet-section {
+      width: 100%;
+      margin: 10px 0 16px 0;
+    }
+
+    .task-sheet-card {
+      background: linear-gradient(135deg, rgba(20, 27, 45, 0.88) 0%, rgba(13, 21, 39, 0.96) 100%);
+      border: 1px solid rgba(6, 182, 212, 0.35);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      border-radius: 12px;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .task-sheet-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .task-sheet-badge-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(6, 182, 212, 0.2) 0%, rgba(16, 185, 129, 0.2) 100%);
+      border: 1px solid rgba(6, 182, 212, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .task-sheet-text-group {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .task-sheet-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .task-sheet-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #f8fafc;
+      letter-spacing: -0.2px;
+    }
+
+    .task-sheet-tag {
+      font-size: 10px;
+      font-weight: 700;
+      background: rgba(6, 182, 212, 0.15);
+      color: #22d3ee;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid rgba(6, 182, 212, 0.3);
+    }
+
+    .task-sheet-subtitle {
+      font-size: 12px;
+      color: #94a3b8;
+    }
+
+    .btn-download-task {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%);
+      color: #ffffff;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 18px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(6, 182, 212, 0.35);
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .btn-download-task:hover {
+      background: linear-gradient(135deg, #0284c7 0%, #0891b2 100%);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(6, 182, 212, 0.45);
+    }
+
+    .btn-download-task:active {
+      transform: translateY(0);
+    }
+
+    @media (max-width: 600px) {
+      .task-sheet-card {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        padding: 12px 14px;
+      }
+      .btn-download-task {
+        justify-content: center;
+        width: 100%;
+      }
+    }
+
     /* Lesson Metadata Card */
     .info-card {
       background: rgba(20, 27, 45, 0.72);
@@ -1325,6 +1439,26 @@
       </button>
     </div>
 
+    <!-- Task Sheet Download Section (Below Video) -->
+    <div class="task-sheet-section" id="task-sheet-section">
+      <div class="task-sheet-card">
+        <div class="task-sheet-left">
+          <div class="task-sheet-badge-icon">📄</div>
+          <div class="task-sheet-text-group">
+            <div class="task-sheet-title-row">
+              <span class="task-sheet-title" id="task-sheet-title">Task for this session</span>
+              <span class="task-sheet-tag">DOCX</span>
+            </div>
+            <div class="task-sheet-subtitle" id="task-sheet-subtitle">Practical worksheet for Unit 1</div>
+          </div>
+        </div>
+        <button id="btn-download-task" class="btn-download-task" type="button">
+          <span class="btn-download-icon">📥</span>
+          <span id="btn-download-text">Download Task Sheet</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Course Video Playlist Section -->
     <div class="playlist-section" id="playlist-section">
       <div class="playlist-header">
@@ -1456,6 +1590,12 @@
     const playlistLangTag = document.getElementById('playlist-lang-tag');
     const watermarkEl = document.getElementById('floating-watermark');
 
+    // Task Sheet Elements
+    const btnDownloadTask = document.getElementById('btn-download-task');
+    const btnDownloadText = document.getElementById('btn-download-text');
+    const taskSheetTitle = document.getElementById('task-sheet-title');
+    const taskSheetSubtitle = document.getElementById('task-sheet-subtitle');
+
     // State
     let initialResumeSeconds = parseInt(INJECTED_PROGRESS, 10) || 0;
     let targetResumeSeconds = initialResumeSeconds;
@@ -1513,8 +1653,14 @@
         document.getElementById('error-title').textContent = "Lecture Interrompue";
         document.getElementById('error-message').textContent = "La connexion de streaming a été interrompue. Appuyez sur Réessayer pour relancer le flux.";
         btnRetryPlayback.textContent = "🔄 Réessayer la Lecture";
+        if (taskSheetTitle) taskSheetTitle.textContent = "Exercice pour cette session";
+        if (taskSheetSubtitle) taskSheetSubtitle.textContent = `Fiche de travail pratique - Unité ${currentModuleNumber}`;
+        if (btnDownloadText) btnDownloadText.textContent = "Télécharger la Fiche de Travail";
       } else {
         playlistLangTag.textContent = "English Syllabus";
+        if (taskSheetTitle) taskSheetTitle.textContent = "Task for this session";
+        if (taskSheetSubtitle) taskSheetSubtitle.textContent = `Practical worksheet for Unit ${currentModuleNumber}`;
+        if (btnDownloadText) btnDownloadText.textContent = "Download Task Sheet";
       }
     }
 
@@ -1716,6 +1862,8 @@
         ? `Module ${newModuleNumber} : ${currentItem.title}`
         : `Module ${newModuleNumber}: ${currentItem.title}`;
 
+      updateTaskSheet(newModuleNumber);
+
       renderPlaylist();
       showBuffering(true);
 
@@ -1730,6 +1878,61 @@
         showBuffering(false);
         updatePlayPauseUI();
       }
+    }
+
+    // Update task sheet subtitle based on current unit
+    function updateTaskSheet(modNum) {
+      const isFr = isFrench();
+      const unitNum = modNum || currentModuleNumber;
+      if (taskSheetSubtitle) {
+        taskSheetSubtitle.textContent = isFr 
+          ? `Fiche de travail pratique pour l'Unité ${unitNum}`
+          : `Practical worksheet for Unit ${unitNum}`;
+      }
+    }
+
+    // Task Sheet Download with S3 Temporary Presigned URL
+    async function handleTaskSheetDownload() {
+      if (!btnDownloadTask) return;
+      const isFr = isFrench();
+      const origText = btnDownloadText ? btnDownloadText.textContent : "Download Task Sheet";
+      if (btnDownloadText) {
+        btnDownloadText.textContent = isFr ? "⏳ Génération du lien..." : "⏳ Generating link...";
+      }
+      btnDownloadTask.disabled = true;
+
+      try {
+        const queryLang = isFr ? 'fr' : 'en';
+        const resp = await fetch(`/api/video/task-sheet-url?session=${encodeURIComponent(sessionParam || '')}&unit=${currentModuleNumber}&lang=${queryLang}`);
+        const data = await resp.json();
+
+        if (data && data.downloadUrl) {
+          const a = document.createElement('a');
+          a.href = data.downloadUrl;
+          a.download = data.filename || (isFr ? 'Kairos_Unit1_Fiche_de_travail_Francais.docx' : 'Kairos_Unit1_Task_Sheet_English.docx');
+          a.target = '_blank';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        } else {
+          window.location.href = `/api/video/download-task-sheet?session=${encodeURIComponent(sessionParam || '')}&unit=${currentModuleNumber}&lang=${queryLang}`;
+        }
+      } catch (err) {
+        console.warn('Download task sheet error:', err);
+        const queryLang = isFr ? 'fr' : 'en';
+        window.location.href = `/api/video/download-task-sheet?session=${encodeURIComponent(sessionParam || '')}&unit=${currentModuleNumber}&lang=${queryLang}`;
+      } finally {
+        setTimeout(() => {
+          if (btnDownloadTask && btnDownloadText) {
+            btnDownloadText.textContent = origText;
+            btnDownloadTask.disabled = false;
+          }
+        }, 1500);
+      }
+    }
+
+    if (btnDownloadTask) {
+      btnDownloadTask.addEventListener('click', handleTaskSheetDownload);
     }
 
     // Initialize player

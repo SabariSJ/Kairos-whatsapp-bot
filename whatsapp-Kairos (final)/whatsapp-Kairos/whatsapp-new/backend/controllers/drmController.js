@@ -1,6 +1,7 @@
 const path = require("path");
 const fs = require("fs");
 const { S3Client, GetObjectCommand, HeadObjectCommand } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const drmService = require("../services/drmService");
 const googleSheetService = require("../services/googleSheetService");
 const whatsappService = require("../services/whatsappService");
@@ -523,6 +524,110 @@ class DrmController {
       isGraduated,
       nextClassroomUrl: isGraduated ? null : nextClassroomUrl
     });
+  }
+
+  /**
+   * Generate Secure Temporary S3 Presigned URL for Task Sheet Download
+   * GET /api/video/task-sheet-url
+   */
+  async getTaskSheetDownloadUrl(req, res) {
+    try {
+      const sessionId = req.query.session || req.query.sessionId;
+      const unit = parseInt(req.query.unit || 1, 10);
+      const session = sessionId ? drmService.getSession(sessionId) : null;
+
+      // Determine language
+      const isFr = (session && googleSheetService.isFrench(session.language)) || req.query.lang === "fr";
+
+      const s3Key = isFr
+        ? (unit === 1 ? "french/TaskSheets/Kairos_Unit1_Fiche_de_travail_Francais.docx" : `french/TaskSheets/Kairos_Unit${unit}_Fiche_de_travail_Francais.docx`)
+        : (unit === 1 ? "english/TaskSheets/Kairos_Unit1_Task_Sheet_English.docx" : `english/TaskSheets/Kairos_Unit${unit}_Task_Sheet_English.docx`);
+
+      const filename = isFr
+        ? (unit === 1 ? "Kairos_Unit1_Fiche_de_travail_Francais.docx" : `Kairos_Unit${unit}_Fiche_de_travail_Francais.docx`)
+        : (unit === 1 ? "Kairos_Unit1_Task_Sheet_English.docx" : `Kairos_Unit${unit}_Task_Sheet_English.docx`);
+
+      // 1. Attempt AWS S3 Presigned URL (15 minutes validity)
+      try {
+        const command = new GetObjectCommand({
+          Bucket: S3_BUCKET_NAME,
+          Key: s3Key,
+          ResponseContentDisposition: `attachment; filename="${filename}"`
+        });
+        const presignedUrl = await getSignedUrl(s3Client, command, { expiresIn: 900 });
+
+        return res.json({
+          success: true,
+          downloadUrl: presignedUrl,
+          filename: filename,
+          isPresigned: true,
+          expiresIn: 900,
+          unit: unit,
+          lang: isFr ? "fr" : "en"
+        });
+      } catch (s3PresignErr) {
+        console.warn(`[TaskSheet Presign] Falling back to server download endpoint: ${s3PresignErr.message}`);
+        const fallbackUrl = `/api/video/download-task-sheet?session=${encodeURIComponent(sessionId || "")}&unit=${unit}&lang=${isFr ? "fr" : "en"}`;
+        return res.json({
+          success: true,
+          downloadUrl: fallbackUrl,
+          filename: filename,
+          isPresigned: false,
+          unit: unit,
+          lang: isFr ? "fr" : "en"
+        });
+      }
+    } catch (err) {
+      console.error("[TaskSheet Error]:", err.message);
+      return res.status(500).json({ error: "Failed to generate download link", details: err.message });
+    }
+  }
+
+  /**
+   * Direct Stream / Fallback Download for Task Sheet
+   * GET /api/video/download-task-sheet
+   */
+  async downloadTaskSheet(req, res) {
+    try {
+      const sessionId = req.query.session || req.query.sessionId;
+      const unit = parseInt(req.query.unit || 1, 10);
+      const session = sessionId ? drmService.getSession(sessionId) : null;
+      const isFr = (session && googleSheetService.isFrench(session.language)) || req.query.lang === "fr";
+
+      const s3Key = isFr
+        ? (unit === 1 ? "french/TaskSheets/Kairos_Unit1_Fiche_de_travail_Francais.docx" : `french/TaskSheets/Kairos_Unit${unit}_Fiche_de_travail_Francais.docx`)
+        : (unit === 1 ? "english/TaskSheets/Kairos_Unit1_Task_Sheet_English.docx" : `english/TaskSheets/Kairos_Unit${unit}_Task_Sheet_English.docx`);
+
+      const filename = isFr
+        ? (unit === 1 ? "Kairos_Unit1_Fiche_de_travail_Francais.docx" : `Kairos_Unit${unit}_Fiche_de_travail_Francais.docx`)
+        : (unit === 1 ? "Kairos_Unit1_Task_Sheet_English.docx" : `Kairos_Unit${unit}_Task_Sheet_English.docx`);
+
+      // Try streaming from S3 directly
+      try {
+        const s3Data = await s3Client.send(new GetObjectCommand({
+          Bucket: S3_BUCKET_NAME,
+          Key: s3Key
+        }));
+
+        res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+        res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+        if (s3Data.ContentLength) {
+          res.setHeader("Content-Length", s3Data.ContentLength);
+        }
+        return s3Data.Body.pipe(res);
+      } catch (s3Err) {
+        console.warn(`[TaskSheet Stream Fallback] S3 stream failed: ${s3Err.message}. Checking local media fallback.`);
+        const localFilename = isFr ? "Kairos_Unit1_Fiche_de_travail_Francais.docx" : "Kairos_Unit1_Task_Sheet_English.docx";
+        const localPath = path.join(__dirname, "..", "public", "media", "TaskSheets", localFilename);
+        if (fs.existsSync(localPath)) {
+          return res.download(localPath, filename);
+        }
+        return res.status(404).json({ error: "Task sheet file not found on S3 or local storage" });
+      }
+    } catch (err) {
+      console.error("[Download Error]:", err.message);
+      return res.status(500).json({ error: "Download failed", details: err.message });
+    }
   }
 }
 

@@ -22,5 +22,13 @@ router.post("/progress", (req, res) => drmController.saveProgress(req, res));
 // POST /api/video/complete
 router.post("/complete", (req, res) => drmController.completeModule(req, res));
 
+// Secure Temporary Download URL for Task Sheet (AWS S3 Presigned URL)
+// GET /api/video/task-sheet-url
+router.get("/task-sheet-url", (req, res) => drmController.getTaskSheetDownloadUrl(req, res));
+
+// Direct Download Route for Task Sheet
+// GET /api/video/download-task-sheet
+router.get("/download-task-sheet", (req, res) => drmController.downloadTaskSheet(req, res));
+
 module.exports = router;
 
