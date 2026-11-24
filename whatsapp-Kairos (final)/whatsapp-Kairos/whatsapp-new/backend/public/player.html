@@ -170,14 +170,16 @@
     .floating-watermark {
       position: absolute;
       padding: 5px 10px;
-      background: rgba(0, 0, 0, 0.45);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(0, 0, 0, 0.55);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 6px;
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      color: rgba(255, 255, 255, 0.35);
+      color: rgba(255, 255, 255, 0.45);
       white-space: nowrap;
-      transition: all 3.5s ease-in-out;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease-in-out;
       transform: translate(-50%, -50%);
       pointer-events: none;
     }
@@ -1462,6 +1464,7 @@
     let studentData = null;
     let activeToken = null;
     let watermarkInterval = null;
+    let watermarkHideTimeout = null;
     let controlsHideTimeout = null;
     let isSeeking = false;
     let hasCompletedModule = false;
@@ -1543,7 +1546,7 @@
       if (lockScreen) lockScreen.style.display = 'flex';
     }
 
-    // Watermark animation
+    // Dynamic Anti-Piracy Watermark: Appears for 3s every 40s interval (no continuous flowing)
     function updateWatermarkPosition() {
       if (!watermarkEl || !playerContainer) return;
       const rect = playerContainer.getBoundingClientRect();
@@ -1563,10 +1566,34 @@
       watermarkEl.textContent = `${phoneTxt ? phoneTxt + ' • ' : ''}${nameTxt} • KAIROS • ${now}`;
     }
 
-    function startWatermark() {
+    function showWatermarkBriefly() {
+      if (!watermarkEl || !playerContainer) return;
       updateWatermarkPosition();
+      watermarkEl.style.visibility = 'visible';
+      watermarkEl.style.opacity = '1';
+
+      if (watermarkHideTimeout) clearTimeout(watermarkHideTimeout);
+      watermarkHideTimeout = setTimeout(() => {
+        if (watermarkEl) {
+          watermarkEl.style.opacity = '0';
+          setTimeout(() => {
+            if (watermarkEl && watermarkEl.style.opacity === '0') {
+              watermarkEl.style.visibility = 'hidden';
+            }
+          }, 350);
+        }
+      }, 3000); // Display for exactly 3 seconds
+    }
+
+    function startWatermark() {
       if (watermarkInterval) clearInterval(watermarkInterval);
-      watermarkInterval = setInterval(updateWatermarkPosition, 3500);
+      if (watermarkHideTimeout) clearTimeout(watermarkHideTimeout);
+
+      // Trigger appearance for 3 seconds
+      showWatermarkBriefly();
+
+      // Repeat with 40 seconds time interval
+      watermarkInterval = setInterval(showWatermarkBriefly, 40000);
     }
 
     // Render Syllabus Playlist
