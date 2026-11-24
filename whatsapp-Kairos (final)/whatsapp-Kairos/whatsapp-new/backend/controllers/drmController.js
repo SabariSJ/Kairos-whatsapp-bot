@@ -8,10 +8,19 @@ const whatsappService = require("../services/whatsappService");
 const chatbotService = require("../services/chatbotService");
 const backendStudentService = require("../services/backendStudentService");
 
-// Initialize AWS S3 Client for Private Bucket Video Delivery
-const s3Client = new S3Client({
+// Initialize AWS S3 Client for Private Bucket Delivery (Video & Task Sheets)
+const s3Config = {
   region: process.env.AWS_REGION || "us-east-1"
-});
+};
+
+if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY) {
+  s3Config.credentials = {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+  };
+}
+
+const s3Client = new S3Client(s3Config);
 const S3_BUCKET_NAME = process.env.S3_BUCKET_NAME || "kairos-whatsapp-vid";
 
 /**
@@ -620,7 +629,12 @@ class DrmController {
         const localFilename = isFr ? "Kairos_Unit1_Fiche_de_travail_Francais.docx" : "Kairos_Unit1_Task_Sheet_English.docx";
         const localPath = path.join(__dirname, "..", "public", "media", "TaskSheets", localFilename);
         if (fs.existsSync(localPath)) {
-          return res.download(localPath, filename);
+          res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+          return res.download(localPath, filename, {
+            headers: {
+              "Content-Type": "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            }
+          });
         }
         return res.status(404).json({ error: "Task sheet file not found on S3 or local storage" });
       }

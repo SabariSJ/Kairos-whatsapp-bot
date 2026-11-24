@@ -1907,13 +1907,7 @@
         const data = await resp.json();
 
         if (data && data.downloadUrl) {
-          const a = document.createElement('a');
-          a.href = data.downloadUrl;
-          a.download = data.filename || (isFr ? 'Kairos_Unit1_Fiche_de_travail_Francais.docx' : 'Kairos_Unit1_Task_Sheet_English.docx');
-          a.target = '_blank';
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
+          window.location.href = data.downloadUrl;
         } else {
           window.location.href = `/api/video/download-task-sheet?session=${encodeURIComponent(sessionParam || '')}&unit=${currentModuleNumber}&lang=${queryLang}`;
         }
