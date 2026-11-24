@@ -29,7 +29,7 @@ async function testBilingualFlow() {
   // Message 2nd:
   console.assert(replies[1].type === "button", "2nd message should be button message");
   console.assert(
-    replies[1].body === "Pick your language\nChoisissez votre langue",
+    replies[1].body === "Please select your language\nVeuillez sélectionner votre langue",
     `2nd message body mismatch: ${replies[1].body}`
   );
   console.assert(replies[1].buttons.length === 2, "Expected 2 buttons (English & French)");
@@ -96,9 +96,9 @@ async function testBilingualFlow() {
   // User taps "I accept"
   replies = await chatbotService.processMessage(phoneEn, "I accept", "agree");
   console.assert(replies.length === 1 && replies[0].type === "video", "Expected English video");
-  console.assert(replies[0].url.includes("kairos_english.mp4"), `Expected kairos_english.mp4, got ${replies[0].url}`);
+  console.assert(replies[0].url.includes("english_promo.mp4"), `Expected english_promo.mp4, got ${replies[0].url}`);
   console.assert(replies[0].caption === "Start for free", `English caption mismatch: ${replies[0].caption}`);
-  console.log("✅ English video delivered (kairos_english.mp4, caption: Start for free)");
+  console.log("✅ English video delivered (english_promo.mp4, caption: Start for free)");
 
   // Video finished / decision prompt
   replies = await chatbotService.processMessage(phoneEn, "done");

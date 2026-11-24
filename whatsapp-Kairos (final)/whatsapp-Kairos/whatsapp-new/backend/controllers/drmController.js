@@ -167,21 +167,21 @@ class DrmController {
     }
 
     const enPlaylist = [
-      { module: 1, title: "Market Research & Idea Validation", duration: "05:14", s3Key: "english/video1.mp4" },
-      { module: 2, title: "Financial Literacy & Cash Flow", duration: "04:02", s3Key: "english/video2.mp4" },
-      { module: 3, title: "Customer Acquisition & Sales Strategy", duration: "04:12", s3Key: "english/video3.mp4" },
-      { module: 4, title: "Digital Marketing & WhatsApp Growth", duration: "05:54", s3Key: "english/video4.mp4" },
-      { module: 5, title: "Operations & Inventory Management", duration: "05:18", s3Key: "english/video5.mp4" },
-      { module: 6, title: "Scaling & Business Growth", duration: "04:52", s3Key: "english/video6.mp4" }
+      { module: 1, unit: 1, title: "Unit 1: Market Research & Idea Validation", duration: "05:14", s3Key: "english/video1.mp4" },
+      { module: 2, unit: 2, title: "Unit 2: Financial Literacy & Cash Flow", duration: "04:02", s3Key: "english/video2.mp4" },
+      { module: 3, unit: 3, title: "Unit 3: Customer Acquisition & Sales Strategy", duration: "04:12", s3Key: "english/video3.mp4" },
+      { module: 4, unit: 4, title: "Unit 4: Digital Marketing & WhatsApp Growth", duration: "05:54", s3Key: "english/video4.mp4" },
+      { module: 5, unit: 5, title: "Unit 5: Operations & Inventory Management", duration: "05:18", s3Key: "english/video5.mp4" },
+      { module: 6, unit: 6, title: "Unit 6: Scaling & Business Growth", duration: "04:52", s3Key: "english/video6.mp4" }
     ];
 
     const frPlaylist = [
-      { module: 1, title: "Étude de Marché et Validation d'Idée", duration: "05:16", s3Key: "french/french_video1.mp4" },
-      { module: 2, title: "Gestion Financière et Flux de Trésorerie", duration: "04:00", s3Key: "french/french_video2.mp4" },
-      { module: 3, title: "Stratégie de Vente et Acquisition Client", duration: "04:22", s3Key: "french/french_video3.mp4" },
-      { module: 4, title: "Marketing Digital et Croissance WhatsApp", duration: "06:14", s3Key: "french/french_video4.mp4" },
-      { module: 5, title: "Gestion des Opérations et des Stocks", duration: "05:12", s3Key: "french/french_video5.mp4" },
-      { module: 6, title: "Stratégies de Croissance et Expansion", duration: "05:04", s3Key: "french/french_video6.mp4" }
+      { module: 1, unit: 1, title: "Unité 1 : Étude de Marché et Validation d'Idée", duration: "05:16", s3Key: "french/french_video1.mp4" },
+      { module: 2, unit: 2, title: "Unité 2 : Gestion Financière et Flux de Trésorerie", duration: "04:00", s3Key: "french/french_video2.mp4" },
+      { module: 3, unit: 3, title: "Unité 3 : Stratégie de Vente et Acquisition Client", duration: "04:22", s3Key: "french/french_video3.mp4" },
+      { module: 4, unit: 4, title: "Unité 4 : Marketing Digital et Croissance WhatsApp", duration: "06:14", s3Key: "french/french_video4.mp4" },
+      { module: 5, unit: 5, title: "Unité 5 : Gestion des Opérations et des Stocks", duration: "05:12", s3Key: "french/french_video5.mp4" },
+      { module: 6, unit: 6, title: "Unité 6 : Stratégies de Croissance et Expansion", duration: "05:04", s3Key: "french/french_video6.mp4" }
     ];
 
     return res.status(200).json({

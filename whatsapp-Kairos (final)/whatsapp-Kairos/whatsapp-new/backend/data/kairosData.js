@@ -11,7 +11,7 @@ const KAIROS_CONFIG = {
   // Screen 0: Initial Language Selection Sequence
   languageSelection: {
     welcomeMessage: "Welcome to Kairos\nBienvenue sur Kairos",
-    prompt: "Pick your language\nChoisissez votre langue",
+    prompt: "Please select your language\nVeuillez sélectionner votre langue",
     buttons: [
       { id: "lang_en", title: "English" },
       { id: "lang_fr", title: "Français" }
@@ -54,7 +54,7 @@ const KAIROS_CONFIG = {
     ],
     moreInfoText: "Kairos Lite helps you access skills, training and business growth tools, 100% free.\n\nYour data remains strictly confidential.",
     demoVideo: {
-      filename: "kairos_english.mp4",
+      filename: "english_promo.mp4",
       caption: "Start for free",
       subscriptionQuestion: "Would you like to register for our course?",
       buttons: [

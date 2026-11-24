@@ -78,7 +78,7 @@ async function main() {
     assert(Array.isArray(step1), "Step 1 should be an array");
     assert.strictEqual(step1.length, 2, "Step 1 should have text greeting + language buttons");
     assert(step1[0].text.includes("Welcome to Kairos\nBienvenue sur Kairos"), "Step 1 must have bilingual greeting");
-    assert(step1[1].body.includes("Pick your language\nChoisissez votre langue"), "Step 1 must prompt language");
+    assert(step1[1].body.includes("Please select your language\nVeuillez sélectionner votre langue"), "Step 1 must prompt language");
     const langBtns = step1[1].buttons.map(b => b.id);
     assert(langBtns.includes("lang_en") && langBtns.includes("lang_fr"), "Must have English & Français buttons");
 
@@ -94,7 +94,7 @@ async function main() {
     // Step 3: Accept Free Intro Course
     const step3 = await chatbotService.processMessage(unregPhone, "I accept", "accept_intro");
     const videoMsg = step3.find(m => m.type === "video");
-    assert(videoMsg && videoMsg.url.includes("kairos_english.mp4"), "Must send English intro video");
+    assert(videoMsg && videoMsg.url.includes("english_promo.mp4"), "Must send English intro video");
     assert.strictEqual(videoMsg.caption, "Start for free", "Video caption must be 'Start for free'");
     const regPromptBtn = step3.find(m => m.type === "button");
     assert(regPromptBtn.body.includes("Would you like to register for our course?"), "Must prompt for course registration");

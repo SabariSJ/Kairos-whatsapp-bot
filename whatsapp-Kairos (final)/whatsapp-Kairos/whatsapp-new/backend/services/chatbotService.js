@@ -128,24 +128,24 @@ function getCourseHeaderTitle(currentMod, course, lang = "en") {
 }
 
 /**
- * Syllabus information for the 6 course modules in perfect order
+ * Syllabus information for the 6 course units in Module 1 in perfect order
  */
 const COURSE_SYLLABUS = [
-  { module: 1, title: "Module 1: Orientation & Core Fundamentals", duration: "18 mins" },
-  { module: 2, title: "Module 2: Practical Skills & Strategy", duration: "24 mins" },
-  { module: 3, title: "Module 3: Tools, Workflows & Implementation", duration: "22 mins" },
-  { module: 4, title: "Module 4: Real-World Case Studies & Troubleshooting", duration: "28 mins" },
-  { module: 5, title: "Module 5: Capstone Project & Best Practices", duration: "32 mins" },
-  { module: 6, title: "Module 6: Final Assessment & Certification", duration: "20 mins" }
+  { module: 1, unit: 1, title: "Unit 1: Market Research & Idea Validation", duration: "05:14" },
+  { module: 1, unit: 2, title: "Unit 2: Financial Literacy & Cash Flow", duration: "04:02" },
+  { module: 1, unit: 3, title: "Unit 3: Customer Acquisition & Sales Strategy", duration: "04:12" },
+  { module: 1, unit: 4, title: "Unit 4: Digital Marketing & WhatsApp Growth", duration: "05:54" },
+  { module: 1, unit: 5, title: "Unit 5: Operations & Inventory Management", duration: "05:18" },
+  { module: 1, unit: 6, title: "Unit 6: Scaling & Business Growth", duration: "04:52" }
 ];
 
 const COURSE_SYLLABUS_FR = [
-  { module: 1, title: "Module 1 : Orientation et Fondamentaux", duration: "18 min" },
-  { module: 2, title: "Module 2 : Compétences pratiques et Stratégie", duration: "24 min" },
-  { module: 3, title: "Module 3 : Outils, Processus et Mise en œuvre", duration: "22 min" },
-  { module: 4, title: "Module 4 : Études de cas réels et Solutions", duration: "28 min" },
-  { module: 5, title: "Module 5 : Projet de synthèse et Bonnes pratiques", duration: "32 min" },
-  { module: 6, title: "Module 6 : Évaluation finale et Certification", duration: "20 min" }
+  { module: 1, unit: 1, title: "Unité 1 : Étude de Marché et Validation d'Idée", duration: "05:16" },
+  { module: 1, unit: 2, title: "Unité 2 : Gestion Financière et Flux de Trésorerie", duration: "04:00" },
+  { module: 1, unit: 3, title: "Unité 3 : Stratégie de Vente et Acquisition Client", duration: "04:22" },
+  { module: 1, unit: 4, title: "Unité 4 : Marketing Digital et Croissance WhatsApp", duration: "06:14" },
+  { module: 1, unit: 5, title: "Unité 5 : Gestion des Opérations et des Stocks", duration: "05:12" },
+  { module: 1, unit: 6, title: "Unité 6 : Stratégies de Croissance et Expansion", duration: "05:04" }
 ];
 
 /**
@@ -372,7 +372,7 @@ async function processMessage(from, userMessage = "", buttonId = null, messageId
       return [
         {
           type: "video",
-          url: getPosterUrl("kairos_english.mp4"),
+          url: getPosterUrl("english_promo.mp4"),
           caption: "Start for free"
         },
         {
@@ -449,12 +449,12 @@ async function processMessage(from, userMessage = "", buttonId = null, messageId
         {
           type: "text",
           text: isFr
-            ? `🎓 *Présentation du cours de Réussite Commerciale*\n\nNotre formation comprend 6 modules complets :\n\n${syllabus.map(m => `• *${m.title}* (${m.duration})`).join("\n")}\n\n✨ Complétez les 6 modules sur WhatsApp pour obtenir votre certificat officiel !`
-            : `🎓 *Certified Business Success Class Overview*\n\nOur complete course includes 6 comprehensive modules:\n\n${syllabus.map(m => `• *${m.title}* (${m.duration})`).join("\n")}\n\n✨ Complete all 6 modules on WhatsApp to earn your verified certificate!`
+            ? `🎓 *Présentation du cours de Réussite Commerciale - Module 1*\n\nNotre formation comprend 6 unités vidéo complètes :\n\n${syllabus.map(m => `• *${m.title}* (${m.duration})`).join("\n")}\n\n✨ Complétez les 6 unités sur WhatsApp pour obtenir votre certificat officiel !`
+            : `🎓 *Certified Business Success Class Overview - Module 1*\n\nOur complete course includes 6 comprehensive video units:\n\n${syllabus.map(m => `• *${m.title}* (${m.duration})`).join("\n")}\n\n✨ Complete all 6 units on WhatsApp to earn your verified certificate!`
         },
         {
           type: "button",
-          body: isFr ? "Choisissez votre langue pour commencer :" : "Pick your language to start:",
+          body: isFr ? "Veuillez sélectionner votre langue :" : "Please select your language:",
           buttons: [
             { id: "lang_en", title: "English" },
             { id: "lang_fr", title: "Français" }
@@ -474,7 +474,7 @@ async function processMessage(from, userMessage = "", buttonId = null, messageId
       },
       {
         type: "button",
-        body: "Pick your language\nChoisissez votre langue",
+        body: "Please select your language\nVeuillez sélectionner votre langue",
         buttons: [
           { id: "lang_en", title: "English" },
           { id: "lang_fr", title: "Français" }
@@ -545,6 +545,10 @@ async function processStudentAccess(student, from, clean, buttonId, serverBase, 
 
     const classroomUrl = `${serverBase}/classroom/${sessionData.sessionId}`;
 
+    const unitsList = isFr
+      ? `📚 Unités du Module 1 :\n• Unité 1 : Étude de Marché et Validation d'Idée\n• Unité 2 : Gestion Financière et Flux de Trésorerie\n• Unité 3 : Stratégie de Vente et Acquisition Client\n• Unité 4 : Marketing Digital et Croissance WhatsApp\n• Unité 5 : Gestion des Opérations et des Stocks\n• Unité 6 : Stratégies de Croissance et Expansion`
+      : `📚 Module 1 Units:\n• Unit 1: Market Research & Idea Validation\n• Unit 2: Financial Literacy & Cash Flow\n• Unit 3: Customer Acquisition & Sales Strategy\n• Unit 4: Digital Marketing & WhatsApp Growth\n• Unit 5: Operations & Inventory Management\n• Unit 6: Scaling & Business Growth`;
+
     const resumeLine = progressSec > 0
       ? (isFr ? `▶️ Reprise du Module ${currentMod} à : ${progressTime}` : `▶️ Resuming Module ${currentMod} from: ${progressTime}`)
       : (isFr ? `▶️ Démarrage du Module ${currentMod} à : 00:00` : `▶️ Starting Module ${currentMod} from: 00:00`);
@@ -552,8 +556,8 @@ async function processStudentAccess(student, from, clean, buttonId, serverBase, 
     const headerTitle = getCourseHeaderTitle(currentMod, student.course, userLang);
 
     const bodyText = isFr
-      ? `Bonjour ${studentName} !\n\nVotre salle de classe pour le ${courseName} - Module ${currentMod} est prête.\n\n${resumeLine}\n\nAppuyez sur le bouton ci-dessous pour démarrer votre cours :`
-      : `Hello ${studentName}!\n\nYour ${courseName} - Module ${currentMod} classroom is ready.\n\n${resumeLine}\n\nTap the button below to start your class:`;
+      ? `Bonjour ${studentName} !\n\nVotre salle de classe pour le ${courseName} - Module ${currentMod} est prête.\n\n${unitsList}\n\n${resumeLine}\n\nAppuyez sur le bouton ci-dessous pour démarrer votre cours :`
+      : `Hello ${studentName}!\n\nYour ${courseName} - Module ${currentMod} classroom is ready.\n\n${unitsList}\n\n${resumeLine}\n\nTap the button below to start your class:`;
 
     const buttonLabel = isFr ? `▶️ Ouvrir Module ${currentMod}` : `▶️ Open Module ${currentMod}`;
 
@@ -596,8 +600,8 @@ async function processStudentAccess(student, from, clean, buttonId, serverBase, 
     const classroomUrl = `${serverBase}/classroom/${sessionData.sessionId}?reset=1`;
     const headerTitle = getCourseHeaderTitle(currentMod, student.course, userLang);
     const bodyText = isFr
-      ? `Bonjour ${student.name} !\n\nVotre salle de classe pour le ${courseName} - Module ${currentMod} est prête.\n\n▶️ Démarrage du Module ${currentMod} à : 00:00\n\nAppuyez sur le bouton ci-dessous pour démarrer votre cours :`
-      : `Hello ${student.name}!\n\nYour ${courseName} - Module ${currentMod} classroom is ready.\n\n▶️ Starting Module ${currentMod} from: 00:00\n\nTap the button below to start your class:`;
+      ? `Bonjour ${student.name} !\n\nVotre salle de classe pour le ${courseName} - Module ${currentMod} est prête.\n\n${unitsList}\n\n▶️ Démarrage du Module ${currentMod} à : 00:00\n\nAppuyez sur le bouton ci-dessous pour démarrer votre cours :`
+      : `Hello ${student.name}!\n\nYour ${courseName} - Module ${currentMod} classroom is ready.\n\n${unitsList}\n\n▶️ Starting Module ${currentMod} from: 00:00\n\nTap the button below to start your class:`;
 
     const buttonLabel = isFr ? `▶️ Ouvrir Module ${currentMod}` : `▶️ Open Module ${currentMod}`;
 
