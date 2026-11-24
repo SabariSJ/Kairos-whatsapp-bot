@@ -169,19 +169,19 @@
 
     .floating-watermark {
       position: absolute;
-      padding: 5px 10px;
-      background: rgba(0, 0, 0, 0.55);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      display: none;
+      opacity: 0;
+      padding: 5px 12px;
+      background: rgba(0, 0, 0, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.18);
       border-radius: 6px;
       font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      color: rgba(255, 255, 255, 0.45);
+      color: rgba(255, 255, 255, 0.6);
       white-space: nowrap;
-      opacity: 0;
-      visibility: hidden;
       transition: opacity 0.3s ease-in-out;
-      transform: translate(-50%, -50%);
       pointer-events: none;
+      z-index: 25;
     }
 
     /* Resume Notification Banner */
@@ -1549,47 +1549,73 @@
     // Dynamic Anti-Piracy Watermark: Appears for 3s every 40s interval (no continuous flowing)
     function updateWatermarkPosition() {
       if (!watermarkEl || !playerContainer) return;
+      const phoneTxt = studentPhoneEl ? studentPhoneEl.textContent : "";
+      const nameTxt = studentNameEl ? studentNameEl.textContent : "STUDENT";
+      const now = new Date().toLocaleTimeString();
+      watermarkEl.textContent = `${phoneTxt ? phoneTxt + ' • ' : ''}${nameTxt} • KAIROS • ${now}`;
+
       const rect = playerContainer.getBoundingClientRect();
-      const w = rect.width || 320;
-      const h = rect.height || 180;
-      const minX = 70;
-      const maxX = Math.max(minX, w - 120);
-      const minY = 35;
-      const maxY = Math.max(minY, h - 35);
-      const randX = Math.floor(Math.random() * (maxX - minX + 1)) + minX;
-      const randY = Math.floor(Math.random() * (maxY - minY + 1)) + minY;
+      const pWidth = rect.width || 340;
+      const pHeight = rect.height || 190;
+
+      // Safe boundaries to guarantee the entire watermark is never cut off
+      const padX = 14;
+      const padY = 24;
+      const wmWidth = watermarkEl.offsetWidth || 230;
+      const wmHeight = watermarkEl.offsetHeight || 28;
+
+      const maxX = Math.max(padX, pWidth - wmWidth - padX);
+      const maxY = Math.max(padY, pHeight - wmHeight - padY);
+
+      const randX = Math.floor(Math.random() * (maxX - padX + 1)) + padX;
+      const randY = Math.floor(Math.random() * (maxY - padY + 1)) + padY;
+
+      watermarkEl.style.transform = 'none';
       watermarkEl.style.left = `${randX}px`;
       watermarkEl.style.top = `${randY}px`;
-      const now = new Date().toLocaleTimeString();
-      const phoneTxt = studentPhoneEl.textContent || "";
-      const nameTxt = studentNameEl.textContent || "STUDENT";
-      watermarkEl.textContent = `${phoneTxt ? phoneTxt + ' • ' : ''}${nameTxt} • KAIROS • ${now}`;
     }
 
     function showWatermarkBriefly() {
       if (!watermarkEl || !playerContainer) return;
+
+      // Make element measurable and calculate safe position
+      watermarkEl.style.display = 'block';
+      watermarkEl.style.opacity = '0';
       updateWatermarkPosition();
-      watermarkEl.style.visibility = 'visible';
-      watermarkEl.style.opacity = '1';
+
+      // Smooth fade in
+      requestAnimationFrame(() => {
+        if (watermarkEl) {
+          watermarkEl.style.opacity = '1';
+        }
+      });
 
       if (watermarkHideTimeout) clearTimeout(watermarkHideTimeout);
+
+      // Hide after EXACTLY 3 seconds (3000ms)
       watermarkHideTimeout = setTimeout(() => {
         if (watermarkEl) {
           watermarkEl.style.opacity = '0';
           setTimeout(() => {
             if (watermarkEl && watermarkEl.style.opacity === '0') {
-              watermarkEl.style.visibility = 'hidden';
+              watermarkEl.style.display = 'none';
             }
           }, 350);
         }
-      }, 3000); // Display for exactly 3 seconds
+      }, 3000);
     }
 
     function startWatermark() {
       if (watermarkInterval) clearInterval(watermarkInterval);
       if (watermarkHideTimeout) clearTimeout(watermarkHideTimeout);
 
-      // Trigger appearance for 3 seconds
+      // Ensure hidden on startup
+      if (watermarkEl) {
+        watermarkEl.style.display = 'none';
+        watermarkEl.style.opacity = '0';
+      }
+
+      // Show initially for 3 seconds
       showWatermarkBriefly();
 
       // Repeat with 40 seconds time interval
