@@ -1431,7 +1431,7 @@
         <span id="btn-prev-text">Previous Video</span>
       </button>
       <div class="nav-module-info" id="nav-module-info">
-        <span id="nav-module-counter">Module 1 of 6</span>
+        <span id="nav-module-counter">Unit 1 of 6</span>
       </div>
       <button id="btn-next-module" class="btn-nav-module">
         <span id="btn-next-text">Next Video</span>
@@ -1477,7 +1477,7 @@
     <div class="info-card" id="info-card">
       <div class="info-header">
         <div class="info-header-left">
-          <h1 class="lesson-title" id="module-title">Module {{MODULE_NUMBER}}: {{COURSE_NAME}}</h1>
+          <h1 class="lesson-title" id="module-title">Unit {{MODULE_NUMBER}}: {{COURSE_NAME}}</h1>
           <div class="student-tag">
             Student: <strong id="student-name">{{STUDENT_NAME_UPPER}}</strong> (<span id="student-phone">{{STUDENT_PHONE}}</span>)
           </div>
@@ -1775,8 +1775,8 @@
       playlistGrid.innerHTML = '';
 
       navModuleCounter.innerHTML = isFr 
-        ? `Module 1 • Unité <strong>${currentModuleNumber}</strong> sur 6`
-        : `Module 1 • Unit <strong>${currentModuleNumber}</strong> of 6`;
+        ? `Unité <strong>${currentModuleNumber}</strong> sur 6`
+        : `Unit <strong>${currentModuleNumber}</strong> of 6`;
 
       // Next module links are delivered via WhatsApp - hide next button in browser player
       if (btnNextModule) btnNextModule.style.display = 'none';
@@ -1858,9 +1858,7 @@
       
       const playlist = isFr ? FRENCH_PLAYLIST : ENGLISH_PLAYLIST;
       const currentItem = playlist.find(p => p.module === newModuleNumber) || playlist[0];
-      moduleTitleEl.textContent = isFr 
-        ? `Module ${newModuleNumber} : ${currentItem.title}`
-        : `Module ${newModuleNumber}: ${currentItem.title}`;
+      moduleTitleEl.textContent = currentItem.title;
 
       updateTaskSheet(newModuleNumber);
 
@@ -2340,7 +2338,7 @@
       renderPlaylist();
 
       const isFr = isFrench();
-      saveStatusEl.textContent = isFr ? "🎉 Module Terminé !" : "🎉 Module Completed!";
+      saveStatusEl.textContent = isFr ? "🎉 Unité Terminée !" : "🎉 Unit Completed!";
       saveStatusEl.classList.add('completed');
 
       try {
@@ -2373,16 +2371,16 @@
       if (currentModuleNumber >= 6) {
         titleEl.textContent = isFr ? "🎓 Formation Terminée ! 🏆" : "🎓 Course Completed! 🏆";
         subEl.textContent = isFr
-          ? "Félicitations ! Vous avez terminé tous les 6 modules. Votre attestation officielle est en cours de délivrance sur WhatsApp !"
-          : "Congratulations! You have finished all 6 modules. Your completion certificate has been registered on WhatsApp!";
+          ? "Félicitations ! Vous avez terminé toutes les 6 unités. Votre attestation officielle est en cours de délivrance sur WhatsApp !"
+          : "Congratulations! You have finished all 6 units. Your completion certificate has been registered on WhatsApp!";
         if (waBtn) waBtn.textContent = isFr ? "💬 Ouvrir WhatsApp" : "💬 Open WhatsApp";
       } else {
         const nextMod = currentModuleNumber + 1;
-        titleEl.textContent = isFr ? `🎉 Module ${currentModuleNumber} Terminé !` : `🎉 Module ${currentModuleNumber} Completed!`;
+        titleEl.textContent = isFr ? `🎉 Unité ${currentModuleNumber} Terminée !` : `🎉 Unit ${currentModuleNumber} Completed!`;
         subEl.textContent = isFr
-          ? `Bravo ! Le lien d'accès sécurisé pour le Module ${nextMod} a été envoyé directement sur votre WhatsApp.`
-          : `Great job! Your access link for Module ${nextMod} has been sent directly to your WhatsApp.`;
-        if (waBtn) waBtn.textContent = isFr ? `💬 Ouvrir WhatsApp pour le Module ${nextMod}` : `💬 Open WhatsApp for Module ${nextMod}`;
+          ? `Bravo ! Le lien d'accès sécurisé pour l'Unité ${nextMod} a été envoyé directement sur votre WhatsApp.`
+          : `Great job! Your access link for Unit ${nextMod} has been sent directly to your WhatsApp.`;
+        if (waBtn) waBtn.textContent = isFr ? `💬 Ouvrir WhatsApp pour l'Unité ${nextMod}` : `💬 Open WhatsApp for Unit ${nextMod}`;
       }
 
       completionOverlay.style.display = 'flex';

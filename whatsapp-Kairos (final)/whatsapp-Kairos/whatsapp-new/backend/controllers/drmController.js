@@ -476,22 +476,22 @@ class DrmController {
     let nextClassroomUrl = null;
 
     if (isGraduated) {
-      console.log(`[Graduation Event] Student ${payload.name} (+${targetPhone}) completed all 6 modules! Sending congratulations in ${isFrench ? 'French' : 'English'}.`);
+      console.log(`[Graduation Event] Student ${payload.name} (+${targetPhone}) completed all 6 units! Sending congratulations in ${isFrench ? 'French' : 'English'}.`);
       if (isFrench) {
         const frenchCourseName = chatbotService.getCourseName(session.course, "fr");
         whatsappService.sendTextMessage(
           targetPhone,
-          `🎓 *FÉLICITATIONS, ${(payload.name || "Étudiant").toUpperCase()} !* 🏆\n\nVous avez officiellement terminé *LES 6 MODULES* du cours *${frenchCourseName}* !\n\nVotre certificat de réussite a été enregistré. Notre coordinateur académique vous contactera très prochainement pour vos attestations officielles.\n\nMerci d'avoir choisi Kairos Academy !`
+          `🎓 *FÉLICITATIONS, ${(payload.name || "Étudiant").toUpperCase()} !* 🏆\n\nVous avez officiellement terminé *LES 6 UNITÉS* du cours *${frenchCourseName}* !\n\nVotre certificat de réussite a été enregistré. Notre coordinateur académique vous contactera très prochainement pour vos attestations officielles.\n\nMerci d'avoir choisi Kairos Academy !`
         ).catch(err => console.error("[WhatsApp Send Error]", err.message));
       } else {
         const engCourseName = chatbotService.getCourseName(session.course, "en");
         whatsappService.sendTextMessage(
           targetPhone,
-          `🎓 *CONGRATULATIONS, ${(payload.name || "Student").toUpperCase()}!* 🏆\n\nYou have officially completed *ALL 6 MODULES* of the *${engCourseName}*!\n\nYour certificate of completion has been registered. Our academic coordinator will contact you shortly regarding your graduation credentials.\n\nThank you for choosing Kairos Academy!`
+          `🎓 *CONGRATULATIONS, ${(payload.name || "Student").toUpperCase()}!* 🏆\n\nYou have officially completed *ALL 6 UNITS* of the *${engCourseName}*!\n\nYour certificate of completion has been registered. Our academic coordinator will contact you shortly regarding your graduation credentials.\n\nThank you for choosing Kairos Academy!`
         ).catch(err => console.error("[WhatsApp Send Error]", err.message));
       }
     } else {
-      console.log(`[Auto-Advance Event] Student ${payload.name} (+${targetPhone}) completed Module ${completedModule}. Unlocking Module ${nextModule} (Lang: ${isFrench ? 'fr' : 'en'})!`);
+      console.log(`[Auto-Advance Event] Student ${payload.name} (+${targetPhone}) completed Unit ${completedModule}. Unlocking Unit ${nextModule} (Lang: ${isFrench ? 'fr' : 'en'})!`);
       const courseName = chatbotService.getCourseName(session.course, isFrench ? "fr" : "en");
       const nextSession = drmService.createSession({
         phone: targetPhone,
@@ -504,15 +504,15 @@ class DrmController {
 
       nextClassroomUrl = `${serverBase}/classroom/${nextSession.sessionId}`;
 
-      const advanceTitle = isFrench ? `Module ${nextModule} Débloqué !` : `Module ${nextModule} Unlocked!`;
+      const advanceTitle = isFrench ? `Unité ${nextModule} Débloquée !` : `Unit ${nextModule} Unlocked!`;
       const advanceMessage = isFrench
-        ? `🎉 *Félicitations ${payload.name} !* Vous avez terminé le Module ${completedModule} !\n\n` +
-          `Votre prochain cours *Module ${nextModule}* est maintenant débloqué et prêt.\n\n` +
+        ? `🎉 *Félicitations ${payload.name} !* Vous avez terminé l'Unité ${completedModule} !\n\n` +
+          `Votre prochain cours *Unité ${nextModule}* est maintenant débloqué et prêt.\n\n` +
           `Appuyez sur le bouton ci-dessous pour continuer votre parcours :`
-        : `🎉 *Congratulations ${payload.name}!* You completed Module ${completedModule}!\n\n` +
-          `Your next class *Module ${nextModule}* is now unlocked and ready.\n\n` +
+        : `🎉 *Congratulations ${payload.name}!* You completed Unit ${completedModule}!\n\n` +
+          `Your next class *Unit ${nextModule}* is now unlocked and ready.\n\n` +
           `Tap the button below to continue your journey:`;
-      const advanceBtn = isFrench ? `▶️ Commencer Module ${nextModule}` : `▶️ Start Module ${nextModule}`;
+      const advanceBtn = isFrench ? `▶️ Commencer Unité ${nextModule}` : `▶️ Start Unit ${nextModule}`;
 
       whatsappService.sendCtaUrlButton(
         targetPhone,

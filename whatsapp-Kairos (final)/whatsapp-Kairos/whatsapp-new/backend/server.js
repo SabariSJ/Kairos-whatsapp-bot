@@ -134,7 +134,7 @@ app.post("/api/registrations", async (req, res) => {
       const isFr = student.language === "fr";
       const welcomeMsg = isFr
         ? `👋 *Bienvenue sur Kairos Academy, ${student.fullName} !*\n\nNous avons bien reçu votre inscription pour *${student.courseName}*.\n\nVeuillez finaliser votre paiement pour débloquer votre salle de classe. Répondez avec *Bonjour* pour afficher les options de paiement.`
-        : `👋 *Welcome to Kairos Academy, ${student.fullName}!*\n\nWe have received your registration for *${student.courseName}*.\n\nPlease complete your course payment to unlock Module 1. Reply with *Hi* for payment instructions.`;
+        : `👋 *Welcome to Kairos Academy, ${student.fullName}!*\n\nWe have received your registration for *${student.courseName}*.\n\nPlease complete your course payment to unlock Unit 1. Reply with *Hi* for payment instructions.`;
       whatsappService.sendTextMessage(cleanPhone, welcomeMsg).catch(() => {});
     } catch (_) {}
 
@@ -341,7 +341,7 @@ app.post("/api/webhook/student-registered", async (req, res) => {
       console.log(`[Event Mock] Onboarding notification staged for: +${cleanPhone}`);
     } else {
       const whatsappService = require("./services/whatsappService");
-      const welcomeMsg = `👋 *Welcome to Kairos Academy, ${student.name}!* \n\nWe have received your registration for *${student.course}*.\n\n${student.paymentStatus === 'yes' ? 'Your enrollment is active! Reply with *Hi* to access your classroom.' : 'Please complete your course payment to unlock Module 1. Reply with *Hi* for payment instructions.'}`;
+      const welcomeMsg = `👋 *Welcome to Kairos Academy, ${student.name}!* \n\nWe have received your registration for *${student.course}*.\n\n${student.paymentStatus === 'yes' ? 'Your enrollment is active! Reply with *Hi* to access your classroom.' : 'Please complete your course payment to unlock Unit 1. Reply with *Hi* for payment instructions.'}`;
       whatsappService.sendTextMessage(cleanPhone, welcomeMsg).catch(() => {});
     }
 
@@ -387,8 +387,8 @@ app.post("/api/webhook/payment-confirmed", async (req, res) => {
 
     const confirmTitle = isFr ? "Paiement Confirmé ✅" : "Payment Verified ✅";
     const confirmBody = isFr
-      ? `🎉 *Paiement Confirmé !* Merci pour votre règlement.\n\nVotre accès à la salle de classe pour le *Module ${session.module}* est désormais actif ! Appuyez ci-dessous pour démarrer votre cours :`
-      : `🎉 *Payment Confirmed!* Thank you for your payment.\n\nYour classroom access for *Module ${session.module}* is now active! Tap below to start your class:`;
+      ? `🎉 *Paiement Confirmé !* Merci pour votre règlement.\n\nVotre accès à la salle de classe pour l'*Unité ${session.module}* est désormais actif ! Appuyez ci-dessous pour démarrer votre cours :`
+      : `🎉 *Payment Confirmed!* Thank you for your payment.\n\nYour classroom access for *Unit ${session.module}* is now active! Tap below to start your class:`;
     const confirmBtn = isFr ? "▶️ Accéder au cours" : "▶️ Enter Class";
 
     whatsappService.sendCtaUrlButton(
