@@ -2242,6 +2242,7 @@
     video.addEventListener('playing', () => {
       showBuffering(false);
       showError(false);
+      streamRetryAttempts = 0;
       updatePlayPauseUI();
       if (!hasAppliedInitialSeek && targetResumeSeconds > 1) {
         if (video.currentTime < 2 && targetResumeSeconds >= 2) {
@@ -2255,7 +2256,33 @@
       updatePlayPauseUI();
       syncProgress(true);
     });
+
+    let streamRetryTimeout = null;
+    let streamRetryAttempts = 0;
+
     video.addEventListener('error', () => {
+      console.warn("Video streaming interrupted. Error code:", video.error ? video.error.code : 'unknown');
+      if (streamRetryAttempts < 2) {
+        streamRetryAttempts++;
+        showBuffering(true);
+        if (streamRetryTimeout) clearTimeout(streamRetryTimeout);
+        streamRetryTimeout = setTimeout(() => {
+          const curTime = video.currentTime || targetResumeSeconds || 0;
+          video.load();
+          if (curTime > 0) {
+            try { video.currentTime = curTime; } catch (e) {}
+          }
+          video.play().then(() => {
+            showBuffering(false);
+            showError(false);
+            streamRetryAttempts = 0;
+          }).catch(() => {
+            showBuffering(false);
+            showError(true);
+          });
+        }, 1200);
+        return;
+      }
       showBuffering(false);
       showError(true);
     });
@@ -2305,10 +2332,21 @@
     });
 
     // Retry Playback Button
-    btnRetryPlayback.addEventListener('click', () => {
+    btnRetryPlayback.addEventListener('click', async () => {
       showError(false);
       showBuffering(true);
+      streamRetryAttempts = 0;
+      const curTime = video.currentTime || targetResumeSeconds || 0;
+      try {
+        if (!activeToken && sessionParam) {
+          await initPlayer();
+          return;
+        }
+      } catch (e) {}
       video.load();
+      if (curTime > 0) {
+        try { video.currentTime = curTime; } catch (e) {}
+      }
       video.play().catch(() => {});
     });
 

@@ -217,9 +217,25 @@ class DrmController {
     }
 
     // 2. Anti-sharing device verification
-    const session = drmService.getSession(payload.sessionId);
+    let session = drmService.getSession(payload.sessionId);
     if (!session) {
-      return res.status(404).json({ error: "Session expired or terminated" });
+      session = {
+        sessionId: payload.sessionId,
+        token: token,
+        phone: payload.phone,
+        name: payload.name,
+        course: payload.course,
+        module: payload.module,
+        progressSeconds: payload.progressSeconds || 0,
+        language: payload.language || "en",
+        deviceSig: deviceSig || null,
+        createdAt: payload.iat || Date.now(),
+        expiresAt: payload.exp || (Date.now() + 24 * 3600 * 1000),
+        completed: false
+      };
+      drmService.sessions.set(payload.sessionId, session);
+      drmService.saveSessionsToDisk();
+      console.log(`[DRM Session Rehydrated] Restored session ${payload.sessionId} for ${payload.name} from verified token.`);
     }
 
     if (session.deviceSig && deviceSig && session.deviceSig !== deviceSig) {
@@ -357,6 +373,24 @@ class DrmController {
 
     if (payload) {
       session = drmService.getSession(payload.sessionId);
+      if (!session) {
+        session = {
+          sessionId: payload.sessionId,
+          token: token,
+          phone: payload.phone,
+          name: payload.name,
+          course: payload.course,
+          module: payload.module,
+          progressSeconds: payload.progressSeconds || 0,
+          language: payload.language || "en",
+          deviceSig: deviceSig || null,
+          createdAt: payload.iat || Date.now(),
+          expiresAt: payload.exp || (Date.now() + 24 * 3600 * 1000),
+          completed: false
+        };
+        drmService.sessions.set(payload.sessionId, session);
+        drmService.saveSessionsToDisk();
+      }
     } else {
       // Fallback: check if token or sessionId is a raw valid sessionId
       const sId = sessionId || token;
@@ -415,7 +449,26 @@ class DrmController {
       return res.status(401).json({ error: "Invalid token" });
     }
 
-    const session = drmService.getSession(payload.sessionId);
+    let session = drmService.getSession(payload.sessionId);
+    if (!session) {
+      session = {
+        sessionId: payload.sessionId,
+        token: token,
+        phone: payload.phone,
+        name: payload.name,
+        course: payload.course,
+        module: payload.module,
+        progressSeconds: payload.progressSeconds || 0,
+        language: payload.language || "en",
+        deviceSig: deviceSig || null,
+        createdAt: payload.iat || Date.now(),
+        expiresAt: payload.exp || (Date.now() + 24 * 3600 * 1000),
+        completed: false
+      };
+      drmService.sessions.set(payload.sessionId, session);
+      drmService.saveSessionsToDisk();
+    }
+
     if (!session || (session.deviceSig && session.deviceSig !== deviceSig)) {
       return res.status(403).json({ error: "Unauthorized device" });
     }
