@@ -1331,11 +1331,9 @@
           <h2 id="completion-title">Module Completed!</h2>
           <p id="completion-subtitle">Great job! Your access link for the next module has been sent to your WhatsApp.</p>
           <div class="completion-buttons">
-            <a id="btn-wa-portal" href="https://wa.me/919629531891?text=Hi" class="btn-completion btn-wa-comp">
-              💬 Open WhatsApp for Next Module
-            </a>
-            <button id="btn-replay-comp" class="btn-completion btn-nav-module" style="background: rgba(255,255,255,0.1); color: #fff;">
-              🔁 Replay This Video
+            <button id="btn-replay-comp" class="btn-completion btn-primary-comp" style="background: linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%); color: #ffffff; box-shadow: 0 4px 18px rgba(6, 182, 212, 0.45); font-size: 15px; padding: 12px 24px;">
+              <span>🔁</span>
+              <span id="btn-replay-text">Replay This Video</span>
             </button>
           </div>
         </div>
@@ -1550,7 +1548,6 @@
     const resumeBanner = document.getElementById('resume-banner');
     const resumeText = document.getElementById('resume-text');
     const completionOverlay = document.getElementById('completion-overlay');
-    const btnWaPortal = document.getElementById('btn-wa-portal');
     const btnReplayComp = document.getElementById('btn-replay-comp');
     const studentNameEl = document.getElementById('student-name');
     const studentPhoneEl = document.getElementById('student-phone');
@@ -2400,25 +2397,27 @@
       const isFr = isFrench();
       const titleEl = document.getElementById('completion-title');
       const subEl = document.getElementById('completion-subtitle');
-      const waBtn = document.getElementById('btn-wa-portal');
+      const replayText = document.getElementById('btn-replay-text');
 
       // Hide custom controls and center play button so they don't leak or overlap
       if (controlsBar) controlsBar.style.display = 'none';
       if (centerPlayOverlay) centerPlayOverlay.style.display = 'none';
+
+      if (replayText) {
+        replayText.textContent = isFr ? "Revoir cette vidéo" : "Replay This Video";
+      }
 
       if (currentModuleNumber >= 6) {
         titleEl.textContent = isFr ? "🎓 Formation Terminée ! 🏆" : "🎓 Course Completed! 🏆";
         subEl.textContent = isFr
           ? "Félicitations ! Vous avez terminé toutes les 6 unités. Votre attestation officielle est en cours de délivrance sur WhatsApp !"
           : "Congratulations! You have finished all 6 units. Your completion certificate has been registered on WhatsApp!";
-        if (waBtn) waBtn.textContent = isFr ? "💬 Ouvrir WhatsApp" : "💬 Open WhatsApp";
       } else {
         const nextMod = currentModuleNumber + 1;
         titleEl.textContent = isFr ? `🎉 Unité ${currentModuleNumber} Terminée !` : `🎉 Unit ${currentModuleNumber} Completed!`;
         subEl.textContent = isFr
           ? `Bravo ! Le lien d'accès sécurisé pour l'Unité ${nextMod} a été envoyé directement sur votre WhatsApp.`
           : `Great job! Your access link for Unit ${nextMod} has been sent directly to your WhatsApp.`;
-        if (waBtn) waBtn.textContent = isFr ? `💬 Ouvrir WhatsApp pour l'Unité ${nextMod}` : `💬 Open WhatsApp for Unit ${nextMod}`;
       }
 
       completionOverlay.style.display = 'flex';
